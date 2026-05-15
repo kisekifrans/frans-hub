@@ -1,0 +1,16 @@
+export const CODE_SNIPPETS: readonly string[] = [
+  `const flow = () => {\n  return focus + discipline;\n};`,
+  `function type(chars) {\n  return chars.map(c => c.key);\n}`,
+  `export default async function build() {\n  await ship();\n}`,
+  `interface Key {\n  id: string;\n  glow: boolean;\n}`,
+  `const wpm = (chars, ms) =>\n  Math.round((chars / 5) / (ms / 60000));`,
+  `type Phase = "idle" | "run" | "done";`,
+  `for (const word of words) {\n  await typeWord(word);\n}`,
+  `const stats = results.reduce((a, r) => {\n  return { ...a, wpm: a.wpm + r.wpm };\n}, { wpm: 0 });`,
+  `useEffect(() => {\n  inputRef.current?.focus();\n}, [text]);`,
+  `if (cursor >= text.length) finish();`,
+  `const pick = (pool) =>\n  pool[Math.floor(Math.random() * pool.length)];`,
+  `class Session {\n  reset() {\n    this.cursor = 0;\n  }\n}`,
+  `const debounce = (fn, ms) => {\n  let id = 0;\n  return (...args) => {\n    clearTimeout(id);\n    id = setTimeout(() => fn(...args), ms);\n  };\n};`,
+  `export function cn(...parts) {\n  return parts.filter(Boolean).join(" ");\n}`,
+];

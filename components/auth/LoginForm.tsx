@@ -120,7 +120,7 @@ export function LoginForm({ error, next = "/admin" }: LoginFormProps) {
             href="/"
             className="text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300"
           >
-            Affiliate Hub
+            Agisna Dev
           </Link>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
             Admin sign in

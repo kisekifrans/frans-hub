@@ -325,3 +325,27 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes typing-caret-glow {
+  0%,
+  100% {
+    background-color: rgba(139, 92, 246, 0.26);
+  }
+  50% {
+    background-color: rgba(139, 92, 246, 0.4);
+  }
+}
+
+.typing-caret {
+  animation: typing-caret-glow 1.05s ease-in-out infinite;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

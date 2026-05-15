@@ -41,7 +41,7 @@ export function PublicProfile() {
       <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-6 sm:px-6 sm:py-8">
         <nav className="mb-4 flex items-center justify-between sm:mb-5">
           <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-            Affiliate Hub
+            Agisna Dev
           </span>
           <div className="flex items-center gap-2">
             <ThemeToggle />

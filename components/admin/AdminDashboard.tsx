@@ -78,6 +78,12 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/admin/audit"
+              className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
+            >
+              QA Admin Audit
+            </Link>
             <ThemeToggle />
             <LogoutButton />
             <button
