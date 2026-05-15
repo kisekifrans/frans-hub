@@ -221,7 +221,7 @@ export function createEmptyProduct(order: number): CollectionProduct {
   const id = crypto.randomUUID();
   return {
     id,
-    title: "New product",
+    title: "New pick",
     description: "",
     affiliateUrl: "https://",
     ctaLabel: "Shop now",

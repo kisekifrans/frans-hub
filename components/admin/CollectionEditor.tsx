@@ -2,16 +2,12 @@
 
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Save, Trash2 } from "lucide-react";
-import { AdminField, AdminSelect, AdminTextarea } from "@/components/admin/AdminField";
+import { AdminField, AdminTextarea } from "@/components/admin/AdminField";
 import { GalleryManager } from "@/components/admin/GalleryManager";
 import { ProductsManager } from "@/components/admin/ProductsManager";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { GlassCard } from "@/components/ui/GlassCard";
-import {
-  COLLECTION_GRADIENT_PRESETS,
-  COLLECTION_LAYOUT_STYLES,
-  type Collection,
-} from "@/lib/types";
+import type { Collection } from "@/lib/types";
 import { normalizeCollectionSlug } from "@/lib/supabase/collection-mappers";
 import type { AutoSaveStatus } from "@/hooks/useAutoSave";
 import { cn } from "@/lib/utils";
@@ -71,9 +67,12 @@ export function CollectionEditor({
 }: CollectionEditorProps) {
   const patch = (p: Partial<Collection>) => onChange({ ...collection, ...p });
   const slugPreview = normalizeCollectionSlug(collection.slug) || "your-slug";
+  const heroPreview = collection.heroGifUrl ?? collection.heroImageUrl;
+  const heroPath =
+    collection.heroGifStoragePath ?? collection.heroImageStoragePath;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -115,12 +114,12 @@ export function CollectionEditor({
         </div>
       </div>
 
-      <GlassCard padding="lg" className="space-y-4">
+      <GlassCard padding="lg" className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-            Collection details
+          <h2 className="text-base font-bold text-zinc-900 dark:text-white">
+            Collection
           </h2>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-xs">
             <input
               type="checkbox"
               checked={collection.enabled}
@@ -138,111 +137,49 @@ export function CollectionEditor({
           label="URL slug"
           value={collection.slug}
           onChange={(slug) => patch({ slug })}
-          hint={`Public URL: /${slugPreview}`}
+          hint={`/${slugPreview}`}
         />
         <AdminTextarea
-          label="Description"
+          label="Short tagline (optional)"
           value={collection.description}
           onChange={(description) => patch({ description })}
-        />
-        <AdminTextarea
-          label="Creator review"
-          value={collection.reviewText ?? ""}
-          onChange={(reviewText) => patch({ reviewText })}
-          rows={4}
-        />
-      </GlassCard>
-
-      <GlassCard padding="lg" className="space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">SEO</h2>
-        <AdminField
-          label="SEO title"
-          value={collection.seoTitle ?? ""}
-          onChange={(seoTitle) => patch({ seoTitle })}
-        />
-        <AdminTextarea
-          label="SEO description"
-          value={collection.seoDescription ?? ""}
-          onChange={(seoDescription) => patch({ seoDescription })}
           rows={2}
         />
-      </GlassCard>
-
-      <GlassCard padding="lg" className="space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Hero media</h2>
         <MediaUpload
           profileId={profileId}
-          blockId={`${collection.id}/hero-gif`}
+          blockId={`${collection.id}/hero`}
           folder="collections"
-          label="Hero GIF"
+          label="Hero preview (image or GIF)"
           accept="image/*,.gif"
           previewAspect="video"
           maxSizeMb={12}
-          currentUrl={collection.heroGifUrl}
-          storagePath={collection.heroGifStoragePath}
-          onUploaded={(url, storagePath) =>
-            patch({ heroGifUrl: url, heroGifStoragePath: storagePath })
-          }
+          currentUrl={heroPreview}
+          storagePath={heroPath}
+          onUploaded={(url, storagePath) => {
+            if (/\.gif(\?|$)/i.test(url)) {
+              patch({
+                heroGifUrl: url,
+                heroGifStoragePath: storagePath,
+                heroImageUrl: undefined,
+                heroImageStoragePath: undefined,
+              });
+            } else {
+              patch({
+                heroImageUrl: url,
+                heroImageStoragePath: storagePath,
+                heroGifUrl: undefined,
+                heroGifStoragePath: undefined,
+              });
+            }
+          }}
           onClear={() =>
-            patch({ heroGifUrl: undefined, heroGifStoragePath: undefined })
+            patch({
+              heroGifUrl: undefined,
+              heroGifStoragePath: undefined,
+              heroImageUrl: undefined,
+              heroImageStoragePath: undefined,
+            })
           }
-        />
-        <MediaUpload
-          profileId={profileId}
-          blockId={`${collection.id}/hero-image`}
-          folder="collections"
-          label="Hero image"
-          previewAspect="video"
-          maxSizeMb={12}
-          currentUrl={collection.heroImageUrl}
-          storagePath={collection.heroImageStoragePath}
-          onUploaded={(url, storagePath) =>
-            patch({ heroImageUrl: url, heroImageStoragePath: storagePath })
-          }
-          onClear={() =>
-            patch({ heroImageUrl: undefined, heroImageStoragePath: undefined })
-          }
-        />
-        <AdminField
-          label="Hero video URL (optional)"
-          value={collection.heroVideoUrl ?? ""}
-          onChange={(heroVideoUrl) => patch({ heroVideoUrl })}
-          type="url"
-          hint="MP4/WebM hosted URL if not using upload"
-        />
-      </GlassCard>
-
-      <GlassCard padding="lg" className="space-y-4">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-          Customization
-        </h2>
-        <AdminField
-          label="Accent color"
-          value={collection.accentColor ?? "#a78bfa"}
-          onChange={(accentColor) => patch({ accentColor })}
-          type="color"
-        />
-        <AdminSelect
-          label="Background gradient"
-          value={collection.gradientPreset}
-          options={COLLECTION_GRADIENT_PRESETS}
-          onChange={(gradientPreset) => patch({ gradientPreset })}
-        />
-        <AdminSelect
-          label="Layout style"
-          value={collection.layoutStyle}
-          options={COLLECTION_LAYOUT_STYLES}
-          onChange={(layoutStyle) => patch({ layoutStyle })}
-        />
-      </GlassCard>
-
-      <GlassCard padding="lg">
-        <GalleryManager
-          profileId={profileId}
-          collectionId={collection.id}
-          images={collection.gallery}
-          onChange={(gallery) => patch({ gallery })}
-          onAdd={onAddGallery}
         />
       </GlassCard>
 
@@ -253,6 +190,16 @@ export function CollectionEditor({
           products={collection.products}
           onChange={(products) => patch({ products })}
           onAdd={onAddProduct}
+        />
+      </GlassCard>
+
+      <GlassCard padding="lg">
+        <GalleryManager
+          profileId={profileId}
+          collectionId={collection.id}
+          images={collection.gallery}
+          onChange={(gallery) => patch({ gallery })}
+          onAdd={onAddGallery}
         />
       </GlassCard>
     </div>

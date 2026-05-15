@@ -16,9 +16,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp, GripVertical, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { AdminField, AdminTextarea } from "@/components/admin/AdminField";
+import { GripVertical, Plus, Trash2 } from "lucide-react";
+import { AdminField } from "@/components/admin/AdminField";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { GlassCard } from "@/components/ui/GlassCard";
 import type { CollectionProduct } from "@/lib/types";
@@ -67,11 +66,43 @@ export function ProductsManager({
     );
   };
 
+  const setPreview = (
+    id: string,
+    url: string,
+    storagePath: string,
+  ) => {
+    const isGif = /\.gif(\?|$)/i.test(url);
+    if (isGif) {
+      patch(id, {
+        gifUrl: url,
+        gifStoragePath: storagePath,
+        imageUrl: undefined,
+        imageStoragePath: undefined,
+      });
+    } else {
+      patch(id, {
+        imageUrl: url,
+        imageStoragePath: storagePath,
+        gifUrl: undefined,
+        gifStoragePath: undefined,
+      });
+    }
+  };
+
+  const clearPreview = (id: string) => {
+    patch(id, {
+      imageUrl: undefined,
+      imageStoragePath: undefined,
+      gifUrl: undefined,
+      gifStoragePath: undefined,
+    });
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-          Product cards
+          Curated picks
         </h3>
         <button
           type="button"
@@ -79,7 +110,7 @@ export function ProductsManager({
           className="glass-card flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium hover:bg-white/55 dark:hover:bg-white/15"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add product
+          Add pick
         </button>
       </div>
 
@@ -92,15 +123,21 @@ export function ProductsManager({
           items={sorted.map((p) => p.id)}
           strategy={verticalListSortingStrategy}
         >
-          <ul className="space-y-3">
+          <ul className="grid gap-2 sm:grid-cols-2">
             {sorted.map((product) => (
-              <SortableProductItem
+              <SortablePick
                 key={product.id}
                 product={product}
                 profileId={profileId}
                 collectionId={collectionId}
+                previewUrl={product.gifUrl ?? product.imageUrl}
+                previewPath={
+                  product.gifStoragePath ?? product.imageStoragePath
+                }
                 onPatch={(p) => patch(product.id, p)}
                 onRemove={() => remove(product.id)}
+                onPreview={(url, path) => setPreview(product.id, url, path)}
+                onClearPreview={() => clearPreview(product.id)}
               />
             ))}
           </ul>
@@ -110,51 +147,27 @@ export function ProductsManager({
   );
 }
 
-function TagsInput({
-  tags,
-  onChange,
-}: {
-  tags: string[];
-  onChange: (tags: string[]) => void;
-}) {
-  const [raw, setRaw] = useState(tags.join(", "));
-
-  return (
-    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300">
-      Tags (comma-separated)
-      <input
-        type="text"
-        value={raw}
-        onChange={(e) => {
-          setRaw(e.target.value);
-          onChange(
-            e.target.value
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean),
-          );
-        }}
-        placeholder="streetwear, summer, sale"
-        className="mt-1 w-full rounded-xl border border-white/20 bg-white/50 px-3 py-2 text-sm dark:bg-white/10"
-      />
-    </label>
-  );
-}
-
-function SortableProductItem({
+function SortablePick({
   product,
   profileId,
   collectionId,
+  previewUrl,
+  previewPath,
   onPatch,
   onRemove,
+  onPreview,
+  onClearPreview,
 }: {
   product: CollectionProduct;
   profileId: string;
   collectionId: string;
+  previewUrl?: string;
+  previewPath?: string;
   onPatch: (p: Partial<CollectionProduct>) => void;
   onRemove: () => void;
+  onPreview: (url: string, path: string) => void;
+  onClearPreview: () => void;
 }) {
-  const [open, setOpen] = useState(true);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: product.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -165,128 +178,64 @@ function SortableProductItem({
       style={style}
       className={cn(isDragging && "z-50 opacity-90")}
     >
-      <GlassCard padding="md" className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <button
-              type="button"
-              className="touch-none rounded p-1 text-zinc-400"
-              aria-label="Drag"
-              {...attributes}
-              {...listeners}
-            >
-              <GripVertical className="h-4 w-4" />
-            </button>
-            <span className="truncate text-sm font-semibold text-zinc-800 dark:text-white">
-              {product.title || "Untitled product"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1 text-xs">
-              <input
-                type="checkbox"
-                checked={product.enabled}
-                onChange={(e) => onPatch({ enabled: e.target.checked })}
-              />
-              Visible
-            </label>
-            <button
-              type="button"
-              onClick={() => setOpen((o) => !o)}
-              className="rounded p-1 text-zinc-500"
-              aria-label={open ? "Collapse" : "Expand"}
-            >
-              {open ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onRemove}
-              className="rounded p-1 text-rose-500 hover:bg-rose-500/10"
-              aria-label="Delete"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
+      <GlassCard padding="sm" className="space-y-2">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="touch-none rounded p-1 text-zinc-400"
+            aria-label="Drag"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+          <label className="ml-auto flex items-center gap-1 text-[10px]">
+            <input
+              type="checkbox"
+              checked={product.enabled}
+              onChange={(e) => onPatch({ enabled: e.target.checked })}
+            />
+            Visible
+          </label>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="rounded p-1 text-rose-500"
+            aria-label="Delete"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         </div>
-
-        {open && (
-          <div className="space-y-3 border-t border-white/10 pt-3">
-            <AdminField
-              label="Title"
-              value={product.title}
-              onChange={(title) => onPatch({ title })}
-            />
-            <AdminTextarea
-              label="Description"
-              value={product.description}
-              onChange={(description) => onPatch({ description })}
-            />
-            <AdminField
-              label="Affiliate URL"
-              value={product.affiliateUrl}
-              onChange={(affiliateUrl) => onPatch({ affiliateUrl })}
-              type="url"
-            />
-            <AdminField
-              label="CTA button text"
-              value={product.ctaLabel}
-              onChange={(ctaLabel) => onPatch({ ctaLabel })}
-            />
-            <AdminField
-              label="Category"
-              value={product.category ?? ""}
-              onChange={(category) => onPatch({ category })}
-            />
-            <TagsInput
-              tags={product.tags}
-              onChange={(tags) => onPatch({ tags })}
-            />
-            <AdminTextarea
-              label="Creator review (product)"
-              value={product.reviewText ?? ""}
-              onChange={(reviewText) => onPatch({ reviewText })}
-              rows={2}
-            />
-            <MediaUpload
-              profileId={profileId}
-              blockId={`${collectionId}/product-${product.id}-image`}
-              folder="collections"
-              label="Product image"
-              previewAspect="portrait"
-              maxSizeMb={12}
-              currentUrl={product.imageUrl}
-              storagePath={product.imageStoragePath}
-              onUploaded={(url, storagePath) =>
-                onPatch({ imageUrl: url, imageStoragePath: storagePath })
-              }
-              onClear={() =>
-                onPatch({ imageUrl: undefined, imageStoragePath: undefined })
-              }
-            />
-            <MediaUpload
-              profileId={profileId}
-              blockId={`${collectionId}/product-${product.id}-gif`}
-              folder="collections"
-              label="GIF / video preview"
-              accept="image/*,.gif,video/mp4,video/webm"
-              previewAspect="video"
-              maxSizeMb={12}
-              allowVideo
-              currentUrl={product.gifUrl}
-              storagePath={product.gifStoragePath}
-              onUploaded={(url, storagePath) =>
-                onPatch({ gifUrl: url, gifStoragePath: storagePath })
-              }
-              onClear={() =>
-                onPatch({ gifUrl: undefined, gifStoragePath: undefined })
-              }
-            />
-          </div>
-        )}
+        <AdminField
+          label="Title"
+          value={product.title}
+          onChange={(title) => onPatch({ title })}
+        />
+        <AdminField
+          label="Affiliate URL"
+          value={product.affiliateUrl}
+          onChange={(affiliateUrl) => onPatch({ affiliateUrl })}
+          type="url"
+        />
+        <AdminField
+          label="Caption (optional)"
+          value={product.description}
+          onChange={(description) => onPatch({ description })}
+        />
+        <MediaUpload
+          profileId={profileId}
+          blockId={`${collectionId}/pick-${product.id}`}
+          folder="collections"
+          label="Preview (image or GIF)"
+          accept="image/*,.gif,video/mp4,video/webm"
+          previewAspect="square"
+          maxSizeMb={12}
+          allowVideo
+          currentUrl={previewUrl}
+          storagePath={previewPath}
+          onUploaded={onPreview}
+          onClear={onClearPreview}
+        />
       </GlassCard>
     </li>
   );
