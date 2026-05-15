@@ -15,11 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Agisna Fransisco | Dev",
-  description:
-    "I built this website to showcase my links.",
-    icons: {
-      icon: "/icon.png",
-    },
+  description: "I built this website to showcase my links.",
 };
 
 const themeInitScript = `
