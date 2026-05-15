@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Affiliate Hub — Link-in-bio Dashboard",
+  title: "Agisna Fransisco | Dev",
   description:
-    "Modern affiliate link-in-bio hub with glassmorphism, embeds, GIFs, and analytics.",
+    "I built this website to showcase my links.",
 };
 
 const themeInitScript = `

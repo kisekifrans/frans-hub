@@ -1,12 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { Copy, ExternalLink, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MotionDiv } from "@/components/ui/motion";
+import { SafeImage } from "@/components/ui/SafeImage";
 import type { LinkBlock } from "@/lib/types";
+import { isValidImageSrc } from "@/lib/image-utils";
 import { cn } from "@/lib/utils";
 
 interface LinkBlockCardProps {
@@ -16,7 +17,7 @@ interface LinkBlockCardProps {
 
 export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
   const [copied, setCopied] = useState(false);
-  const hasThumbnail = Boolean(block.thumbnailUrl?.trim());
+  const hasThumbnail = isValidImageSrc(block.thumbnailUrl);
   const layout = block.thumbnailLayout ?? "side";
   const isBanner = hasThumbnail && layout === "banner";
 
@@ -34,7 +35,7 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
   };
 
   return (
-    <MotionDiv whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+    <MotionDiv whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.99 }}>
       <GlassCard
         hover
         padding={isBanner ? "none" : "md"}
@@ -47,15 +48,14 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
           onClick={onClick}
           className="block no-underline"
         >
-          {isBanner && block.thumbnailUrl && (
+          {isBanner && hasThumbnail && (
             <div className="relative aspect-[2/1] w-full overflow-hidden">
-              <Image
+              <SafeImage
                 src={block.thumbnailUrl}
                 alt=""
                 fill
                 className="object-cover transition duration-500 group-hover:scale-[1.03]"
                 sizes="(max-width: 480px) 100vw, 420px"
-                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
             </div>
@@ -68,15 +68,14 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
             )}
           >
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              {hasThumbnail && layout === "side" && block.thumbnailUrl && (
+              {hasThumbnail && layout === "side" && (
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-2 ring-white/30 dark:ring-white/10">
-                  <Image
+                  <SafeImage
                     src={block.thumbnailUrl}
                     alt=""
                     fill
                     className="object-cover"
                     sizes="48px"
-                    unoptimized
                   />
                 </div>
               )}

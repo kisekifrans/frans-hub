@@ -1,11 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { AnalyticsSnapshot, Profile, ProfileBlock } from "@/lib/types";
+import type {
+  AnalyticsGranularity,
+  AnalyticsPeriod,
+  AnalyticsSnapshot,
+  Profile,
+  ProfileBlock,
+} from "@/lib/types";
+import { buildAnalyticsReport, periodStart } from "@/lib/analytics-report";
 import { DEFAULT_DATA } from "@/lib/defaults";
 import type { DbBlock, DbProfile } from "./database.types";
 import { STORAGE_BUCKET } from "./database.types";
 import {
-  aggregateAnalytics,
   blockFromDb,
+  blockTitlesFromProfile,
   blockToDb,
   profileFromDb,
   profileToDb,
@@ -42,30 +49,50 @@ export async function fetchHub(
   if (blocksError) throw blocksError;
 
   const blocks = (blockRows as DbBlock[]).map(blockFromDb);
-  const analytics = await fetchAnalytics(supabase, profileRow.id);
+  const profile = profileFromDb(profileRow as DbProfile, blocks);
+  const analytics = await fetchAnalytics(supabase, profileRow.id, {
+    blockTitles: blockTitlesFromProfile(blocks),
+  });
 
   return {
-    profile: profileFromDb(profileRow as DbProfile, blocks),
+    profile,
     profileId: profileRow.id,
     analytics,
   };
 }
 
+export interface FetchAnalyticsOptions {
+  period?: AnalyticsPeriod;
+  granularity?: AnalyticsGranularity;
+  blockTitles?: Record<string, string>;
+}
+
 export async function fetchAnalytics(
   supabase: SupabaseClient,
   profileId: string,
+  options: FetchAnalyticsOptions = {},
 ): Promise<AnalyticsSnapshot> {
-  const since = new Date();
-  since.setDate(since.getDate() - 30);
+  const period = options.period ?? "30d";
+  const granularity = options.granularity ?? "daily";
+  const since = periodStart(period);
 
   const { data, error } = await supabase
     .from("analytics_events")
-    .select("event_type, block_id, created_at")
+    .select(
+      "event_type, block_id, created_at, visitor_id, device_type, browser, os",
+    )
     .eq("profile_id", profileId)
-    .gte("created_at", since.toISOString());
+    .gte("created_at", since.toISOString())
+    .order("created_at", { ascending: true })
+    .limit(10000);
 
   if (error) throw error;
-  return aggregateAnalytics(data ?? []);
+
+  return buildAnalyticsReport(data ?? [], {
+    period,
+    granularity,
+    blockTitles: options.blockTitles ?? {},
+  });
 }
 
 export async function saveProfile(
@@ -81,6 +108,9 @@ export async function saveProfile(
       display_name: row.display_name,
       bio: row.bio,
       avatar_url: row.avatar_url,
+      avatar_storage_path: row.avatar_storage_path,
+      verified: row.verified,
+      social_links: row.social_links,
       theme: row.theme,
       updated_at: new Date().toISOString(),
     })
@@ -194,6 +224,11 @@ async function seedHub(supabase: SupabaseClient): Promise<void> {
       display_name: seed.displayName,
       bio: seed.bio,
       avatar_url: seed.avatarUrl,
+      verified: seed.verified,
+      social_links: seed.socialLinks.map((l) => ({
+        platform: l.platform,
+        url: l.url,
+      })),
       theme: seed.theme,
     })
     .select()

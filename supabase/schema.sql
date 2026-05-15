@@ -9,6 +9,9 @@ create table if not exists profiles (
   display_name text not null default 'Frans Hub',
   bio text not null default '',
   avatar_url text,
+  avatar_storage_path text,
+  verified boolean not null default false,
+  social_links jsonb not null default '[]'::jsonb,
   theme text not null default 'violet' check (theme in ('violet', 'cyan', 'rose', 'emerald')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -39,11 +42,26 @@ create table if not exists analytics_events (
   profile_id uuid not null references profiles(id) on delete cascade,
   block_id uuid references blocks(id) on delete set null,
   event_type text not null check (event_type in ('view', 'click')),
+  visitor_id text,
+  device_type text,
+  browser text,
+  os text,
   created_at timestamptz not null default now()
 );
 
 create index if not exists analytics_events_profile_created_idx
   on analytics_events (profile_id, created_at desc);
+
+create index if not exists analytics_events_profile_type_created_idx
+  on analytics_events (profile_id, event_type, created_at desc);
+
+create index if not exists analytics_events_profile_block_created_idx
+  on analytics_events (profile_id, block_id, created_at desc)
+  where block_id is not null;
+
+create index if not exists analytics_events_profile_visitor_idx
+  on analytics_events (profile_id, visitor_id)
+  where visitor_id is not null;
 
 -- Storage bucket (Dashboard → Storage → New bucket: hub-assets, public)
 -- Then run storage policies below.

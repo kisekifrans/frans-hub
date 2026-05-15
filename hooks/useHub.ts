@@ -12,7 +12,14 @@ import {
   saveProfile,
   updateBlock,
 } from "@/lib/supabase/hub-service";
-import type { AnalyticsSnapshot, Profile, ProfileBlock } from "@/lib/types";
+import type {
+  AnalyticsGranularity,
+  AnalyticsPeriod,
+  AnalyticsSnapshot,
+  Profile,
+  ProfileBlock,
+} from "@/lib/types";
+import { blockTitlesFromProfile } from "@/lib/supabase/mappers";
 import { sortBlocks } from "@/lib/store";
 import { generateId } from "@/lib/utils";
 import type { BlockType } from "@/lib/types";
@@ -82,12 +89,22 @@ export function useHub() {
     load();
   }, [load]);
 
-  const refreshAnalytics = useCallback(async () => {
-    if (!profileId || !isSupabaseConfigured()) return;
-    const { fetchAnalytics } = await import("@/lib/supabase/hub-service");
-    const next = await fetchAnalytics(getClient(), profileId);
-    setAnalytics(next);
-  }, [profileId, getClient]);
+  const refreshAnalytics = useCallback(
+    async (
+      period: AnalyticsPeriod = "30d",
+      granularity: AnalyticsGranularity = "daily",
+    ) => {
+      if (!profileId || !profile || !isSupabaseConfigured()) return;
+      const { fetchAnalytics } = await import("@/lib/supabase/hub-service");
+      const next = await fetchAnalytics(getClient(), profileId, {
+        period,
+        granularity,
+        blockTitles: blockTitlesFromProfile(profile.blocks),
+      });
+      setAnalytics(next);
+    },
+    [profileId, profile, getClient],
+  );
 
   const saveProfileFields = useCallback(
     async (patch: Partial<Profile>) => {

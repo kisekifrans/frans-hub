@@ -1,4 +1,7 @@
+import { emptyAnalytics } from "@/lib/analytics-report";
 import type { AppData } from "./types";
+
+export const EMPTY_ANALYTICS = emptyAnalytics("30d", "daily");
 
 export const DEFAULT_DATA: AppData = {
   profile: {
@@ -7,6 +10,11 @@ export const DEFAULT_DATA: AppData = {
     bio: "Creator · Deals · Exclusive links below",
     avatarUrl:
       "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop",
+    verified: true,
+    socialLinks: [
+      { platform: "instagram", url: "https://instagram.com" },
+      { platform: "tiktok", url: "https://tiktok.com" },
+    ],
     theme: "violet",
     blocks: [
       {
@@ -69,31 +77,5 @@ export const DEFAULT_DATA: AppData = {
       },
     ],
   },
-  analytics: {
-    totalViews: 1284,
-    totalClicks: 342,
-    viewsByDay: {
-      "2026-05-09": 142,
-      "2026-05-10": 168,
-      "2026-05-11": 195,
-      "2026-05-12": 210,
-      "2026-05-13": 187,
-      "2026-05-14": 201,
-      "2026-05-15": 181,
-    },
-    clicksByBlock: {
-      "link-1": 128,
-      "link-2": 94,
-      "link-3": 56,
-    },
-    clicksByDay: {
-      "2026-05-09": 38,
-      "2026-05-10": 45,
-      "2026-05-11": 52,
-      "2026-05-12": 48,
-      "2026-05-13": 41,
-      "2026-05-14": 55,
-      "2026-05-15": 63,
-    },
-  },
+  analytics: EMPTY_ANALYTICS,
 };

@@ -1,5 +1,37 @@
-import type { DbBlock, DbProfile } from "./database.types";
-import type { AnalyticsSnapshot, Profile, ProfileBlock } from "@/lib/types";
+import { buildAnalyticsReport } from "@/lib/analytics-report";
+import type { DbBlock, DbProfile, DbSocialLink } from "./database.types";
+import type {
+  AnalyticsSnapshot,
+  Profile,
+  ProfileBlock,
+  SocialLink,
+  SocialPlatform,
+} from "@/lib/types";
+
+const SOCIAL_PLATFORMS = new Set<SocialPlatform>([
+  "instagram",
+  "tiktok",
+  "youtube",
+  "x",
+  "website",
+]);
+
+function socialLinksFromDb(raw: DbSocialLink[] | null | undefined): SocialLink[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (l): l is DbSocialLink =>
+        l != null &&
+        typeof l.platform === "string" &&
+        typeof l.url === "string" &&
+        SOCIAL_PLATFORMS.has(l.platform as SocialPlatform),
+    )
+    .map((l) => ({
+      platform: l.platform as SocialPlatform,
+      url: l.url.trim(),
+    }))
+    .filter((l) => l.url.length > 0);
+}
 
 export function blockFromDb(row: DbBlock): ProfileBlock {
   const base = {
@@ -95,6 +127,9 @@ export function profileFromDb(
     displayName: row.display_name,
     bio: row.bio,
     avatarUrl: row.avatar_url ?? "",
+    avatarStoragePath: row.avatar_storage_path ?? undefined,
+    verified: Boolean(row.verified),
+    socialLinks: socialLinksFromDb(row.social_links ?? []),
     theme: row.theme,
     blocks,
   };
@@ -106,7 +141,16 @@ export function profileToDb(
   slug: string,
 ): Pick<
   DbProfile,
-  "id" | "slug" | "username" | "display_name" | "bio" | "avatar_url" | "theme"
+  | "id"
+  | "slug"
+  | "username"
+  | "display_name"
+  | "bio"
+  | "avatar_url"
+  | "avatar_storage_path"
+  | "verified"
+  | "social_links"
+  | "theme"
 > {
   return {
     id: profileId,
@@ -115,38 +159,39 @@ export function profileToDb(
     display_name: profile.displayName,
     bio: profile.bio,
     avatar_url: profile.avatarUrl || null,
+    avatar_storage_path: profile.avatarStoragePath ?? null,
+    verified: profile.verified,
+    social_links: profile.socialLinks.map((l) => ({
+      platform: l.platform,
+      url: l.url,
+    })),
     theme: profile.theme,
   };
 }
 
 export function aggregateAnalytics(
-  events: { event_type: string; block_id: string | null; created_at: string }[],
+  events: {
+    event_type: string;
+    block_id: string | null;
+    created_at: string;
+    visitor_id?: string | null;
+    device_type?: string | null;
+    browser?: string | null;
+    os?: string | null;
+  }[],
+  blockTitles: Record<string, string> = {},
 ): AnalyticsSnapshot {
-  const viewsByDay: Record<string, number> = {};
-  const clicksByDay: Record<string, number> = {};
-  const clicksByBlock: Record<string, number> = {};
-  let totalViews = 0;
-  let totalClicks = 0;
+  return buildAnalyticsReport(events, {
+    period: "30d",
+    granularity: "daily",
+    blockTitles,
+  });
+}
 
-  for (const e of events) {
-    const day = e.created_at.slice(0, 10);
-    if (e.event_type === "view") {
-      totalViews++;
-      viewsByDay[day] = (viewsByDay[day] ?? 0) + 1;
-    } else if (e.event_type === "click") {
-      totalClicks++;
-      clicksByDay[day] = (clicksByDay[day] ?? 0) + 1;
-      if (e.block_id) {
-        clicksByBlock[e.block_id] = (clicksByBlock[e.block_id] ?? 0) + 1;
-      }
-    }
+export function blockTitlesFromProfile(blocks: ProfileBlock[]): Record<string, string> {
+  const titles: Record<string, string> = {};
+  for (const b of blocks) {
+    if (b.type === "link") titles[b.id] = b.title;
   }
-
-  return {
-    totalViews,
-    totalClicks,
-    viewsByDay,
-    clicksByDay,
-    clicksByBlock,
-  };
+  return titles;
 }

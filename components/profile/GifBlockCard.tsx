@@ -1,23 +1,31 @@
 "use client";
 
-import Image from "next/image";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MotionDiv } from "@/components/ui/motion";
+import { SafeImage } from "@/components/ui/SafeImage";
 import type { GifBlock } from "@/lib/types";
+import { isValidImageSrc } from "@/lib/image-utils";
 
 export function GifBlockCard({ block }: { block: GifBlock }) {
-  if (!block.url) return null;
+  if (!isValidImageSrc(block.url)) {
+    return (
+      <MotionDiv whileHover={{ scale: 1.01 }}>
+        <GlassCard padding="md" className="text-center text-sm text-zinc-600 dark:text-zinc-300">
+          Media coming soon
+        </GlassCard>
+      </MotionDiv>
+    );
+  }
 
   return (
     <MotionDiv whileHover={{ scale: 1.01 }}>
       <GlassCard padding="none" className="overflow-hidden">
         <div className="relative aspect-video w-full">
-          <Image
+          <SafeImage
             src={block.url}
             alt={block.alt ?? "GIF"}
             fill
             className="object-cover transition duration-500 hover:scale-[1.02]"
-            unoptimized
             sizes="(max-width: 480px) 100vw, 420px"
           />
         </div>

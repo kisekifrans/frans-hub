@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Image from "next/image";
 import { ImageIcon, Loader2, Upload, X } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { isValidImageSrc } from "@/lib/image-utils";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { assetPath, uploadAsset, removeAsset } from "@/lib/supabase/hub-service";
@@ -138,19 +139,18 @@ export function MediaUpload({
         )}
       </label>
 
-      {currentUrl && (
+      {isValidImageSrc(currentUrl) && (
         <div
           className={cn(
             "relative overflow-hidden rounded-xl border border-white/20",
             previewAspect === "video" ? "aspect-video" : "aspect-square max-w-[120px]",
           )}
         >
-          <Image
+          <SafeImage
             src={currentUrl}
             alt="Preview"
             fill
             className="object-cover"
-            unoptimized
           />
         </div>
       )}

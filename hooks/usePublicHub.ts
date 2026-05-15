@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { fetchHub, trackEvent } from "@/lib/supabase/hub-service";
+import { fetchHub } from "@/lib/supabase/hub-service";
+import { trackAnalyticsEvent } from "@/lib/analytics-client";
 import type { Profile } from "@/lib/types";
 
 export function usePublicHub() {
@@ -40,13 +41,17 @@ export function usePublicHub() {
   useEffect(() => {
     if (!profileId || viewedRef.current || !isSupabaseConfigured()) return;
     viewedRef.current = true;
-    trackEvent(getClient(), profileId, "view").catch(() => {});
+    trackAnalyticsEvent({ profileId, eventType: "view" }).catch(() => {});
   }, [profileId, getClient]);
 
   const trackClick = useCallback(
     (blockId: string) => {
       if (!profileId || !isSupabaseConfigured()) return;
-      trackEvent(getClient(), profileId, "click", blockId).catch(() => {});
+      trackAnalyticsEvent({
+        profileId,
+        eventType: "click",
+        blockId,
+      }).catch(() => {});
     },
     [profileId, getClient],
   );

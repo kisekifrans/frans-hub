@@ -1,24 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  BarChart3,
-  Eye,
-  Link2,
-  Loader2,
-  MousePointerClick,
-} from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
-import { MiniChart } from "@/components/analytics/MiniChart";
-import { StatCard } from "@/components/analytics/StatCard";
+import { AnalyticsPanel } from "@/components/analytics/AnalyticsPanel";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PageShell } from "@/components/ui/PageShell";
 import { MediaUpload } from "@/components/admin/MediaUpload";
-import { ctr, getLast7Days } from "@/lib/analytics";
+import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
+import { ThemePicker } from "@/components/profile/ThemePicker";
+import type { AnalyticsGranularity, AnalyticsPeriod } from "@/lib/types";
 import { useHub } from "@/hooks/useHub";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -39,6 +33,16 @@ export function AdminDashboard() {
   } = useHub();
 
   const [tab, setTab] = useState<"blocks" | "analytics" | "profile">("analytics");
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  const handlePeriodChange = useCallback(
+    async (period: AnalyticsPeriod, granularity: AnalyticsGranularity) => {
+      setAnalyticsLoading(true);
+      await refreshAnalytics(period, granularity);
+      setAnalyticsLoading(false);
+    },
+    [refreshAnalytics],
+  );
 
   if (loading || !profile || !profileId || !analytics) {
     return (
@@ -48,10 +52,6 @@ export function AdminDashboard() {
     );
   }
 
-  const days = getLast7Days();
-  const viewValues = days.map((d) => analytics.viewsByDay[d] ?? 0);
-  const clickValues = days.map((d) => analytics.clicksByDay[d] ?? 0);
-  const dayLabels = days.map((d) => d.slice(5));
   const blocks = profile.blocks;
 
   return (
@@ -106,48 +106,11 @@ export function AdminDashboard() {
         </nav>
 
         {tab === "analytics" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-              <StatCard
-                label="Total views"
-                value={analytics.totalViews.toLocaleString()}
-                icon={Eye}
-                accent="violet"
-              />
-              <StatCard
-                label="Link clicks"
-                value={analytics.totalClicks.toLocaleString()}
-                icon={MousePointerClick}
-                accent="cyan"
-              />
-              <StatCard
-                label="Click-through rate"
-                value={`${ctr(analytics)}%`}
-                icon={BarChart3}
-                accent="rose"
-              />
-              <StatCard
-                label="Active blocks"
-                value={blocks.filter((b) => b.enabled).length}
-                icon={Link2}
-                accent="emerald"
-              />
-            </div>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <MiniChart
-                title="Views (last 7 days)"
-                labels={dayLabels}
-                values={viewValues}
-                color="bg-violet-500"
-              />
-              <MiniChart
-                title="Clicks (last 7 days)"
-                labels={dayLabels}
-                values={clickValues}
-                color="bg-cyan-500"
-              />
-            </div>
-          </div>
+          <AnalyticsPanel
+            stats={analytics}
+            loading={analyticsLoading}
+            onPeriodChange={handlePeriodChange}
+          />
         )}
 
         {tab === "profile" && (
@@ -173,24 +136,29 @@ export function AdminDashboard() {
               folder="avatars"
               label="Avatar"
               currentUrl={profile.avatarUrl}
-              onUploaded={(url) => saveProfileFields({ avatarUrl: url })}
+              storagePath={profile.avatarStoragePath}
+              onUploaded={(url, storagePath) =>
+                saveProfileFields({ avatarUrl: url, avatarStoragePath: storagePath })
+              }
             />
-            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300">
-              Theme accent
-              <select
-                value={profile.theme}
+            <SocialLinksEditor
+              links={profile.socialLinks}
+              onChange={(socialLinks) => saveProfileFields({ socialLinks })}
+            />
+            <ThemePicker
+              value={profile.theme}
+              onChange={(theme) => saveProfileFields({ theme })}
+            />
+            <label className="flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-300">
+              <input
+                type="checkbox"
+                checked={profile.verified}
                 onChange={(e) =>
-                  saveProfileFields({
-                    theme: e.target.value as Profile["theme"],
-                  })
+                  saveProfileFields({ verified: e.target.checked })
                 }
-                className="mt-1 w-full rounded-xl border border-white/20 bg-white/50 px-3 py-2 text-sm dark:bg-white/10"
-              >
-                <option value="violet">Violet</option>
-                <option value="cyan">Cyan</option>
-                <option value="rose">Rose</option>
-                <option value="emerald">Emerald</option>
-              </select>
+                className="rounded border-white/30"
+              />
+              Show verified creator badge
             </label>
           </GlassCard>
         )}
