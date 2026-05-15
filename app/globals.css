@@ -1,0 +1,318 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f8f5ff;
+  --foreground: #18181b;
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --blob-1: #c4b5fd;
+  --blob-2: #f0abfc;
+  --blob-3: #fda4af;
+  --blob-4: #a78bfa;
+  --blob-5: #e879f9;
+}
+
+.dark {
+  --background: #07050f;
+  --foreground: #fafafa;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --blob-1: #6d28d9;
+  --blob-2: #be185d;
+  --blob-3: #7c3aed;
+  --blob-4: #db2777;
+  --blob-5: #4c1d95;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* —— Premium animated background (Arc / Apple inspired) —— */
+
+.premium-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--background);
+}
+
+.premium-bg__base {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, color-mix(in oklab, var(--blob-2) 35%, transparent), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 100% 50%, color-mix(in oklab, var(--blob-4) 25%, transparent), transparent 50%),
+    linear-gradient(165deg, var(--background) 0%, color-mix(in oklab, var(--blob-1) 12%, var(--background)) 45%, var(--background) 100%);
+}
+
+.premium-bg__blobs {
+  position: absolute;
+  inset: -20%;
+  filter: blur(0);
+}
+
+.premium-blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  filter: blur(72px);
+  opacity: 0.55;
+  mix-blend-mode: normal;
+}
+
+.dark .premium-blob {
+  opacity: 0.72;
+  filter: blur(88px);
+}
+
+.premium-blob--1 {
+  width: min(55vw, 420px);
+  height: min(55vw, 420px);
+  left: 5%;
+  top: 10%;
+  background: var(--blob-1);
+  animation: premium-float-1 22s ease-in-out infinite;
+}
+
+.premium-blob--2 {
+  width: min(50vw, 380px);
+  height: min(50vw, 380px);
+  right: 0;
+  top: 25%;
+  background: var(--blob-2);
+  animation: premium-float-2 26s ease-in-out infinite;
+}
+
+.premium-blob--3 {
+  width: min(45vw, 340px);
+  height: min(45vw, 340px);
+  left: 30%;
+  bottom: 5%;
+  background: var(--blob-3);
+  animation: premium-float-3 20s ease-in-out infinite;
+}
+
+.premium-blob--4 {
+  width: min(40vw, 300px);
+  height: min(40vw, 300px);
+  right: 15%;
+  bottom: 20%;
+  background: var(--blob-4);
+  animation: premium-float-4 24s ease-in-out infinite;
+}
+
+.premium-blob--5 {
+  width: min(35vw, 260px);
+  height: min(35vw, 260px);
+  left: 50%;
+  top: 45%;
+  background: var(--blob-5);
+  animation: premium-float-5 28s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+.dark .premium-blob--5 {
+  opacity: 0.55;
+}
+
+.premium-bg__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 50% at 50% 40%,
+    color-mix(in oklab, var(--blob-2) 18%, transparent) 0%,
+    transparent 70%
+  );
+  animation: premium-pulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.premium-bg__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    color-mix(in oklab, var(--background) 85%, black) 100%
+  );
+  pointer-events: none;
+}
+
+.premium-bg__noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  mix-blend-mode: overlay;
+}
+
+.dark .premium-bg__noise {
+  opacity: 0.06;
+}
+
+/* Theme accent variants */
+.premium-bg[data-variant="cyan"] {
+  --blob-1: #22d3ee;
+  --blob-2: #3b82f6;
+  --blob-3: #14b8a6;
+  --blob-4: #06b6d4;
+  --blob-5: #6366f1;
+}
+
+.dark .premium-bg[data-variant="cyan"] {
+  --blob-1: #0891b2;
+  --blob-2: #1d4ed8;
+  --blob-3: #0f766e;
+  --blob-4: #0284c7;
+  --blob-5: #4338ca;
+}
+
+.premium-bg[data-variant="rose"] {
+  --blob-1: #fb7185;
+  --blob-2: #f472b6;
+  --blob-3: #fb923c;
+  --blob-4: #f43f5e;
+  --blob-5: #ec4899;
+}
+
+.dark .premium-bg[data-variant="rose"] {
+  --blob-1: #be123c;
+  --blob-2: #9d174d;
+  --blob-3: #c2410c;
+  --blob-4: #e11d48;
+  --blob-5: #831843;
+}
+
+.premium-bg[data-variant="emerald"] {
+  --blob-1: #34d399;
+  --blob-2: #2dd4bf;
+  --blob-3: #4ade80;
+  --blob-4: #10b981;
+  --blob-5: #14b8a6;
+}
+
+.dark .premium-bg[data-variant="emerald"] {
+  --blob-1: #059669;
+  --blob-2: #0d9488;
+  --blob-3: #16a34a;
+  --blob-4: #047857;
+  --blob-5: #0f766e;
+}
+
+@keyframes premium-float-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(12%, 8%) scale(1.08);
+  }
+  66% {
+    transform: translate(-6%, 14%) scale(0.95);
+  }
+}
+
+@keyframes premium-float-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    transform: translate(-14%, 10%) scale(1.1);
+  }
+  70% {
+    transform: translate(8%, -8%) scale(0.92);
+  }
+}
+
+@keyframes premium-float-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(10%, -12%) scale(1.06);
+  }
+}
+
+@keyframes premium-float-4 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  45% {
+    transform: translate(-10%, -6%) scale(1.12);
+  }
+  80% {
+    transform: translate(6%, 10%) scale(0.9);
+  }
+}
+
+@keyframes premium-float-5 {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-42%, -58%) scale(1.15);
+  }
+}
+
+.premium-blob--5 {
+  transform: translate(-50%, -50%);
+}
+
+@keyframes premium-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-blob,
+  .premium-bg__glow {
+    animation: none !important;
+  }
+}
+
+/* —— Glassmorphism —— */
+
+.glass-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.dark .glass-card {
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.tiktok-embed,
+.instagram-media {
+  margin: 0 auto !important;
+}
