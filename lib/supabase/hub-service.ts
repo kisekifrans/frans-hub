@@ -251,7 +251,7 @@ async function seedHub(supabase: SupabaseClient): Promise<void> {
 
 export function assetPath(
   profileId: string,
-  folder: "thumbnails" | "gifs" | "avatars",
+  folder: "thumbnails" | "gifs" | "avatars" | "collections",
   filename: string,
 ): string {
   return `${profileId}/${folder}/${filename}`;

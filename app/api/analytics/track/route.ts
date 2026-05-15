@@ -8,6 +8,8 @@ export async function POST(request: Request) {
     const profileId = body.profileId as string | undefined;
     const eventType = body.eventType as "view" | "click" | undefined;
     const blockId = body.blockId as string | undefined;
+    const collectionId = body.collectionId as string | undefined;
+    const productId = body.productId as string | undefined;
     const visitorId = body.visitorId as string | undefined;
 
     if (!profileId || !eventType || !["view", "click"].includes(eventType)) {
@@ -21,6 +23,8 @@ export async function POST(request: Request) {
     const { error } = await supabase.from("analytics_events").insert({
       profile_id: profileId,
       block_id: blockId ?? null,
+      collection_id: collectionId ?? null,
+      product_id: productId ?? null,
       event_type: eventType,
       visitor_id: visitorId?.slice(0, 128) ?? null,
       device_type: deviceType,

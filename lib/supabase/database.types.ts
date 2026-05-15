@@ -52,4 +52,56 @@ export interface DbAnalyticsEvent {
   created_at: string;
 }
 
+export interface DbCollection {
+  id: string;
+  profile_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  hero_gif_url: string | null;
+  hero_image_url: string | null;
+  hero_image_storage_path: string | null;
+  hero_gif_storage_path: string | null;
+  hero_video_url: string | null;
+  review_text: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  accent_color: string | null;
+  gradient_preset: string;
+  layout_style: string;
+  enabled: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbCollectionGalleryImage {
+  id: string;
+  collection_id: string;
+  url: string;
+  alt: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface DbCollectionProduct {
+  id: string;
+  collection_id: string;
+  title: string;
+  description: string;
+  image_url: string | null;
+  image_storage_path: string | null;
+  gif_url: string | null;
+  gif_storage_path: string | null;
+  affiliate_url: string;
+  cta_label: string;
+  review_text: string | null;
+  category: string | null;
+  tags: string[];
+  sort_order: number;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const STORAGE_BUCKET = "hub-assets";

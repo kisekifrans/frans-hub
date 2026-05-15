@@ -12,14 +12,16 @@ import { cn } from "@/lib/utils";
 interface MediaUploadProps {
   profileId: string;
   blockId: string;
-  folder: "thumbnails" | "gifs" | "avatars";
+  folder: "thumbnails" | "gifs" | "avatars" | "collections";
   label: string;
   accept?: string;
   currentUrl?: string;
   storagePath?: string;
   onUploaded: (url: string, storagePath: string) => void;
   onClear?: () => void;
-  previewAspect?: "square" | "video";
+  previewAspect?: "square" | "video" | "portrait";
+  maxSizeMb?: number;
+  allowVideo?: boolean;
 }
 
 export function MediaUpload({
@@ -33,21 +35,27 @@ export function MediaUpload({
   onUploaded,
   onClear,
   previewAspect = folder === "gifs" ? "video" : "square",
+  maxSizeMb = 8,
+  allowVideo = false,
 }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
 
   const upload = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image or GIF");
+      const isImage = file.type.startsWith("image/");
+      const isVideo = allowVideo && file.type.startsWith("video/");
+      if (!isImage && !isVideo) {
+        toast.error("Please upload an image, GIF, or video");
         return;
       }
-      if (file.size > 8 * 1024 * 1024) {
-        toast.error("Max file size is 8MB");
+      if (file.size > maxSizeMb * 1024 * 1024) {
+        toast.error(`Max file size is ${maxSizeMb}MB`);
         return;
       }
       setUploading(true);
+      setProgress(15);
       try {
         const ext = file.name.split(".").pop() ?? "jpg";
         const path = assetPath(
@@ -59,20 +67,23 @@ export function MediaUpload({
         if (storagePath) {
           await removeAsset(supabase, storagePath).catch(() => {});
         }
+        setProgress(55);
         const { publicUrl, storagePath: newPath } = await uploadAsset(
           supabase,
           file,
           path,
         );
+        setProgress(100);
         onUploaded(publicUrl, newPath);
         toast.success("Uploaded");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Upload failed");
       } finally {
         setUploading(false);
+        setTimeout(() => setProgress(0), 350);
       }
     },
-    [profileId, blockId, folder, onUploaded, storagePath],
+    [profileId, blockId, folder, onUploaded, storagePath, maxSizeMb, allowVideo],
   );
 
   const onDrop = (e: React.DragEvent) => {
@@ -128,7 +139,15 @@ export function MediaUpload({
           }}
         />
         {uploading ? (
-          <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+          <div className="flex w-full max-w-[220px] flex-col items-center gap-2 px-2">
+            <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/30">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
         ) : (
           <>
             <Upload className="mb-2 h-6 w-6 text-zinc-400" />
@@ -143,7 +162,11 @@ export function MediaUpload({
         <div
           className={cn(
             "relative overflow-hidden rounded-xl border border-white/20",
-            previewAspect === "video" ? "aspect-video" : "aspect-square max-w-[120px]",
+            previewAspect === "video"
+              ? "aspect-video"
+              : previewAspect === "portrait"
+                ? "aspect-[3/4] max-w-[140px]"
+                : "aspect-square max-w-[120px]",
           )}
         >
           <SafeImage
