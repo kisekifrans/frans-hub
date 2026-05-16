@@ -12,6 +12,7 @@ interface ThumbnailFocusEditorProps {
   layout: LinkThumbnailLayout;
   focus?: ThumbnailFocus | null;
   onChange: (focus: ThumbnailFocus) => void;
+  onResetFocus?: () => void;
   previewTitle?: string;
 }
 
@@ -20,6 +21,7 @@ export function ThumbnailFocusEditor({
   layout,
   focus,
   onChange,
+  onResetFocus,
   previewTitle,
 }: ThumbnailFocusEditorProps) {
   return (
@@ -31,7 +33,11 @@ export function ThumbnailFocusEditor({
         </span>
         <button
           type="button"
-          onClick={() => onChange({ ...DEFAULT_THUMBNAIL_FOCUS })}
+          onClick={() =>
+            onResetFocus
+              ? onResetFocus()
+              : onChange({ ...DEFAULT_THUMBNAIL_FOCUS })
+          }
           className="text-xs text-violet-600 hover:underline dark:text-violet-300"
         >
           Reset
@@ -39,6 +45,7 @@ export function ThumbnailFocusEditor({
       </div>
 
       <InteractiveThumbnailCrop
+        key={imageUrl}
         imageUrl={imageUrl}
         layout={layout}
         focus={focus}
@@ -46,6 +53,7 @@ export function ThumbnailFocusEditor({
       />
 
       <ThumbnailLivePreview
+        key={imageUrl}
         imageUrl={imageUrl}
         layout={layout}
         focus={focus}

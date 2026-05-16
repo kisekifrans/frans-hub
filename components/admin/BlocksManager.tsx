@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -21,6 +22,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { ThumbnailFocusEditor } from "@/components/admin/ThumbnailFocusEditor";
 import { DEFAULT_THUMBNAIL_FOCUS } from "@/lib/thumbnail-focus";
+import type { ThumbnailFocus } from "@/lib/thumbnail-focus";
 import { isValidImageSrc } from "@/lib/image-utils";
 import type { BlockType, ProfileBlock } from "@/lib/types";
 import { sortBlocks } from "@/lib/store";
@@ -38,7 +40,10 @@ interface BlocksManagerProps {
   blocks: ProfileBlock[];
   saving: boolean;
   onAdd: (type: BlockType) => void;
-  onPatch: (id: string, patch: Partial<ProfileBlock>) => void;
+  onPatch: (
+    id: string,
+    patch: Partial<ProfileBlock>,
+  ) => void | Promise<void>;
   onRemove: (id: string) => void;
   onReorder: (blocks: ProfileBlock[]) => void;
 }
@@ -120,9 +125,36 @@ function SortableBlockEditor({
 }: {
   block: ProfileBlock;
   profileId: string;
-  onPatch: (id: string, patch: Partial<ProfileBlock>) => void;
+  onPatch: (
+    id: string,
+    patch: Partial<ProfileBlock>,
+  ) => void | Promise<void>;
   onRemove: (id: string) => void;
 }) {
+  const focusSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (focusSaveTimer.current) clearTimeout(focusSaveTimer.current);
+    },
+    [],
+  );
+
+  const saveThumbnailFocus = useCallback(
+    (thumbnailFocus: ThumbnailFocus, immediate = false) => {
+      if (focusSaveTimer.current) clearTimeout(focusSaveTimer.current);
+      const run = () => {
+        void onPatch(block.id, { thumbnailFocus });
+      };
+      if (immediate) {
+        run();
+      } else {
+        focusSaveTimer.current = setTimeout(run, 400);
+      }
+    },
+    [block.id, onPatch],
+  );
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: block.id });
 
@@ -209,13 +241,14 @@ function SortableBlockEditor({
               currentUrl={block.thumbnailUrl}
               storagePath={block.storagePath}
               previewFocus={block.thumbnailFocus}
-              onUploaded={(url, storagePath) =>
-                onPatch(block.id, {
+              onUploaded={async (url, storagePath) => {
+                if (focusSaveTimer.current) clearTimeout(focusSaveTimer.current);
+                await onPatch(block.id, {
                   thumbnailUrl: url,
                   storagePath,
                   thumbnailFocus: { ...DEFAULT_THUMBNAIL_FOCUS },
-                })
-              }
+                });
+              }}
               onClear={() =>
                 onPatch(block.id, {
                   thumbnailUrl: undefined,
@@ -226,12 +259,14 @@ function SortableBlockEditor({
             />
             {isValidImageSrc(block.thumbnailUrl) && (
               <ThumbnailFocusEditor
+                key={block.thumbnailUrl}
                 imageUrl={block.thumbnailUrl!}
                 layout={block.thumbnailLayout ?? "side"}
                 focus={block.thumbnailFocus}
                 previewTitle={block.title}
-                onChange={(thumbnailFocus) =>
-                  onPatch(block.id, { thumbnailFocus })
+                onChange={(thumbnailFocus) => saveThumbnailFocus(thumbnailFocus)}
+                onResetFocus={() =>
+                  saveThumbnailFocus({ ...DEFAULT_THUMBNAIL_FOCUS }, true)
                 }
               />
             )}

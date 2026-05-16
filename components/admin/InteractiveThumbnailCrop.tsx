@@ -55,8 +55,10 @@ export function InteractiveThumbnailCrop({
   focusRef.current = localFocus;
 
   useEffect(() => {
-    setLocalFocus(normalizeThumbnailFocus(focus));
-  }, [focus]);
+    const next = normalizeThumbnailFocus(focus);
+    setLocalFocus(next);
+    focusRef.current = next;
+  }, [imageUrl, focus]);
 
   const flushChange = useCallback(
     (next: ThumbnailFocus) => {
@@ -214,6 +216,7 @@ export function InteractiveThumbnailCrop({
       onTouchEnd={onTouchEnd}
     >
       <SafeImage
+        key={imageUrl}
         src={imageUrl}
         alt=""
         fill

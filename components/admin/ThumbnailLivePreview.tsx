@@ -31,6 +31,7 @@ export function ThumbnailLivePreview({
           <div>
             <div className="relative aspect-[2/1] w-full overflow-hidden">
               <SafeImage
+                key={imageUrl}
                 src={imageUrl}
                 alt=""
                 fill
@@ -47,12 +48,13 @@ export function ThumbnailLivePreview({
           <div className="flex items-center gap-2.5 px-3 py-2.5">
             <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-2 ring-white/30 dark:ring-white/10">
               <SafeImage
+                key={imageUrl}
                 src={imageUrl}
                 alt=""
                 fill
                 className="object-cover"
                 style={style}
-                sizes="48px"
+                sizes="96px"
               />
             </div>
             <span className="truncate text-sm font-semibold text-zinc-900 dark:text-white">

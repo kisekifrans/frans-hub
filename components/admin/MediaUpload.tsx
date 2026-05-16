@@ -6,6 +6,10 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { isValidImageSrc } from "@/lib/image-utils";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import {
+  cacheBustMediaUrl,
+  uniqueMediaFilename,
+} from "@/lib/media-url";
 import { assetPath, uploadAsset, removeAsset } from "@/lib/supabase/hub-service";
 import { thumbnailFocusStyle } from "@/lib/thumbnail-focus";
 import type { ThumbnailFocus } from "@/lib/thumbnail-focus";
@@ -19,7 +23,7 @@ interface MediaUploadProps {
   accept?: string;
   currentUrl?: string;
   storagePath?: string;
-  onUploaded: (url: string, storagePath: string) => void;
+  onUploaded: (url: string, storagePath: string) => void | Promise<void>;
   onClear?: () => void;
   previewAspect?: "square" | "video" | "portrait";
   previewFocus?: ThumbnailFocus | null;
@@ -62,11 +66,9 @@ export function MediaUpload({
       setProgress(15);
       try {
         const ext = file.name.split(".").pop() ?? "jpg";
-        const path = assetPath(
-          profileId,
-          folder,
-          `${blockId}.${ext}`,
-        );
+        const version = Date.now();
+        const filename = uniqueMediaFilename(blockId, ext);
+        const path = assetPath(profileId, folder, filename);
         const supabase = createClient();
         if (storagePath) {
           await removeAsset(supabase, storagePath).catch(() => {});
@@ -76,9 +78,14 @@ export function MediaUpload({
           supabase,
           file,
           path,
+          {
+            cacheControl:
+              folder === "thumbnails" || folder === "gifs" ? "120" : "3600",
+          },
         );
         setProgress(100);
-        onUploaded(publicUrl, newPath);
+        const bustedUrl = cacheBustMediaUrl(publicUrl, version);
+        await onUploaded(bustedUrl, newPath);
         toast.success("Uploaded");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Upload failed");
@@ -174,6 +181,7 @@ export function MediaUpload({
           )}
         >
           <SafeImage
+            key={currentUrl}
             src={currentUrl}
             alt="Preview"
             fill

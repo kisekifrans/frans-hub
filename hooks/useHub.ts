@@ -170,23 +170,36 @@ export function useHub() {
   );
 
   const patchBlock = useCallback(
-    async (id: string, patch: Partial<ProfileBlock>) => {
-      if (!profile || !profileId) return;
-      const prev = profile;
-      const blocks = profile.blocks.map((b) =>
-        b.id === id ? ({ ...b, ...patch } as ProfileBlock) : b,
-      );
-      const block = blocks.find((b) => b.id === id);
-      if (!block) return;
-      setProfile({ ...profile, blocks });
+    async (id: string, patch: Partial<ProfileBlock>): Promise<void> => {
+      if (!profileId) return;
+
+      let snapshot: Profile | null = null;
+      let updated: ProfileBlock | undefined;
+
+      setProfile((prev) => {
+        if (!prev) return prev;
+        snapshot = prev;
+        const blocks = prev.blocks.map((b) => {
+          if (b.id !== id) return b;
+          const merged = { ...b, ...patch } as ProfileBlock;
+          updated = merged;
+          return merged;
+        });
+        if (!updated) return prev;
+        return { ...prev, blocks };
+      });
+
+      if (!updated || !snapshot) return;
+
       try {
-        await updateBlock(getClient(), block, profileId);
+        await updateBlock(getClient(), updated, profileId);
       } catch (e) {
-        setProfile(prev);
+        setProfile(snapshot);
         toast.error(e instanceof Error ? e.message : "Update failed");
+        throw e;
       }
     },
-    [profile, profileId, getClient],
+    [profileId, getClient],
   );
 
   const removeBlock = useCallback(

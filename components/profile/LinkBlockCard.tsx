@@ -75,6 +75,7 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
             {isBanner && hasThumbnail && (
               <div className="relative mb-0 aspect-[2/1] w-full overflow-hidden">
                 <SafeImage
+                  key={block.thumbnailUrl}
                   src={block.thumbnailUrl}
                   alt=""
                   fill
@@ -96,12 +97,13 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
                 {hasThumbnail && layout === "side" && (
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-2 ring-white/30 dark:ring-white/10">
                     <SafeImage
+                      key={block.thumbnailUrl}
                       src={block.thumbnailUrl}
                       alt=""
                       fill
                       className="pointer-events-none object-cover"
                       style={thumbStyle}
-                      sizes="48px"
+                      sizes="96px"
                     />
                   </div>
                 )}

@@ -196,10 +196,14 @@ export async function uploadAsset(
   supabase: SupabaseClient,
   file: File,
   path: string,
+  options?: { cacheControl?: string },
 ): Promise<{ publicUrl: string; storagePath: string }> {
   const { error } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .upload(path, file, { upsert: true, cacheControl: "3600" });
+    .upload(path, file, {
+      upsert: true,
+      cacheControl: options?.cacheControl ?? "3600",
+    });
 
   if (error) throw error;
 
