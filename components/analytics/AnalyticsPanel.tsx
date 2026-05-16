@@ -56,6 +56,7 @@ function AnalyticsPanelInner({
   );
 
   const hasActivity = stats.totalViews > 0 || stats.totalClicks > 0;
+  const hasTrend = stats.series.some((p) => p.views > 0 || p.clicks > 0);
 
   return (
     <div className="space-y-6">
@@ -130,11 +131,11 @@ function AnalyticsPanelInner({
       {!hasActivity ? (
         <GlassCard padding="md" className="text-center">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            No analytics yet
+            Belum ada data analitik
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            Share your hub link to start collecting views, clicks, and visitor
-            insights.
+            Bagikan link hub Anda untuk mulai melacak kunjungan, klik, dan
+            wawasan pengunjung.
           </p>
         </GlassCard>
       ) : (
@@ -143,21 +144,32 @@ function AnalyticsPanelInner({
             title={`Traffic (${granularity})`}
             series={stats.series}
           />
-          <div className="grid gap-4 md:grid-cols-2">
-            <BreakdownChart title="Devices" data={stats.devices} />
-            <BreakdownChart
-              title="Browsers"
-              data={stats.browsers}
-              colors={[
-                "bg-indigo-500",
-                "bg-sky-500",
-                "bg-violet-500",
-                "bg-cyan-500",
-                "bg-rose-500",
-              ]}
-            />
-          </div>
-          <TopLinksTable links={stats.topLinks} />
+          {hasTrend ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                <BreakdownChart title="Devices" data={stats.devices} />
+                <BreakdownChart
+                  title="Browsers"
+                  data={stats.browsers}
+                  colors={[
+                    "bg-indigo-500",
+                    "bg-sky-500",
+                    "bg-violet-500",
+                    "bg-cyan-500",
+                    "bg-rose-500",
+                  ]}
+                />
+              </div>
+              <TopLinksTable links={stats.topLinks} />
+            </>
+          ) : (
+            <GlassCard padding="md" className="text-center">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Breakdown perangkat dan tautan populer akan muncul setelah ada
+                lebih banyak interaksi.
+              </p>
+            </GlassCard>
+          )}
         </>
       )}
     </div>

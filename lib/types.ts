@@ -9,6 +9,8 @@ export interface BaseBlock {
 
 export type LinkThumbnailLayout = "side" | "banner";
 
+export type { ThumbnailFocus } from "@/lib/thumbnail-focus";
+
 export interface LinkBlock extends BaseBlock {
   type: "link";
   title: string;
@@ -19,6 +21,7 @@ export interface LinkBlock extends BaseBlock {
   thumbnailUrl?: string;
   /** side = square thumb left; banner = wide image above title */
   thumbnailLayout?: LinkThumbnailLayout;
+  thumbnailFocus?: import("@/lib/thumbnail-focus").ThumbnailFocus;
   storagePath?: string;
 }
 
@@ -46,6 +49,7 @@ export type SocialPlatform =
   | "instagram"
   | "tiktok"
   | "youtube"
+  | "facebook"
   | "x"
   | "website";
 
@@ -58,6 +62,7 @@ export const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string }[] = [
   { id: "instagram", label: "Instagram" },
   { id: "tiktok", label: "TikTok" },
   { id: "youtube", label: "YouTube" },
+  { id: "facebook", label: "Facebook" },
   { id: "x", label: "X" },
   { id: "website", label: "Website" },
 ];
@@ -111,87 +116,4 @@ export interface AnalyticsSnapshot {
 export interface AppData {
   profile: Profile;
   analytics: AnalyticsSnapshot;
-}
-
-export type CollectionGradientPreset =
-  | "violet"
-  | "rose"
-  | "fuchsia"
-  | "sunset"
-  | "midnight";
-
-export type CollectionLayoutStyle = "editorial" | "grid" | "compact";
-
-export const COLLECTION_GRADIENT_PRESETS: {
-  id: CollectionGradientPreset;
-  label: string;
-}[] = [
-  { id: "violet", label: "Violet bloom" },
-  { id: "rose", label: "Rose blush" },
-  { id: "fuchsia", label: "Fuchsia pulse" },
-  { id: "sunset", label: "Sunset glow" },
-  { id: "midnight", label: "Midnight" },
-];
-
-export const COLLECTION_LAYOUT_STYLES: {
-  id: CollectionLayoutStyle;
-  label: string;
-}[] = [
-  { id: "editorial", label: "Editorial" },
-  { id: "grid", label: "Grid" },
-  { id: "compact", label: "Compact" },
-];
-
-export interface CollectionGalleryImage {
-  id: string;
-  url: string;
-  alt: string;
-  order: number;
-  storagePath?: string;
-}
-
-export interface CollectionProduct {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  imageStoragePath?: string;
-  gifUrl?: string;
-  gifStoragePath?: string;
-  affiliateUrl: string;
-  ctaLabel: string;
-  reviewText?: string;
-  category?: string;
-  tags: string[];
-  order: number;
-  enabled: boolean;
-}
-
-export interface Collection {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  heroGifUrl?: string;
-  heroGifStoragePath?: string;
-  heroImageUrl?: string;
-  heroImageStoragePath?: string;
-  heroVideoUrl?: string;
-  reviewText?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  accentColor?: string;
-  gradientPreset: CollectionGradientPreset;
-  layoutStyle: CollectionLayoutStyle;
-  enabled: boolean;
-  order: number;
-  gallery: CollectionGalleryImage[];
-  products: CollectionProduct[];
-}
-
-export interface CollectionPageData {
-  collection: Collection;
-  profileId: string;
-  theme: Profile["theme"];
-  creatorName: string;
 }

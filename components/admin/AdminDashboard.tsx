@@ -11,7 +11,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { PageShell } from "@/components/ui/PageShell";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
-import { CollectionsManager } from "@/components/admin/CollectionsManager";
 import { ThemePicker } from "@/components/profile/ThemePicker";
 import type { AnalyticsGranularity, AnalyticsPeriod } from "@/lib/types";
 import { useHub } from "@/hooks/useHub";
@@ -33,9 +32,7 @@ export function AdminDashboard() {
     refreshAnalytics,
   } = useHub();
 
-  const [tab, setTab] = useState<
-    "analytics" | "blocks" | "profile" | "collections"
-  >("analytics");
+  const [tab, setTab] = useState<"analytics" | "blocks" | "profile">("analytics");
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const handlePeriodChange = useCallback(
@@ -97,7 +94,7 @@ export function AdminDashboard() {
         </header>
 
         <nav className="mb-6 flex gap-2 overflow-x-auto pb-1">
-          {(["analytics", "blocks", "collections", "profile"] as const).map((t) => (
+          {(["analytics", "blocks", "profile"] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -171,8 +168,6 @@ export function AdminDashboard() {
             </label>
           </GlassCard>
         )}
-
-        {tab === "collections" && <CollectionsManager />}
 
         {tab === "blocks" && (
           <BlocksManager

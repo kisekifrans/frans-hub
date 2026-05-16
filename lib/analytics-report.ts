@@ -1,3 +1,4 @@
+import { formatChartBucketLabel } from "@/lib/chart-labels";
 import type {
   AnalyticsGranularity,
   AnalyticsPeriod,
@@ -44,18 +45,6 @@ function bucketKey(iso: string, granularity: AnalyticsGranularity): string {
   if (granularity === "weekly") return weekKey(iso);
   if (granularity === "monthly") return monthKey(iso);
   return dayKey(iso);
-}
-
-function formatLabel(key: string, granularity: AnalyticsGranularity): string {
-  if (granularity === "monthly") {
-    const [y, m] = key.split("-");
-    const d = new Date(Number(y), Number(m) - 1, 1);
-    return d.toLocaleDateString(undefined, { month: "short", year: "2-digit" });
-  }
-  if (granularity === "weekly") {
-    return key.slice(5);
-  }
-  return key.slice(5);
 }
 
 function enumerateBuckets(
@@ -162,7 +151,7 @@ export function buildAnalyticsReport(
 
   const series: AnalyticsSeriesPoint[] = bucketKeys.map((key) => ({
     key,
-    label: formatLabel(key, granularity),
+    label: formatChartBucketLabel(key, granularity),
     views: viewsByBucket[key] ?? 0,
     clicks: clicksByBucket[key] ?? 0,
   }));

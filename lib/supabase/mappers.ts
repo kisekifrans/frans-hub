@@ -1,4 +1,5 @@
 import { buildAnalyticsReport } from "@/lib/analytics-report";
+import { parseThumbnailFocus } from "@/lib/thumbnail-focus";
 import type { DbBlock, DbProfile, DbSocialLink } from "./database.types";
 import type {
   AnalyticsSnapshot,
@@ -12,6 +13,7 @@ const SOCIAL_PLATFORMS = new Set<SocialPlatform>([
   "instagram",
   "tiktok",
   "youtube",
+  "facebook",
   "x",
   "website",
 ]);
@@ -51,6 +53,7 @@ export function blockFromDb(row: DbBlock): ProfileBlock {
         accent: row.accent ?? undefined,
         thumbnailUrl: row.thumbnail_url ?? undefined,
         thumbnailLayout: row.thumbnail_layout ?? undefined,
+        thumbnailFocus: parseThumbnailFocus(row.thumbnail_focus),
         storagePath: row.storage_path ?? undefined,
       };
     case "gif":
@@ -86,6 +89,7 @@ export function blockToDb(
     accent: null as string | null,
     thumbnail_url: null as string | null,
     thumbnail_layout: null as DbBlock["thumbnail_layout"],
+    thumbnail_focus: null as DbBlock["thumbnail_focus"],
     storage_path:
       "storagePath" in block ? (block.storagePath ?? null) : null,
     alt: null as string | null,
@@ -101,6 +105,7 @@ export function blockToDb(
         accent: block.accent ?? null,
         thumbnail_url: block.thumbnailUrl ?? null,
         thumbnail_layout: block.thumbnailLayout ?? null,
+        thumbnail_focus: block.thumbnailFocus ?? null,
       };
     case "gif":
       return {

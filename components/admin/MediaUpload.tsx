@@ -7,12 +7,14 @@ import { isValidImageSrc } from "@/lib/image-utils";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { assetPath, uploadAsset, removeAsset } from "@/lib/supabase/hub-service";
+import { thumbnailFocusStyle } from "@/lib/thumbnail-focus";
+import type { ThumbnailFocus } from "@/lib/thumbnail-focus";
 import { cn } from "@/lib/utils";
 
 interface MediaUploadProps {
   profileId: string;
   blockId: string;
-  folder: "thumbnails" | "gifs" | "avatars" | "collections";
+  folder: "thumbnails" | "gifs" | "avatars";
   label: string;
   accept?: string;
   currentUrl?: string;
@@ -20,6 +22,7 @@ interface MediaUploadProps {
   onUploaded: (url: string, storagePath: string) => void;
   onClear?: () => void;
   previewAspect?: "square" | "video" | "portrait";
+  previewFocus?: ThumbnailFocus | null;
   maxSizeMb?: number;
   allowVideo?: boolean;
 }
@@ -35,6 +38,7 @@ export function MediaUpload({
   onUploaded,
   onClear,
   previewAspect = folder === "gifs" ? "video" : "square",
+  previewFocus,
   maxSizeMb = 8,
   allowVideo = false,
 }: MediaUploadProps) {
@@ -174,6 +178,7 @@ export function MediaUpload({
             alt="Preview"
             fill
             className="object-cover"
+            style={previewFocus ? thumbnailFocusStyle(previewFocus) : undefined}
           />
         </div>
       )}

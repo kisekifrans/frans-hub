@@ -1,4 +1,5 @@
 import {
+  RiFacebookFill,
   RiGlobalLine,
   RiInstagramLine,
   RiTiktokLine,
@@ -16,6 +17,7 @@ const platformMeta: Record<
   instagram: { label: "Instagram", icon: RiInstagramLine },
   tiktok: { label: "TikTok", icon: RiTiktokLine, iconClassName: "h-[17px] w-[17px]" },
   youtube: { label: "YouTube", icon: RiYoutubeLine },
+  facebook: { label: "Facebook", icon: RiFacebookFill },
   x: { label: "X", icon: RiTwitterXLine },
   website: { label: "Website", icon: RiGlobalLine },
 };

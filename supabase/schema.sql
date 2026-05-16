@@ -28,6 +28,7 @@ create table if not exists blocks (
   accent text,
   thumbnail_url text,
   thumbnail_layout text check (thumbnail_layout in ('side', 'banner')),
+  thumbnail_focus jsonb,
   storage_path text,
   alt text,
   caption text,

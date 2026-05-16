@@ -19,12 +19,15 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MediaUpload } from "@/components/admin/MediaUpload";
+import { ThumbnailFocusEditor } from "@/components/admin/ThumbnailFocusEditor";
+import { DEFAULT_THUMBNAIL_FOCUS } from "@/lib/thumbnail-focus";
+import { isValidImageSrc } from "@/lib/image-utils";
 import type { BlockType, ProfileBlock } from "@/lib/types";
 import { sortBlocks } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const blockLabels: Record<BlockType, string> = {
-  link: "Affiliate Link",
+  link: "Link",
   gif: "GIF",
   tiktok: "TikTok Embed",
   instagram: "Instagram Embed",
@@ -178,7 +181,7 @@ function SortableBlockEditor({
               onBlur={(v) => onPatch(block.id, { title: v })}
             />
             <Field
-              label="Affiliate URL"
+              label="Link URL"
               value={block.url}
               onBlur={(v) => onPatch(block.id, { url: v })}
             />
@@ -201,19 +204,37 @@ function SortableBlockEditor({
               profileId={profileId}
               blockId={block.id}
               folder="thumbnails"
-              label="Thumbnail image"
+              label="Thumbnail image or GIF"
+              accept="image/*,.gif"
               currentUrl={block.thumbnailUrl}
               storagePath={block.storagePath}
+              previewFocus={block.thumbnailFocus}
               onUploaded={(url, storagePath) =>
-                onPatch(block.id, { thumbnailUrl: url, storagePath })
+                onPatch(block.id, {
+                  thumbnailUrl: url,
+                  storagePath,
+                  thumbnailFocus: { ...DEFAULT_THUMBNAIL_FOCUS },
+                })
               }
               onClear={() =>
                 onPatch(block.id, {
                   thumbnailUrl: undefined,
                   storagePath: undefined,
+                  thumbnailFocus: undefined,
                 })
               }
             />
+            {isValidImageSrc(block.thumbnailUrl) && (
+              <ThumbnailFocusEditor
+                imageUrl={block.thumbnailUrl!}
+                layout={block.thumbnailLayout ?? "side"}
+                focus={block.thumbnailFocus}
+                previewTitle={block.title}
+                onChange={(thumbnailFocus) =>
+                  onPatch(block.id, { thumbnailFocus })
+                }
+              />
+            )}
           </>
         )}
 
