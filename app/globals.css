@@ -345,7 +345,60 @@ body {
   image-rendering: crisp-edges;
 }
 
-.pixelated {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+/* —— Signature studio —— */
+
+.signature-glow {
+  box-shadow:
+    0 8px 32px rgba(139, 92, 246, 0.08),
+    0 0 0 1px rgba(167, 139, 250, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dark .signature-glow {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(167, 139, 250, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.signature-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.35),
+    rgba(236, 72, 153, 0.35)
+  );
+}
+
+.signature-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.45);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.signature-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.signature-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.45);
+  cursor: pointer;
+}
+
+.signature-canvas-wrap {
+  overscroll-behavior: contain;
 }

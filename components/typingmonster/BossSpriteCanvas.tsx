@@ -160,7 +160,6 @@ export function BossSpriteCanvas({
     </div>
   );
 }
-
 function drawPlaceholderBoss(
   ctx: CanvasRenderingContext2D,
   w: number,
@@ -184,3 +183,4 @@ function drawPlaceholderBoss(
     ctx.fillRect(cx + 30, cy - 30, 36, 8);
   }
 }
+
