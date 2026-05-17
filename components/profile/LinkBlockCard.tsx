@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MotionDiv } from "@/components/ui/motion";
-import { SafeImage } from "@/components/ui/SafeImage";
+import { MediaPreview } from "@/components/ui/MediaPreview";
 import { thumbnailFocusStyle } from "@/lib/thumbnail-focus";
 import { openLinkUrl } from "@/lib/thumbnail-crop";
 import type { LinkBlock } from "@/lib/types";
@@ -74,8 +74,9 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
           >
             {isBanner && hasThumbnail && (
               <div className="relative mb-0 aspect-[2/1] w-full overflow-hidden">
-                <SafeImage
-                  key={block.thumbnailUrl}
+                <MediaPreview
+                  mediaKey={block.id}
+                  keyPrefix="link-banner"
                   src={block.thumbnailUrl}
                   alt=""
                   fill
@@ -96,8 +97,9 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 {hasThumbnail && layout === "side" && (
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-2 ring-white/30 dark:ring-white/10">
-                    <SafeImage
-                      key={block.thumbnailUrl}
+                    <MediaPreview
+                      mediaKey={block.id}
+                      keyPrefix="link-side"
                       src={block.thumbnailUrl}
                       alt=""
                       fill

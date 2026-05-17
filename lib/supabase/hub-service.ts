@@ -196,13 +196,21 @@ export async function uploadAsset(
   supabase: SupabaseClient,
   file: File,
   path: string,
-  options?: { cacheControl?: string },
+  options?: { cacheControl?: string; contentType?: string },
 ): Promise<{ publicUrl: string; storagePath: string }> {
+  const contentType =
+    options?.contentType && options.contentType.startsWith("image/")
+      ? options.contentType
+      : file.type?.startsWith("image/")
+        ? file.type
+        : "image/jpeg";
+
   const { error } = await supabase.storage
     .from(STORAGE_BUCKET)
     .upload(path, file, {
       upsert: true,
       cacheControl: options?.cacheControl ?? "3600",
+      contentType,
     });
 
   if (error) throw error;
@@ -255,7 +263,7 @@ async function seedHub(supabase: SupabaseClient): Promise<void> {
 
 export function assetPath(
   profileId: string,
-  folder: "thumbnails" | "gifs" | "avatars",
+  folder: "thumbnails" | "gifs" | "avatars" | "gear",
   filename: string,
 ): string {
   return `${profileId}/${folder}/${filename}`;

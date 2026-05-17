@@ -8,7 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { Move } from "lucide-react";
-import { SafeImage } from "@/components/ui/SafeImage";
+import { MediaPreview } from "@/components/ui/MediaPreview";
 import { thumbnailFocusStyle } from "@/lib/thumbnail-focus";
 import {
   applyDragToFocus,
@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 interface InteractiveThumbnailCropProps {
   imageUrl: string;
   layout: LinkThumbnailLayout;
+  mediaKey: string;
   focus?: ThumbnailFocus | null;
   onChange: (focus: ThumbnailFocus) => void;
 }
@@ -36,6 +37,7 @@ const PINCH_ZOOM = 0.004;
 export function InteractiveThumbnailCrop({
   imageUrl,
   layout,
+  mediaKey,
   focus,
   onChange,
 }: InteractiveThumbnailCropProps) {
@@ -215,11 +217,14 @@ export function InteractiveThumbnailCrop({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <SafeImage
-        key={imageUrl}
+      <MediaPreview
+        mediaKey={mediaKey}
+        keyPrefix="crop"
         src={imageUrl}
         alt=""
         fill
+        priority
+        loading="eager"
         className={cn(
           "pointer-events-none object-cover will-change-transform",
           !dragging && "transition-[object-position,transform] duration-200 ease-out",

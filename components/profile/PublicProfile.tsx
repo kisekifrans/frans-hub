@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Settings, Loader2 } from "lucide-react";
+import { Settings, Loader2, Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { BlockRenderer } from "@/components/profile/BlockRenderer";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
@@ -44,6 +44,13 @@ export function PublicProfile() {
             Agisna Dev
           </span>
           <div className="flex items-center gap-2">
+            <Link
+              href="/gear"
+              className="glass-card flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/55 dark:hover:bg-white/15 sm:h-10 sm:w-10"
+              aria-label="Gear showcase"
+            >
+              <Gamepad2 className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+            </Link>
             <ThemeToggle />
             <Link
               href="/admin"

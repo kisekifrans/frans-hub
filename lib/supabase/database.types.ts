@@ -53,4 +53,38 @@ export interface DbAnalyticsEvent {
   created_at: string;
 }
 
+export interface DbGearPageSettings {
+  profile_id: string;
+  setup_description: string;
+  updated_at: string;
+}
+
+export interface DbGearCategory {
+  id: string;
+  profile_id: string;
+  slug: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface DbGearItem {
+  id: string;
+  profile_id: string;
+  category_id: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  storage_path: string | null;
+  image_focus: { x: number; y: number; scale?: number } | null;
+  product_url: string | null;
+  price: number | null;
+  price_currency: string;
+  featured: boolean;
+  enabled: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export const STORAGE_BUCKET = "hub-assets";

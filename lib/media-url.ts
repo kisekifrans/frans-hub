@@ -29,3 +29,63 @@ export function mediaUrlWithoutVersion(url: string): string {
     return url.split("?")[0] ?? url;
   }
 }
+
+export function mediaVersionFromUrl(url: string | undefined): string {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    return u.searchParams.get("v") ?? "";
+  } catch {
+    const match = url.match(/[?&]v=([^&]+)/);
+    return match?.[1] ?? "";
+  }
+}
+
+/** Stable React key — never use raw imageUrl alone when siblings share the same src. */
+export function mediaReactKey(
+  prefix: string,
+  stableId: string,
+  url?: string | null,
+): string {
+  const version = url ? mediaVersionFromUrl(url) : "none";
+  return `${prefix}-${stableId}-${version}`;
+}
+
+export function isGifMediaUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  const path = mediaUrlWithoutVersion(url).split("?")[0]!.toLowerCase();
+  return path.endsWith(".gif");
+}
+
+export function ensureCacheBustUrl(
+  url: string | null | undefined,
+  fallbackVersion: string | number,
+): string | undefined {
+  if (!url) return undefined;
+  if (mediaVersionFromUrl(url)) return url;
+  return cacheBustMediaUrl(url, fallbackVersion);
+}
+
+const MIME_BY_EXT: Record<string, string> = {
+  gif: "image/gif",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
+
+export function extensionFromFile(file: File): string {
+  if (file.type === "image/gif") return "gif";
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+  if (fromName && MIME_BY_EXT[fromName]) return fromName;
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+  if (file.type === "image/jpeg") return "jpg";
+  return fromName || "jpg";
+}
+
+export function mimeTypeFromFile(file: File): string {
+  if (file.type && file.type.startsWith("image/")) return file.type;
+  const ext = extensionFromFile(file);
+  return MIME_BY_EXT[ext] ?? "image/jpeg";
+}

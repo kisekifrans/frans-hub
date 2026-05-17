@@ -4,12 +4,15 @@ import { Move } from "lucide-react";
 import { InteractiveThumbnailCrop } from "@/components/admin/InteractiveThumbnailCrop";
 import { ThumbnailLivePreview } from "@/components/admin/ThumbnailLivePreview";
 import { DEFAULT_THUMBNAIL_FOCUS } from "@/lib/thumbnail-focus";
+import { mediaReactKey } from "@/lib/media-url";
 import type { ThumbnailFocus } from "@/lib/thumbnail-focus";
 import type { LinkThumbnailLayout } from "@/lib/types";
 
 interface ThumbnailFocusEditorProps {
   imageUrl: string;
   layout: LinkThumbnailLayout;
+  /** Stable id (gear item id, block id) — avoids duplicate React keys */
+  mediaKey: string;
   focus?: ThumbnailFocus | null;
   onChange: (focus: ThumbnailFocus) => void;
   onResetFocus?: () => void;
@@ -19,11 +22,15 @@ interface ThumbnailFocusEditorProps {
 export function ThumbnailFocusEditor({
   imageUrl,
   layout,
+  mediaKey,
   focus,
   onChange,
   onResetFocus,
   previewTitle,
 }: ThumbnailFocusEditorProps) {
+  const cropKey = mediaReactKey("crop", mediaKey, imageUrl);
+  const liveKey = mediaReactKey("live", mediaKey, imageUrl);
+
   return (
     <div className="space-y-3 rounded-xl border border-white/20 bg-white/15 p-3 dark:bg-white/5">
       <div className="flex items-center justify-between gap-2">
@@ -45,17 +52,19 @@ export function ThumbnailFocusEditor({
       </div>
 
       <InteractiveThumbnailCrop
-        key={imageUrl}
+        key={cropKey}
         imageUrl={imageUrl}
         layout={layout}
+        mediaKey={mediaKey}
         focus={focus}
         onChange={onChange}
       />
 
       <ThumbnailLivePreview
-        key={imageUrl}
+        key={liveKey}
         imageUrl={imageUrl}
         layout={layout}
+        mediaKey={mediaKey}
         focus={focus}
         title={previewTitle}
       />

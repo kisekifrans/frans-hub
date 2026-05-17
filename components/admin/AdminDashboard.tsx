@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
+import { GearManager } from "@/components/admin/gear/GearManager";
 import { AnalyticsPanel } from "@/components/analytics/AnalyticsPanel";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -32,7 +33,9 @@ export function AdminDashboard() {
     refreshAnalytics,
   } = useHub();
 
-  const [tab, setTab] = useState<"analytics" | "blocks" | "profile">("analytics");
+  const [tab, setTab] = useState<
+    "analytics" | "blocks" | "profile" | "gear"
+  >("analytics");
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const handlePeriodChange = useCallback(
@@ -87,6 +90,12 @@ export function AdminDashboard() {
             >
               Quick Reply
             </Link>
+            <Link
+              href="/gear"
+              className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
+            >
+              Gear
+            </Link>
             <ThemeToggle />
             <LogoutButton />
             <button
@@ -100,7 +109,7 @@ export function AdminDashboard() {
         </header>
 
         <nav className="mb-6 flex gap-2 overflow-x-auto pb-1">
-          {(["analytics", "blocks", "profile"] as const).map((t) => (
+          {(["analytics", "blocks", "gear", "profile"] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -186,6 +195,8 @@ export function AdminDashboard() {
             onReorder={reorder}
           />
         )}
+
+        {tab === "gear" && <GearManager />}
       </div>
     </PageShell>
   );

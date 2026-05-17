@@ -1,4 +1,5 @@
 import { buildAnalyticsReport } from "@/lib/analytics-report";
+import { ensureCacheBustUrl } from "@/lib/media-url";
 import { parseThumbnailFocus } from "@/lib/thumbnail-focus";
 import type { DbBlock, DbProfile, DbSocialLink } from "./database.types";
 import type {
@@ -51,7 +52,10 @@ export function blockFromDb(row: DbBlock): ProfileBlock {
         title: row.title ?? "Untitled",
         url: row.url ?? "",
         accent: row.accent ?? undefined,
-        thumbnailUrl: row.thumbnail_url ?? undefined,
+        thumbnailUrl: ensureCacheBustUrl(
+          row.thumbnail_url,
+          new Date(row.updated_at).getTime(),
+        ),
         thumbnailLayout: row.thumbnail_layout ?? undefined,
         thumbnailFocus: parseThumbnailFocus(row.thumbnail_focus),
         storagePath: row.storage_path ?? undefined,
@@ -60,7 +64,11 @@ export function blockFromDb(row: DbBlock): ProfileBlock {
       return {
         ...base,
         type: "gif",
-        url: row.thumbnail_url ?? row.url ?? "",
+        url:
+          ensureCacheBustUrl(
+            row.thumbnail_url ?? row.url,
+            new Date(row.updated_at).getTime(),
+          ) ?? "",
         alt: row.alt ?? undefined,
         caption: row.caption ?? undefined,
         storagePath: row.storage_path ?? undefined,

@@ -259,9 +259,10 @@ function SortableBlockEditor({
             />
             {isValidImageSrc(block.thumbnailUrl) && (
               <ThumbnailFocusEditor
-                key={block.thumbnailUrl}
+                key={`thumb-focus-${block.id}-${block.thumbnailUrl ?? ""}`}
                 imageUrl={block.thumbnailUrl!}
                 layout={block.thumbnailLayout ?? "side"}
+                mediaKey={block.id}
                 focus={block.thumbnailFocus}
                 previewTitle={block.title}
                 onChange={(thumbnailFocus) => saveThumbnailFocus(thumbnailFocus)}

@@ -2,7 +2,7 @@
 
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MotionDiv } from "@/components/ui/motion";
-import { SafeImage } from "@/components/ui/SafeImage";
+import { MediaPreview } from "@/components/ui/MediaPreview";
 import type { GifBlock } from "@/lib/types";
 import { isValidImageSrc } from "@/lib/image-utils";
 
@@ -21,7 +21,9 @@ export function GifBlockCard({ block }: { block: GifBlock }) {
     <MotionDiv whileHover={{ scale: 1.01 }}>
       <GlassCard padding="none" className="overflow-hidden">
         <div className="relative aspect-video w-full">
-          <SafeImage
+          <MediaPreview
+            mediaKey={block.id}
+            keyPrefix="gif-card"
             src={block.url}
             alt={block.alt ?? "GIF"}
             fill

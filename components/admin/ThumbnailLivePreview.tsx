@@ -1,12 +1,14 @@
 ﻿"use client";
 
-import { SafeImage } from "@/components/ui/SafeImage";
+import { MediaPreview } from "@/components/ui/MediaPreview";
 import { thumbnailFocusStyle } from "@/lib/thumbnail-focus";
 import type { LinkThumbnailLayout } from "@/lib/types";
 import type { ThumbnailFocus } from "@/lib/thumbnail-focus";
+
 interface ThumbnailLivePreviewProps {
   imageUrl: string;
   layout: LinkThumbnailLayout;
+  mediaKey: string;
   focus?: ThumbnailFocus | null;
   title?: string;
 }
@@ -15,6 +17,7 @@ interface ThumbnailLivePreviewProps {
 export function ThumbnailLivePreview({
   imageUrl,
   layout,
+  mediaKey,
   focus,
   title = "Link title",
 }: ThumbnailLivePreviewProps) {
@@ -30,8 +33,9 @@ export function ThumbnailLivePreview({
         {isBanner ? (
           <div>
             <div className="relative aspect-[2/1] w-full overflow-hidden">
-              <SafeImage
-                key={imageUrl}
+              <MediaPreview
+                mediaKey={mediaKey}
+                keyPrefix="live-banner"
                 src={imageUrl}
                 alt=""
                 fill
@@ -47,8 +51,9 @@ export function ThumbnailLivePreview({
         ) : (
           <div className="flex items-center gap-2.5 px-3 py-2.5">
             <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-2 ring-white/30 dark:ring-white/10">
-              <SafeImage
-                key={imageUrl}
+              <MediaPreview
+                mediaKey={mediaKey}
+                keyPrefix="live-side"
                 src={imageUrl}
                 alt=""
                 fill
