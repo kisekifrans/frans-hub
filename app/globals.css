@@ -402,3 +402,16 @@ body {
 .signature-canvas-wrap {
   overscroll-behavior: contain;
 }
+
+/* Quick Reply — emoji picker glass blend */
+.qr-emoji-picker .EmojiPickerReact {
+  --epr-picker-border-color: transparent;
+  --epr-search-border-color: rgba(139, 92, 246, 0.15);
+  --epr-category-icon-active-color: #8b5cf6;
+  --epr-highlight-color: rgba(139, 92, 246, 0.2);
+  border: none !important;
+}
+
+.dark .qr-emoji-picker .EmojiPickerReact {
+  --epr-search-border-color: rgba(255, 255, 255, 0.1);
+}

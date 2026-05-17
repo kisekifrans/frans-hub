@@ -11,7 +11,9 @@ export async function middleware(request: NextRequest) {
   } catch {
     if (
       request.nextUrl.pathname === "/admin" ||
-      request.nextUrl.pathname.startsWith("/admin/")
+      request.nextUrl.pathname.startsWith("/admin/") ||
+      request.nextUrl.pathname === "/tools/quickreply" ||
+      request.nextUrl.pathname.startsWith("/tools/quickreply/")
     ) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/login";
@@ -27,9 +29,12 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isProtectedTool =
+    pathname === "/tools/quickreply" ||
+    pathname.startsWith("/tools/quickreply/");
   const isLoginRoute = pathname === "/login";
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isProtectedTool) {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/login";
@@ -59,5 +64,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  matcher: ["/admin/:path*", "/login", "/tools/quickreply"],
 };

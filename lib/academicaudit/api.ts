@@ -1,11 +1,22 @@
-import type { AuditResponse } from "./types";
+import type { AuditResponse, ExclusionOptions } from "./types";
 
 export async function submitAudit(
   file: File,
+  exclusions: ExclusionOptions,
   onProgress?: (pct: number) => void,
 ): Promise<AuditResponse> {
   const form = new FormData();
   form.append("file", file);
+  form.append("exclude_toc", exclusions.excludeToc ? "true" : "false");
+  form.append(
+    "exclude_bibliography",
+    exclusions.excludeBibliography ? "true" : "false",
+  );
+  form.append("exclude_appendix", exclusions.excludeAppendix ? "true" : "false");
+  form.append("exclude_captions", exclusions.excludeCaptions ? "true" : "false");
+  if (exclusions.excludePages.trim()) {
+    form.append("exclude_pages", exclusions.excludePages.trim());
+  }
 
   onProgress?.(15);
 

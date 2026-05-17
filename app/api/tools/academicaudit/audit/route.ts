@@ -25,6 +25,19 @@ export async function POST(request: Request) {
     const upstream = new FormData();
     upstream.append("file", file);
 
+    for (const key of [
+      "exclude_toc",
+      "exclude_bibliography",
+      "exclude_appendix",
+      "exclude_captions",
+      "exclude_pages",
+    ] as const) {
+      const val = form.get(key);
+      if (val != null && String(val).trim() !== "") {
+        upstream.append(key, String(val));
+      }
+    }
+
     const res = await fetch(`${apiBase()}/api/v1/audit`, {
       method: "POST",
       body: upstream,

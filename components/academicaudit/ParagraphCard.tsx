@@ -3,7 +3,11 @@
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { copy } from "@/lib/academicaudit/copy";
-import { formatPercent, levelMeta } from "@/lib/academicaudit/levels";
+import {
+  confidenceLabel,
+  formatScore,
+  levelMeta,
+} from "@/lib/academicaudit/levels";
 import type { ParagraphAnalysis } from "@/lib/academicaudit/types";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +19,8 @@ export function ParagraphCard({
   index: number;
 }) {
   const meta = levelMeta[paragraph.level];
+  const conf =
+    confidenceLabel[paragraph.confidence] ?? confidenceLabel.medium;
 
   return (
     <motion.div
@@ -37,14 +43,15 @@ export function ParagraphCard({
               meta.color,
             )}
           >
-            {meta.label} · {formatPercent(paragraph.score)}
+            {meta.label} · {formatScore(paragraph.score)}
           </span>
         </div>
-        <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 line-clamp-4">
+        <p className="text-[10px] text-zinc-400">{conf}</p>
+        <p className="mt-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 line-clamp-4">
           {paragraph.text}
         </p>
         {paragraph.reason ? (
-          <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-500">
+          <p className="mt-2 text-[11px] italic text-zinc-500 dark:text-zinc-500">
             {paragraph.reason}
           </p>
         ) : null}

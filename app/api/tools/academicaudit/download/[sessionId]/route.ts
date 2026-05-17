@@ -24,11 +24,15 @@ export async function GET(
     }
 
     const buffer = await res.arrayBuffer();
+    const upstreamDisposition = res.headers.get("Content-Disposition");
+    const disposition =
+      upstreamDisposition ??
+      'attachment; filename="dokumen_audit-report.pdf"';
+
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition":
-          'attachment; filename="laporan-academic-audit.pdf"',
+        "Content-Disposition": disposition,
       },
     });
   } catch (e) {

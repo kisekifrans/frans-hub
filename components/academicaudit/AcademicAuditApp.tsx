@@ -8,18 +8,27 @@ import { PageShell } from "@/components/ui/PageShell";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ApiStatusBanner } from "@/components/academicaudit/ApiStatusBanner";
 import { DisclaimerBanner } from "@/components/academicaudit/DisclaimerBanner";
+import { AnalysisOptions } from "@/components/academicaudit/AnalysisOptions";
 import { UploadZone } from "@/components/academicaudit/UploadZone";
 import { ProcessingView } from "@/components/academicaudit/ProcessingView";
 import { ResultsView } from "@/components/academicaudit/ResultsView";
 import { copy } from "@/lib/academicaudit/copy";
 import { submitAudit } from "@/lib/academicaudit/api";
-import type { AuditPhase, AuditResponse } from "@/lib/academicaudit/types";
+import {
+  defaultExclusionOptions,
+  type AuditPhase,
+  type AuditResponse,
+  type ExclusionOptions,
+} from "@/lib/academicaudit/types";
 
 export function AcademicAuditApp() {
   const [phase, setPhase] = useState<AuditPhase>("idle");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<AuditResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [exclusions, setExclusions] = useState<ExclusionOptions>(
+    defaultExclusionOptions,
+  );
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
@@ -27,7 +36,9 @@ export function AcademicAuditApp() {
     setProgress(5);
     try {
       setPhase("analyzing");
-      const data = await submitAudit(file, (pct) => setProgress(pct));
+      const data = await submitAudit(file, exclusions, (pct) =>
+        setProgress(pct),
+      );
       setResult(data);
       setPhase("done");
       setProgress(100);
@@ -35,7 +46,7 @@ export function AcademicAuditApp() {
       setError(e instanceof Error ? e.message : copy.errorGeneric);
       setPhase("error");
     }
-  }, []);
+  }, [exclusions]);
 
   const reset = useCallback(() => {
     setPhase("idle");
@@ -92,6 +103,10 @@ export function AcademicAuditApp() {
               exit={{ opacity: 0, y: -8 }}
             >
               <UploadZone onFile={handleFile} disabled={false} />
+              <AnalysisOptions
+                value={exclusions}
+                onChange={setExclusions}
+              />
               {error ? (
                 <p className="mt-4 text-center text-sm text-rose-500">{error}</p>
               ) : null}
