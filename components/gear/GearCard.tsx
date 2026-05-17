@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GearCardImage } from "@/components/gear/GearCardImage";
 import { formatGearPrice } from "@/lib/gear/format";
@@ -14,6 +15,7 @@ interface GearCardProps {
 }
 
 export function GearCard({ item, featured, priority }: GearCardProps) {
+  const t = useTranslations("gear");
   const priceLabel = formatGearPrice(item.price, item.priceCurrency);
   const hasLink = Boolean(item.productUrl?.trim());
 
@@ -42,7 +44,7 @@ export function GearCard({ item, featured, priority }: GearCardProps) {
         />
         {item.featured ? (
           <span className="absolute left-3 top-3 rounded-full bg-violet-600/90 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-            Featured
+            {t("featuredBadge")}
           </span>
         ) : null}
       </div>

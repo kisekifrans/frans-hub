@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "site": {
+      "title": "Agisna Fransisco | Dev",
+      "description": "个人链接、装备与创作者工具主页。"
+    },
+    "home": {
+      "title": "Agisna Fransisco | Dev",
+      "description": "软件工程师 · 科技爱好者。链接、个人资料与项目。"
+    },
+    "gear": {
+      "title": "装备与桌面 | Agisna Dev",
+      "description": "游戏外设、直播设备与桌面装备——创作者精选展示。"
+    },
+    "academicaudit": {
+      "title": "AI 学术审计 | 写作模式分析",
+      "description": "针对印尼语 PDF 的概率性学术写作模式分析，并非确定性 AI 检测。"
+    },
+    "signature": {
+      "title": "签名工作室 | Agisna Dev",
+      "description": "创建并导出数字签名。"
+    },
+    "typing": {
+      "title": "打字训练 | Agisna Dev",
+      "description": "实时统计的打字练习。"
+    },
+    "typingmonster": {
+      "title": "打字怪兽 | Agisna Dev",
+      "description": "RPG 风格打字对战游戏。"
+    }
+  },
+  "common": {
+    "brand": "Agisna Dev",
+    "verified": "已认证",
+    "verifiedTitle": "已认证创作者",
+    "loading": "加载中…",
+    "shareProfile": "分享主页",
+    "shareProfileDialog": "分享主页",
+    "copyLink": "复制链接",
+    "copied": "已复制",
+    "linkCopied": "链接已复制",
+    "copyFailed": "无法复制链接",
+    "scanQr": "扫码打开主页",
+    "copyLinkBlock": "复制链接",
+    "backHome": "返回首页",
+    "gearShowcase": "装备展示",
+    "adminPanel": "管理后台",
+    "hubUnavailable": "主页不可用。请配置 Supabase 并运行",
+    "poweredBy": "Powered by My Last Cursor Token",
+    "language": "语言",
+    "themeToggle": "主题"
+  },
+  "home": {
+    "tagline": "软件工程师 | 科技爱好者"
+  },
+  "gear": {
+    "title": "桌面与装备",
+    "featuredTitle": "精选装备",
+    "featuredSubtitle": "我桌面上的核心推荐",
+    "allGear": "全部装备",
+    "empty": "装备展示即将上线。",
+    "unavailable": "装备页面不可用。",
+    "migrationHint": "supabase/migrations/008_gear.sql",
+    "featuredBadge": "精选",
+    "footerPath": "agisna.dev/gear",
+    "priceUnavailable": "价格暂无"
+  },
+  "academicaudit": {
+    "title": "AI 学术审计",
+    "subtitle": "学术写作模式分析",
+    "tagline": "上传印尼语学术 PDF，查看写作模式的概率性指标。并非 AI 与人工的确定性判定。",
+    "disclaimerTitle": "结果解读",
+    "disclaimerBody": "本分析为概率性结果，用于辅助评估学术写作模式。不能作为文本由 AI 或人工撰写的确凿证据。",
+    "uploadTitle": "上传 PDF 文档",
+    "uploadHint": "拖拽 PDF 到此处，或点击选择文件",
+    "uploadLimit": "最大 12 MB · PDF · 印尼语",
+    "optionsTitle": "分析排除项（可选）",
+    "optionsHint": "勾选要从评分中排除的部分。未经您的选择不会自动排除任何内容。",
+    "excludeToc": "排除目录",
+    "excludeBibliography": "排除参考文献",
+    "excludeAppendix": "排除附录",
+    "excludeCaptions": "排除表格标题与图注",
+    "excludePagesLabel": "跳过的页码",
+    "excludePagesHint": "示例：1,2,5,10-15（无则留空）",
+    "processing": "分析进行中",
+    "processingHint": "正在提取文本、分析写作模式并生成 PDF 报告…",
+    "summaryTitle": "分析摘要",
+    "pageCount": "文档页数",
+    "avgScore": "平均模式分数",
+    "kuat": "强模式",
+    "sedang": "中等模式",
+    "ringan": "弱模式",
+    "natural": "偏自然",
+    "excludedTitle": "已排除部分",
+    "interpretation": "解读摘要",
+    "paragraphs": "段落详情",
+    "download": "下载 PDF 报告",
+    "newDoc": "分析新文档",
+    "scoreLabel": "写作模式概率指标",
+    "truncated": "文档已截断：仅分析了开头部分段落（服务限制）。",
+    "errorGeneric": "出现错误，请重试。",
+    "backHub": "返回 Agisna Dev",
+    "loading": "正在加载 AI 学术审计…"
+  },
+  "languageSwitcher": {
+    "label": "选择语言",
+    "id": "Indonesia",
+    "en": "English",
+    "zh": "中文"
+  }
+}

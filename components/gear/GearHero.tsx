@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
@@ -21,6 +23,8 @@ export function GearHero({
   profileId,
   setupDescription,
 }: GearHeroProps) {
+  const t = useTranslations("gear");
+  const tCommon = useTranslations("common");
   const profileForAvatar: Profile = {
     ...profile,
     blocks: [],
@@ -33,15 +37,18 @@ export function GearHero({
         <Link
           href="/"
           className="glass-card inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-white/55 dark:hover:bg-white/15"
-          aria-label="Kembali ke beranda"
+          aria-label={tCommon("backHome")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-zinc-500">
           <Gamepad2 className="h-3.5 w-3.5 text-violet-500" />
-          Setup & Gear
+          {t("title")}
         </span>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </nav>
 
       <motion.div

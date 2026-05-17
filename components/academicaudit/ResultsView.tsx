@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Download, FileCheck2, RefreshCw } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ParagraphCard } from "@/components/academicaudit/ParagraphCard";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 import { formatScore, levelMeta } from "@/lib/academicaudit/levels";
 import { downloadReportUrl } from "@/lib/academicaudit/api";
 import type { AuditResponse, PatternLevel } from "@/lib/academicaudit/types";
@@ -15,6 +15,7 @@ interface ResultsViewProps {
 }
 
 export function ResultsView({ result, onReset }: ResultsViewProps) {
+  const copy = useAcademicAuditCopy();
   const { summary } = result;
 
   return (

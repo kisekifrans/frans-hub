@@ -1,19 +1,38 @@
+import createIntlMiddleware from "next-intl/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/middleware";
 
-export async function middleware(request: NextRequest) {
+const intlMiddleware = createIntlMiddleware(routing);
+
+const NON_LOCALIZED = [
+  "/admin",
+  "/api",
+  "/auth",
+  "/login",
+  "/tools/quickreply",
+] as const;
+
+function isNonLocalized(pathname: string): boolean {
+  return NON_LOCALIZED.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
+async function handleAuth(request: NextRequest): Promise<NextResponse> {
   let supabase: ReturnType<typeof createClient>["supabase"];
   let response: ReturnType<typeof createClient>["response"];
 
   try {
     ({ supabase, response } = createClient(request));
   } catch {
+    const pathname = request.nextUrl.pathname;
     if (
-      request.nextUrl.pathname === "/admin" ||
-      request.nextUrl.pathname.startsWith("/admin/") ||
-      request.nextUrl.pathname === "/tools/quickreply" ||
-      request.nextUrl.pathname.startsWith("/tools/quickreply/")
+      pathname === "/admin" ||
+      pathname.startsWith("/admin/") ||
+      pathname === "/tools/quickreply" ||
+      pathname.startsWith("/tools/quickreply/")
     ) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/login";
@@ -63,6 +82,16 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
+export default async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  if (isNonLocalized(pathname)) {
+    return handleAuth(request);
+  }
+
+  return intlMiddleware(request);
+}
+
 export const config = {
-  matcher: ["/admin/:path*", "/login", "/tools/quickreply"],
+  matcher: ["/((?!_next|_vercel|.*\\..*).*)"],
 };

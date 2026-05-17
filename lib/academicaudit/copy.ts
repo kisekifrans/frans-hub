@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use `useAcademicAuditCopy()` from `@/hooks/useAcademicAuditCopy`
+ * with next-intl messages (`messages/*.json` → `academicaudit` namespace).
+ */
 export const copy = {
   title: "AI Academic Audit",
   subtitle: "Analisis Pola Penulisan Akademik",

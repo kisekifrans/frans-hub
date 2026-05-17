@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { GearCard } from "@/components/gear/GearCard";
 import { stagger, blockItemVariants } from "@/components/ui/motion";
 import type { GearItem } from "@/lib/gear/types";
@@ -10,6 +11,7 @@ interface FeaturedGearSectionProps {
 }
 
 export function FeaturedGearSection({ items }: FeaturedGearSectionProps) {
+  const t = useTranslations("gear");
   if (items.length === 0) return null;
 
   return (
@@ -17,10 +19,10 @@ export function FeaturedGearSection({ items }: FeaturedGearSectionProps) {
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-white sm:text-xl">
-            Featured Gear
+            {t("featuredTitle")}
           </h2>
           <p className="mt-1 text-xs text-zinc-500">
-            Pilihan utama dari setup saya
+            {t("featuredSubtitle")}
           </p>
         </div>
       </div>

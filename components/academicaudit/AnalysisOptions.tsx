@@ -1,7 +1,7 @@
 "use client";
 
 import { GlassCard } from "@/components/ui/GlassCard";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 import type { ExclusionOptions } from "@/lib/academicaudit/types";
 import { cn } from "@/lib/utils";
 
@@ -11,21 +11,23 @@ interface AnalysisOptionsProps {
   disabled?: boolean;
 }
 
-const CHECKBOX_OPTIONS: {
-  key: keyof Omit<ExclusionOptions, "excludePages">;
-  label: string;
-}[] = [
-  { key: "excludeToc", label: copy.excludeToc },
-  { key: "excludeBibliography", label: copy.excludeBibliography },
-  { key: "excludeAppendix", label: copy.excludeAppendix },
-  { key: "excludeCaptions", label: copy.excludeCaptions },
-];
-
 export function AnalysisOptions({
   value,
   onChange,
   disabled,
 }: AnalysisOptionsProps) {
+  const copy = useAcademicAuditCopy();
+
+  const checkboxOptions: {
+    key: keyof Omit<ExclusionOptions, "excludePages">;
+    label: string;
+  }[] = [
+    { key: "excludeToc", label: copy.excludeToc },
+    { key: "excludeBibliography", label: copy.excludeBibliography },
+    { key: "excludeAppendix", label: copy.excludeAppendix },
+    { key: "excludeCaptions", label: copy.excludeCaptions },
+  ];
+
   return (
     <GlassCard padding="md" className="mt-4 border border-violet-300/20">
       <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
@@ -35,7 +37,7 @@ export function AnalysisOptions({
         {copy.optionsHint}
       </p>
       <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-        {CHECKBOX_OPTIONS.map(({ key, label }) => {
+        {checkboxOptions.map(({ key, label }) => {
           const checked = value[key];
           return (
             <li key={key}>

@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { motion } from "framer-motion";
 import { FileText, Upload } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 import { cn } from "@/lib/utils";
 
 interface UploadZoneProps {
@@ -15,6 +15,7 @@ interface UploadZoneProps {
 }
 
 export function UploadZone({ onFile, disabled, progress }: UploadZoneProps) {
+  const copy = useAcademicAuditCopy();
   const onDrop = useCallback(
     (files: File[]) => {
       const file = files[0];

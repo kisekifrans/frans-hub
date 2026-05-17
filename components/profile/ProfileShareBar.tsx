@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, Share2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MotionDiv } from "@/components/ui/motion";
@@ -13,13 +14,15 @@ interface ProfileShareBarProps {
 }
 
 export function ProfileShareBar({ username }: ProfileShareBarProps) {
+  const t = useTranslations("common");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const hubUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/`
+      ? `${window.location.origin}/${locale}`
       : `https://${username}.hub`;
 
   useEffect(() => {
@@ -43,14 +46,12 @@ export function ProfileShareBar({ username }: ProfileShareBarProps) {
     try {
       await navigator.clipboard.writeText(hubUrl);
       setCopied(true);
-      toast.success("Link copied");
+      toast.success(t("linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Could not copy link");
+      toast.error(t("copyFailed"));
     }
   };
-
-  const onShareClick = () => setOpen((v) => !v);
 
   return (
     <MotionDiv
@@ -61,7 +62,7 @@ export function ProfileShareBar({ username }: ProfileShareBarProps) {
       <div ref={rootRef} className="relative">
         <button
           type="button"
-          onClick={onShareClick}
+          onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-haspopup="dialog"
           className={cn(
@@ -72,14 +73,14 @@ export function ProfileShareBar({ username }: ProfileShareBarProps) {
           )}
         >
           <Share2 className="h-3.5 w-3.5" aria-hidden />
-          Share profile
+          {t("shareProfile")}
         </button>
 
         <AnimatePresence>
           {open && (
             <motion.div
               role="dialog"
-              aria-label="Share profile"
+              aria-label={t("shareProfileDialog")}
               initial={{ opacity: 0, y: 6, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.97 }}
@@ -96,7 +97,7 @@ export function ProfileShareBar({ username }: ProfileShareBarProps) {
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
-                {copied ? "Copied" : "Copy link"}
+                {copied ? t("copied") : t("copyLink")}
               </button>
 
               <div className="mt-3 flex flex-col items-center border-t border-white/15 pt-3">
@@ -108,7 +109,7 @@ export function ProfileShareBar({ username }: ProfileShareBarProps) {
                   fgColor="currentColor"
                 />
                 <p className="mt-2 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
-                  Scan to open hub
+                  {t("scanQr")}
                 </p>
               </div>
             </motion.div>

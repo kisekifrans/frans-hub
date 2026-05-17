@@ -114,7 +114,7 @@ export function GearManager() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-zinc-500">
           Kelola gear showcase. Publik:{" "}
-          <Link href="/gear" className="font-medium text-violet-600 underline dark:text-violet-300">
+          <Link href="/id/gear" className="font-medium text-violet-600 underline dark:text-violet-300">
             /gear
           </Link>
         </p>

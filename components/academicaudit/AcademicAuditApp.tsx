@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useCallback, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, GraduationCap } from "lucide-react";
 import { PageShell } from "@/components/ui/PageShell";
@@ -12,7 +13,7 @@ import { AnalysisOptions } from "@/components/academicaudit/AnalysisOptions";
 import { UploadZone } from "@/components/academicaudit/UploadZone";
 import { ProcessingView } from "@/components/academicaudit/ProcessingView";
 import { ResultsView } from "@/components/academicaudit/ResultsView";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 import { submitAudit } from "@/lib/academicaudit/api";
 import {
   defaultExclusionOptions,
@@ -22,6 +23,7 @@ import {
 } from "@/lib/academicaudit/types";
 
 export function AcademicAuditApp() {
+  const copy = useAcademicAuditCopy();
   const [phase, setPhase] = useState<AuditPhase>("idle");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<AuditResponse | null>(null);
@@ -86,7 +88,10 @@ export function AcademicAuditApp() {
               {copy.tagline}
             </p>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
         </header>
 
         <ApiStatusBanner />

@@ -1,6 +1,8 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { FeaturedGearSection } from "@/components/gear/FeaturedGearSection";
 import { GearCategorySection } from "@/components/gear/GearCategorySection";
 import { GearHero } from "@/components/gear/GearHero";
@@ -12,6 +14,7 @@ import {
 } from "@/lib/gear/group";
 
 export function GearPage() {
+  const t = useTranslations("gear");
   const { data, profileId, loading, error } = usePublicGear();
 
   if (loading) {
@@ -26,8 +29,8 @@ export function GearPage() {
     return (
       <PageShell variant="violet" contentClassName="flex min-h-screen items-center justify-center p-6 text-center">
         <p className="text-sm text-zinc-600 dark:text-zinc-300">
-          {error ?? "Gear page unavailable."}{" "}
-          <code className="rounded bg-white/20 px-1">supabase/migrations/008_gear.sql</code>
+          {error ?? t("unavailable")}{" "}
+          <code className="rounded bg-white/20 px-1">{t("migrationHint")}</code>
         </p>
       </PageShell>
     );
@@ -54,7 +57,7 @@ export function GearPage() {
         {groups.length > 0 ? (
           <div>
             <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-300">
-              Semua Gear
+              {t("allGear")}
             </h2>
             {groups.map((group, i) => (
               <GearCategorySection
@@ -66,14 +69,14 @@ export function GearPage() {
           </div>
         ) : featured.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-violet-300/30 py-16 text-center text-sm text-zinc-500">
-            Gear showcase akan segera hadir.
+            {t("empty")}
           </p>
         ) : null}
 
         <footer className="mt-12 pb-6 text-center text-xs text-zinc-500">
-          <a href="/gear" className="text-violet-600 hover:underline dark:text-violet-300">
-            agisna.dev/gear
-          </a>
+          <Link href="/gear" className="text-violet-600 hover:underline dark:text-violet-300">
+            {t("footerPath")}
+          </Link>
         </footer>
       </div>
     </PageShell>

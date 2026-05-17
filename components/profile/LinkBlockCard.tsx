@@ -2,6 +2,7 @@
 
 import { Copy, ExternalLink, Check } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MotionDiv } from "@/components/ui/motion";
@@ -18,6 +19,7 @@ interface LinkBlockCardProps {
 }
 
 export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
+  const t = useTranslations("common");
   const [copied, setCopied] = useState(false);
   const hasThumbnail = isValidImageSrc(block.thumbnailUrl);
   const layout = block.thumbnailLayout ?? "side";
@@ -143,7 +145,7 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
               ) : (
                 <Copy className="h-3.5 w-3.5" />
               )}
-              Copy link
+              {t("copyLinkBlock")}
             </button>
           </div>
         </div>

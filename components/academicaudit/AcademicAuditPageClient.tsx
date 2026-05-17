@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 
 const AcademicAuditApp = dynamic(
   () =>
@@ -9,13 +10,18 @@ const AcademicAuditApp = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex min-h-[50vh] items-center justify-center text-sm text-zinc-500">
-        Memuat AI Academic Audit…
-      </div>
-    ),
+    loading: () => <AcademicAuditLoading />,
   },
 );
+
+function AcademicAuditLoading() {
+  const t = useTranslations("academicaudit");
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center text-sm text-zinc-500">
+      {t("loading")}
+    </div>
+  );
+}
 
 export function AcademicAuditPageClient() {
   return <AcademicAuditApp />;

@@ -1,4 +1,7 @@
+"use client";
+
 import { BadgeCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +15,18 @@ const badgeByTheme: Record<Profile["theme"], string> = {
 };
 
 export function VerifiedBadge({ theme }: { theme: Profile["theme"] }) {
+  const t = useTranslations("common");
+
   return (
     <span
       className={cn(
         "inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         badgeByTheme[theme],
       )}
-      title="Verified creator"
+      title={t("verifiedTitle")}
     >
       <BadgeCheck className="h-3 w-3" aria-hidden />
-      Verified
+      {t("verified")}
     </span>
   );
 }

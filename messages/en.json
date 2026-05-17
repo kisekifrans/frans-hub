@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "site": {
+      "title": "Agisna Fransisco | Dev",
+      "description": "Personal hub for links, gear, and creator tools."
+    },
+    "home": {
+      "title": "Agisna Fransisco | Dev",
+      "description": "Software Engineer · Tech Enthusiast. Links, profile, and projects."
+    },
+    "gear": {
+      "title": "Gear & Setup | Agisna Dev",
+      "description": "Gaming gear, streaming setup, and peripherals — a curated creator showcase."
+    },
+    "academicaudit": {
+      "title": "AI Academic Audit | Writing Pattern Analysis",
+      "description": "Probabilistic academic writing pattern analysis for Indonesian PDFs. Not definitive AI detection."
+    },
+    "signature": {
+      "title": "Signature Studio | Agisna Dev",
+      "description": "Create and export digital signatures."
+    },
+    "typing": {
+      "title": "Typing Trainer | Agisna Dev",
+      "description": "Typing practice with real-time stats."
+    },
+    "typingmonster": {
+      "title": "Typing Monster | Agisna Dev",
+      "description": "RPG-style typing battle game."
+    }
+  },
+  "common": {
+    "brand": "Agisna Dev",
+    "verified": "Verified",
+    "verifiedTitle": "Verified creator",
+    "loading": "Loading…",
+    "shareProfile": "Share profile",
+    "shareProfileDialog": "Share profile",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "linkCopied": "Link copied",
+    "copyFailed": "Could not copy link",
+    "scanQr": "Scan to open hub",
+    "copyLinkBlock": "Copy link",
+    "backHome": "Back to home",
+    "gearShowcase": "Gear showcase",
+    "adminPanel": "Admin panel",
+    "hubUnavailable": "Hub unavailable. Configure Supabase and run",
+    "poweredBy": "Powered by My Last Cursor Token",
+    "language": "Language",
+    "themeToggle": "Theme"
+  },
+  "home": {
+    "tagline": "Software Engineer | Tech Enthusiast"
+  },
+  "gear": {
+    "title": "Setup & Gear",
+    "featuredTitle": "Featured Gear",
+    "featuredSubtitle": "Top picks from my setup",
+    "allGear": "All Gear",
+    "empty": "Gear showcase coming soon.",
+    "unavailable": "Gear page unavailable.",
+    "migrationHint": "supabase/migrations/008_gear.sql",
+    "featuredBadge": "Featured",
+    "footerPath": "agisna.dev/gear",
+    "priceUnavailable": "Price not available"
+  },
+  "academicaudit": {
+    "title": "AI Academic Audit",
+    "subtitle": "Academic Writing Pattern Analysis",
+    "tagline": "Upload an Indonesian academic PDF to see probabilistic writing-pattern indicators. Not definitive AI vs human detection.",
+    "disclaimerTitle": "How to Read Results",
+    "disclaimerBody": "This analysis is probabilistic and meant to support evaluation of academic writing patterns. Results cannot prove whether text was written by AI or a human.",
+    "uploadTitle": "Upload PDF Document",
+    "uploadHint": "Drag and drop a PDF, or click to browse",
+    "uploadLimit": "Max 12 MB · PDF · Indonesian",
+    "optionsTitle": "Analysis exclusions (optional)",
+    "optionsHint": "Check sections to exclude from scoring. Nothing is excluded automatically without your choice.",
+    "excludeToc": "Exclude table of contents",
+    "excludeBibliography": "Exclude bibliography",
+    "excludeAppendix": "Exclude appendices",
+    "excludeCaptions": "Exclude table titles & captions",
+    "excludePagesLabel": "Pages to skip",
+    "excludePagesHint": "Example: 1,2,5,10-15 (leave empty if none)",
+    "processing": "Analysis in progress",
+    "processingHint": "Extracting text, analyzing writing patterns, and building your PDF report…",
+    "summaryTitle": "Analysis Summary",
+    "pageCount": "Document pages",
+    "avgScore": "Average pattern score",
+    "kuat": "Strong pattern",
+    "sedang": "Moderate pattern",
+    "ringan": "Light pattern",
+    "natural": "Mostly natural",
+    "excludedTitle": "Excluded sections",
+    "interpretation": "Interpretation summary",
+    "paragraphs": "Paragraph details",
+    "download": "Download PDF Report",
+    "newDoc": "Analyze another document",
+    "scoreLabel": "Probabilistic writing-pattern indicator",
+    "truncated": "Document truncated: only the opening paragraphs were analyzed (service limit).",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "backHub": "Back to Agisna Dev",
+    "loading": "Loading AI Academic Audit…"
+  },
+  "languageSwitcher": {
+    "label": "Choose language",
+    "id": "Indonesia",
+    "en": "English",
+    "zh": "中文"
+  }
+}

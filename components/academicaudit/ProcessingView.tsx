@@ -3,13 +3,14 @@
 import { motion } from "framer-motion";
 import { Loader2, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 
 interface ProcessingViewProps {
   progress: number;
 }
 
 export function ProcessingView({ progress }: ProcessingViewProps) {
+  const copy = useAcademicAuditCopy();
   return (
     <GlassCard padding="lg" className="signature-glow text-center">
       <motion.div

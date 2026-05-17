@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 import {
   confidenceLabel,
   formatScore,
@@ -18,6 +18,7 @@ export function ParagraphCard({
   paragraph: ParagraphAnalysis;
   index: number;
 }) {
+  const copy = useAcademicAuditCopy();
   const meta = levelMeta[paragraph.level];
   const conf =
     confidenceLabel[paragraph.confidence] ?? confidenceLabel.medium;

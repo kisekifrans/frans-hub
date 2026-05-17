@@ -2,9 +2,11 @@
 
 import { AlertTriangle } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { copy } from "@/lib/academicaudit/copy";
+import { useAcademicAuditCopy } from "@/hooks/useAcademicAuditCopy";
 
 export function DisclaimerBanner() {
+  const copy = useAcademicAuditCopy();
+
   return (
     <GlassCard
       padding="md"

@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "site": {
+      "title": "Agisna Fransisco | Dev",
+      "description": "Situs hub pribadi untuk tautan, gear, dan alat kreator."
+    },
+    "home": {
+      "title": "Agisna Fransisco | Dev",
+      "description": "Software Engineer · Tech Enthusiast. Tautan, profil, dan proyek."
+    },
+    "gear": {
+      "title": "Gear & Setup | Agisna Dev",
+      "description": "Gear gaming, setup streaming, dan periferal — kurasi kreator."
+    },
+    "academicaudit": {
+      "title": "AI Academic Audit | Analisis Pola Tulisan",
+      "description": "Analisis pola tulisan akademik Bahasa Indonesia dari PDF. Indikator probabilistik, bukan deteksi AI pasti."
+    },
+    "signature": {
+      "title": "Signature Studio | Agisna Dev",
+      "description": "Buat dan ekspor tanda tangan digital."
+    },
+    "typing": {
+      "title": "Typing Trainer | Agisna Dev",
+      "description": "Latihan mengetik dengan statistik real-time."
+    },
+    "typingmonster": {
+      "title": "Typing Monster | Agisna Dev",
+      "description": "Game mengetik bergaya RPG."
+    }
+  },
+  "common": {
+    "brand": "Agisna Dev",
+    "verified": "Terverifikasi",
+    "verifiedTitle": "Kreator terverifikasi",
+    "loading": "Memuat…",
+    "shareProfile": "Bagikan profil",
+    "shareProfileDialog": "Bagikan profil",
+    "copyLink": "Salin tautan",
+    "copied": "Tersalin",
+    "linkCopied": "Tautan disalin",
+    "copyFailed": "Gagal menyalin tautan",
+    "scanQr": "Pindai untuk membuka hub",
+    "copyLinkBlock": "Salin tautan",
+    "backHome": "Kembali ke beranda",
+    "gearShowcase": "Gear showcase",
+    "adminPanel": "Panel admin",
+    "hubUnavailable": "Hub tidak tersedia. Konfigurasi Supabase dan jalankan",
+    "poweredBy": "Powered by My Last Cursor Token",
+    "language": "Bahasa",
+    "themeToggle": "Tema"
+  },
+  "home": {
+    "tagline": "Software Engineer | Tech Enthusiast"
+  },
+  "gear": {
+    "title": "Setup & Gear",
+    "featuredTitle": "Gear Unggulan",
+    "featuredSubtitle": "Pilihan utama dari setup saya",
+    "allGear": "Semua Gear",
+    "empty": "Gear showcase akan segera hadir.",
+    "unavailable": "Halaman gear tidak tersedia.",
+    "migrationHint": "supabase/migrations/008_gear.sql",
+    "featuredBadge": "Unggulan",
+    "footerPath": "agisna.dev/gear",
+    "priceUnavailable": "Harga tidak tersedia"
+  },
+  "academicaudit": {
+    "title": "AI Academic Audit",
+    "subtitle": "Analisis Pola Penulisan Akademik",
+    "tagline": "Unggah PDF akademik berbahasa Indonesia untuk melihat indikator probabilistik pola tulisan. Bukan deteksi pasti AI vs manusia.",
+    "disclaimerTitle": "Interpretasi Hasil",
+    "disclaimerBody": "Analisis ini bersifat probabilistik dan dirancang sebagai alat bantu evaluasi pola penulisan akademik. Hasil tidak dapat digunakan sebagai penentu pasti apakah suatu teks ditulis oleh AI maupun manusia.",
+    "uploadTitle": "Unggah Dokumen PDF",
+    "uploadHint": "Seret dan lepas file PDF, atau klik untuk memilih",
+    "uploadLimit": "Maks. 12 MB · PDF · Bahasa Indonesia",
+    "optionsTitle": "Pengecualian analisis (opsional)",
+    "optionsHint": "Centang bagian yang ingin dikecualikan dari perhitungan skor. Tidak ada pengecualian otomatis tanpa pilihan Anda.",
+    "excludeToc": "Kecualikan daftar isi",
+    "excludeBibliography": "Kecualikan daftar pustaka",
+    "excludeAppendix": "Kecualikan lampiran",
+    "excludeCaptions": "Kecualikan judul tabel & caption",
+    "excludePagesLabel": "Halaman yang tidak ingin dianalisis",
+    "excludePagesHint": "Contoh: 1,2,5,10-15 (kosongkan jika tidak ada)",
+    "processing": "Analisis sedang berjalan",
+    "processingHint": "Mengekstrak teks, menganalisis pola tulisan, dan menyusun laporan PDF…",
+    "summaryTitle": "Ringkasan Analisis",
+    "pageCount": "Halaman dokumen",
+    "avgScore": "Rata-rata skor pola",
+    "kuat": "Pola kuat",
+    "sedang": "Pola sedang",
+    "ringan": "Pola ringan",
+    "natural": "Cenderung natural",
+    "excludedTitle": "Bagian dikecualikan",
+    "interpretation": "Ringkasan interpretasi",
+    "paragraphs": "Detail per paragraf",
+    "download": "Unduh Laporan PDF",
+    "newDoc": "Analisis dokumen baru",
+    "scoreLabel": "Indikator probabilistik pola tulisan",
+    "truncated": "Dokumen dipotong: hanya sebagian paragraf awal yang dianalisis (batas layanan).",
+    "errorGeneric": "Terjadi kesalahan. Silakan coba lagi.",
+    "backHub": "Kembali ke Agisna Dev",
+    "loading": "Memuat AI Academic Audit…"
+  },
+  "languageSwitcher": {
+    "label": "Pilih bahasa",
+    "id": "Indonesia",
+    "en": "English",
+    "zh": "中文"
+  }
+}
