@@ -289,9 +289,17 @@ export async function updateTransaction(
   supabase: SupabaseClient,
   profileId: string,
   item: FinanceTransaction,
+  periods: FinanceBudgetPeriod[],
 ): Promise<FinanceTransaction> {
+  const period = findPeriodForDate(periods, item.transactionDate);
   const row = {
-    ...transactionToDb(item, profileId),
+    ...transactionToDb(
+      {
+        ...item,
+        periodId: period?.id ?? item.periodId,
+      },
+      profileId,
+    ),
     updated_at: new Date().toISOString(),
   };
   const { data, error } = await supabase

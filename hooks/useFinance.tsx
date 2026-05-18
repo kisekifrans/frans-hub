@@ -214,10 +214,31 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const saveTransaction = useCallback(
     async (item: FinanceTransaction) => {
       if (!data) return;
+      const period = findPeriodForDate(data.periods, item.transactionDate);
+      const optimistic: FinanceTransaction = {
+        ...item,
+        periodId: period?.id ?? item.periodId,
+      };
+      const prev = data.transactions;
+      setData((d) =>
+        d
+          ? {
+              ...d,
+              transactions: d.transactions.map((t) =>
+                t.id === item.id ? optimistic : t,
+              ),
+            }
+          : d,
+      );
       setSaving(true);
       try {
         const supabase = createClient();
-        const saved = await updateTransaction(supabase, data.profileId, item);
+        const saved = await updateTransaction(
+          supabase,
+          data.profileId,
+          item,
+          data.periods,
+        );
         setData((d) =>
           d
             ? {
@@ -228,8 +249,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
               }
             : d,
         );
+        toast.success("Transaksi diperbarui");
       } catch (e) {
+        setData((d) => (d ? { ...d, transactions: prev } : d));
         toast.error(e instanceof Error ? e.message : "Gagal menyimpan");
+        throw e;
       } finally {
         setSaving(false);
       }
@@ -239,23 +263,27 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   const removeTransaction = useCallback(
     async (id: string) => {
+      if (!data) return;
+      const prev = data.transactions;
+      setData((d) =>
+        d
+          ? { ...d, transactions: d.transactions.filter((t) => t.id !== id) }
+          : d,
+      );
       setSaving(true);
       try {
         const supabase = createClient();
         await deleteTransaction(supabase, id);
-        setData((d) =>
-          d
-            ? { ...d, transactions: d.transactions.filter((t) => t.id !== id) }
-            : d,
-        );
         toast.success("Transaksi dihapus");
       } catch (e) {
+        setData((d) => (d ? { ...d, transactions: prev } : d));
         toast.error(e instanceof Error ? e.message : "Gagal menghapus");
+        throw e;
       } finally {
         setSaving(false);
       }
     },
-    [],
+    [data],
   );
 
   const saveBudgetLimit = useCallback(
