@@ -1,21 +1,25 @@
+import { normalizeGearCurrency, normalizeGearPrice } from "@/lib/gear/price";
+
 /** Format optional manual price for display. Returns null when hidden. */
 export function formatGearPrice(
   price: number | null | undefined,
   currency = "IDR",
 ): string | null {
-  if (price == null || !Number.isFinite(price) || price <= 0) return null;
-  if (currency === "IDR") {
+  const amount = normalizeGearPrice(price);
+  if (amount == null) return null;
+  const code = normalizeGearCurrency(currency);
+  if (code === "IDR") {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       maximumFractionDigits: 0,
-    }).format(price);
+    }).format(amount);
   }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: currency.length === 3 ? currency : "USD",
+    currency: code.length === 3 ? code : "USD",
     maximumFractionDigits: 2,
-  }).format(price);
+  }).format(amount);
 }
 
 export function slugifyCategory(name: string): string {

@@ -180,20 +180,22 @@ export async function deleteGearCategory(
   if (error) throw error;
 }
 
-export async function saveGearItems(
+/** Update sort order only — avoids overwriting price/media from stale client state. */
+export async function reorderGearItems(
   supabase: SupabaseClient,
-  profileId: string,
-  items: GearItem[],
+  ordered: { id: string; order: number }[],
 ): Promise<void> {
-  const rows = items.map((item) => ({
-    ...gearItemToDb(item, profileId),
-    updated_at: new Date().toISOString(),
-    created_at: item.createdAt || new Date().toISOString(),
-  }));
-  const { error } = await supabase.from("gear_items").upsert(rows, {
-    onConflict: "id",
-  });
-  if (error) throw error;
+  const updatedAt = new Date().toISOString();
+  const results = await Promise.all(
+    ordered.map(({ id, order }) =>
+      supabase
+        .from("gear_items")
+        .update({ sort_order: order, updated_at: updatedAt })
+        .eq("id", id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export async function createGearItem(

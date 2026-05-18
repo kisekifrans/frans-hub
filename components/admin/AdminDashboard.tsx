@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
+import { Link as LocaleLink } from "@/i18n/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
 import { GearManager } from "@/components/admin/gear/GearManager";
@@ -62,12 +63,12 @@ export function AdminDashboard() {
       <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <Link
+            <LocaleLink
               href="/"
               className="glass-card flex h-10 w-10 items-center justify-center rounded-full"
             >
               <ArrowLeft className="h-4 w-4" />
-            </Link>
+            </LocaleLink>
             <div>
               <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
                 Admin Panel
@@ -78,12 +79,12 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Link
+            <LocaleLink
               href="/admin/audit"
               className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
             >
               QA Admin Audit
-            </Link>
+            </LocaleLink>
             <Link
               href="/tools/quickreply"
               className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
@@ -95,6 +96,12 @@ export function AdminDashboard() {
               className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
             >
               Gear
+            </Link>
+            <Link
+              href="/finance"
+              className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
+            >
+              Finance
             </Link>
             <ThemeToggle />
             <LogoutButton />

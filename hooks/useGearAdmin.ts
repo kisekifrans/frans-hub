@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import type {
@@ -16,7 +16,7 @@ import {
   deleteGearItem,
   fetchGearPage,
   saveGearCategories,
-  saveGearItems,
+  reorderGearItems,
   saveGearPageSettings,
   updateGearItem,
 } from "@/lib/supabase/gear-service";
@@ -38,6 +38,11 @@ export function useGearAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [client, setClient] = useState<SupabaseClient | null>(null);
+  const itemsRef = useRef<GearItem[]>([]);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   const getClient = useCallback(() => {
     if (client) return client;
@@ -105,23 +110,6 @@ export function useGearAdmin() {
     [profileId, getClient, load],
   );
 
-  const persistItems = useCallback(
-    async (next: GearItem[]) => {
-      if (!profileId) return;
-      setItems(next);
-      setSaving(true);
-      try {
-        await saveGearItems(getClient(), profileId, next);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Gagal menyimpan item");
-        await load();
-      } finally {
-        setSaving(false);
-      }
-    },
-    [profileId, getClient, load],
-  );
-
   /** Local-only update (text fields while typing). */
   const patchItem = useCallback((id: string, patch: Partial<GearItem>) => {
     setItems((prev) =>
@@ -137,16 +125,11 @@ export function useGearAdmin() {
     async (id: string, patch: Partial<GearItem> = {}) => {
       if (!profileId) return null;
 
-      let merged: GearItem | undefined;
-      setItems((prev) => {
-        const next = prev.map((i) =>
-          i.id === id ? { ...i, ...patch } : i,
-        );
-        merged = next.find((i) => i.id === id);
-        return next;
-      });
+      const current = itemsRef.current.find((i) => i.id === id);
+      if (!current) return null;
 
-      if (!merged) return null;
+      const merged: GearItem = { ...current, ...patch };
+      setItems((prev) => prev.map((i) => (i.id === id ? merged : i)));
 
       setSaving(true);
       try {
@@ -272,15 +255,26 @@ export function useGearAdmin() {
   );
 
   const reorderItemsInCategory = useCallback(
-    (categoryId: string, reordered: GearItem[]) => {
-      const others = items.filter((i) => i.categoryId !== categoryId);
-      const merged = [
-        ...others,
-        ...reordered.map((item, i) => ({ ...item, order: i })),
-      ];
-      void persistItems(merged);
+    async (categoryId: string, reordered: GearItem[]) => {
+      const withOrder = reordered.map((item, i) => ({ ...item, order: i }));
+      setItems((prev) => {
+        const others = prev.filter((i) => i.categoryId !== categoryId);
+        return [...others, ...withOrder];
+      });
+      setSaving(true);
+      try {
+        await reorderGearItems(
+          getClient(),
+          withOrder.map((item) => ({ id: item.id, order: item.order })),
+        );
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Gagal menyimpan urutan");
+        await load();
+      } finally {
+        setSaving(false);
+      }
     },
-    [items, persistItems],
+    [getClient, load],
   );
 
   return {

@@ -1,3 +1,7 @@
+import {
+  normalizeGearCurrency,
+  normalizeGearPrice,
+} from "@/lib/gear/price";
 import { ensureCacheBustUrl, mediaUrlWithoutVersion } from "@/lib/media-url";
 import { parseThumbnailFocus } from "@/lib/thumbnail-focus";
 import type { GearCategory, GearItem, GearPageSettings } from "@/lib/gear/types";
@@ -59,8 +63,8 @@ export function gearItemFromDb(row: DbGearItem): GearItem {
     storagePath: row.storage_path ?? undefined,
     imageFocus: parseThumbnailFocus(row.image_focus),
     productUrl: row.product_url ?? undefined,
-    price: row.price != null ? Number(row.price) : null,
-    priceCurrency: row.price_currency ?? "IDR",
+    price: normalizeGearPrice(row.price),
+    priceCurrency: normalizeGearCurrency(row.price_currency),
     featured: row.featured,
     enabled: row.enabled,
     order: row.sort_order,
@@ -84,8 +88,8 @@ export function gearItemToDb(
     storage_path: item.storagePath ?? null,
     image_focus: item.imageFocus ?? null,
     product_url: item.productUrl ?? null,
-    price: item.price != null && item.price > 0 ? item.price : null,
-    price_currency: item.priceCurrency ?? "IDR",
+    price: normalizeGearPrice(item.price),
+    price_currency: normalizeGearCurrency(item.priceCurrency),
     featured: item.featured,
     enabled: item.enabled,
     sort_order: item.order,

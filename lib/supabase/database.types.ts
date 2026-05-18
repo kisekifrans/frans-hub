@@ -87,4 +87,97 @@ export interface DbGearItem {
   updated_at: string;
 }
 
+export interface DbFinanceCategory {
+  id: string;
+  profile_id: string;
+  name: string;
+  icon: string;
+  color: string;
+  type: string;
+  sort_order: number;
+  is_default?: boolean;
+  created_at: string;
+}
+
+export interface DbFinancePaymentMethod {
+  id: string;
+  profile_id: string;
+  name: string;
+  icon: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface DbFinanceBudgetPeriod {
+  id: string;
+  profile_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  salary_received: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbFinanceBudgetLimit {
+  id: string;
+  profile_id: string;
+  category_id: string;
+  period_id: string;
+  limit_amount: number;
+  warning_threshold: number;
+  created_at: string;
+}
+
+export interface DbFinanceTransaction {
+  id: string;
+  profile_id: string;
+  type: string;
+  title: string;
+  description: string;
+  amount: number;
+  currency: string;
+  category_id: string | null;
+  payment_method_id: string | null;
+  transaction_date: string;
+  period_id: string | null;
+  recurring: boolean;
+  tags: string[];
+  attachment_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbFinanceSubscription {
+  id: string;
+  profile_id: string;
+  name: string;
+  amount: number;
+  currency: string;
+  billing_cycle: string;
+  next_payment_date: string;
+  category_id: string | null;
+  payment_method_id: string | null;
+  auto_renew: boolean;
+  active: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbFinanceImportJob {
+  id: string;
+  profile_id: string;
+  source: string;
+  file_url: string | null;
+  storage_path: string | null;
+  status: string;
+  error_message: string | null;
+  parsed_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export const STORAGE_BUCKET = "hub-assets";

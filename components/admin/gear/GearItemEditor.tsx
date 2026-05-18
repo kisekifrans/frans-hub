@@ -10,6 +10,7 @@ import { DEFAULT_THUMBNAIL_FOCUS } from "@/lib/thumbnail-focus";
 import type { ThumbnailFocus } from "@/lib/thumbnail-focus";
 import type { GearItem } from "@/lib/gear/types";
 import { isValidImageSrc } from "@/lib/image-utils";
+import { parseGearPriceInput, normalizeGearCurrency } from "@/lib/gear/price";
 import { mediaReactKey } from "@/lib/media-url";
 
 interface GearItemEditorProps {
@@ -98,12 +99,18 @@ export function GearItemEditor({
               <input
                 type="number"
                 min={0}
+                step={1}
                 value={item.price ?? ""}
                 onChange={(e) => {
-                  const v = e.target.value;
-                  onChange({ price: v === "" ? null : Number(v) });
+                  onChange({
+                    price: parseGearPriceInput(e.target.value),
+                  });
                 }}
-                onBlur={() => void onSave()}
+                onBlur={(e) => {
+                  void onSave({
+                    price: parseGearPriceInput(e.target.value),
+                  });
+                }}
                 className="mt-1 w-full rounded-xl border border-white/25 bg-white/40 px-3 py-2 text-sm dark:bg-white/5"
                 placeholder="—"
               />
@@ -112,8 +119,16 @@ export function GearItemEditor({
               Mata uang
               <input
                 value={item.priceCurrency}
-                onChange={(e) => onChange({ priceCurrency: e.target.value })}
-                onBlur={() => void onSave()}
+                onChange={(e) =>
+                  onChange({
+                    priceCurrency: normalizeGearCurrency(e.target.value),
+                  })
+                }
+                onBlur={(e) => {
+                  void onSave({
+                    priceCurrency: normalizeGearCurrency(e.target.value),
+                  });
+                }}
                 className="mt-1 w-full rounded-xl border border-white/25 bg-white/40 px-3 py-2 text-sm dark:bg-white/5"
               />
             </label>
