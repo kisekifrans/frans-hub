@@ -1,61 +1,103 @@
 "use client";
 
-import { FileUp, Loader2 } from "lucide-react";
+import { useCallback, useState } from "react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import { CategoryManager } from "@/components/finance/categories/CategoryManager";
+import { ImportPreviewModal } from "@/components/finance/import/ImportPreviewModal";
+import { PdfImportUploader } from "@/components/finance/import/PdfImportUploader";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useFinance } from "@/hooks/useFinance";
-import { usePdfImport } from "@/lib/finance/import/usePdfImport";
+import type { ImportPreviewRow } from "@/lib/finance/import/types";
 import type { ImportSource } from "@/lib/finance/types";
 import { formatDateId } from "@/lib/finance/format";
+import { cn } from "@/lib/utils";
 
-const SOURCES: { id: ImportSource; label: string; desc: string }[] = [
-  { id: "gopay", label: "GoPay", desc: "E-wallet statement PDF" },
-  { id: "bank", label: "Bank (BCA, etc.)", desc: "Bank statement PDF" },
-  { id: "shopeepay", label: "ShopeePay", desc: "ShopeePay export PDF" },
-  { id: "other", label: "Other", desc: "Generic statement" },
-];
+const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-zinc-500/15 text-zinc-600 dark:text-zinc-300",
+  processing: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  failed: "bg-rose-500/15 text-rose-700 dark:text-rose-300",
+};
 
 export function FinanceSettings() {
   const finance = useFinance();
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewRows, setPreviewRows] = useState<ImportPreviewRow[]>([]);
+  const [previewErrors, setPreviewErrors] = useState<string[]>([]);
+  const [previewFilename, setPreviewFilename] = useState("");
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  const handleUpload = useCallback(
+    async (files: File[], source: ImportSource) => {
+      if (!finance) return;
+      for (const file of files) {
+        setUploadProgress(0);
+        const result = await finance.processPdfImport(file, source, setUploadProgress);
+        if (result && result.rows.length > 0) {
+          setPreviewRows(result.rows);
+          setPreviewErrors(result.errors);
+          setPreviewFilename(file.name);
+          setActiveJobId(result.job.id);
+          setPreviewOpen(true);
+          break;
+        }
+      }
+    },
+    [finance],
+  );
+
+  const handleConfirm = useCallback(
+    async (rows: ImportPreviewRow[]) => {
+      if (!finance || !activeJobId) return;
+      await finance.confirmPdfImport(activeJobId, rows);
+      setPreviewOpen(false);
+      setActiveJobId(null);
+    },
+    [finance, activeJobId],
+  );
+
+  const handleRetry = useCallback(
+    async (jobId: string) => {
+      if (!finance) return;
+      const job = finance.importJobs.find((j) => j.id === jobId);
+      setUploadProgress(0);
+      const result = await finance.retryImportJob(jobId, setUploadProgress);
+      if (result && result.rows.length > 0) {
+        setPreviewRows(result.rows);
+        setPreviewErrors(result.errors);
+        setPreviewFilename(job?.originalFilename ?? "statement.pdf");
+        setActiveJobId(jobId);
+        setPreviewOpen(true);
+      }
+    },
+    [finance],
+  );
+
   if (!finance) return null;
 
-  const { importJobs, queuePdfImport, saving } = finance;
-  const { ready } = usePdfImport();
+  const { importJobs, saving, categories, paymentMethods, periods } = finance;
+  const uploading = saving && uploadProgress > 0 && uploadProgress < 100;
 
   return (
     <div className="space-y-6">
       <CategoryManager />
 
       <GlassCard padding="md" className="space-y-4">
-        <h2 className="text-sm font-semibold">PDF import (coming soon)</h2>
-        <p className="text-xs text-zinc-500">
-          Architecture is ready. Parser/OCR will map transactions automatically.
-          For now, queue a placeholder job or use quick add.
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {SOURCES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              disabled={saving}
-              onClick={() => void queuePdfImport(s.id)}
-              className="glass-card flex items-start gap-3 rounded-xl p-4 text-left transition hover:bg-white/50 dark:hover:bg-white/10"
-            >
-              <FileUp className="mt-0.5 h-5 w-5 text-violet-500" />
-              <span>
-                <span className="block text-sm font-medium">{s.label}</span>
-                <span className="text-xs text-zinc-500">{s.desc}</span>
-              </span>
-            </button>
-          ))}
+        <div>
+          <h2 className="text-sm font-semibold">Import from PDF</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Upload GoPay, bank, ShopeePay, or generic statements. Text is extracted
+            locally — OCR coming later.
+          </p>
         </div>
-        <label className="flex cursor-not-allowed flex-col items-center justify-center rounded-xl border border-dashed border-white/30 bg-white/20 px-4 py-8 opacity-60">
-          <input type="file" accept=".pdf" disabled className="hidden" />
-          <FileUp className="mb-2 h-8 w-8 text-zinc-400" />
-          <span className="text-sm text-zinc-500">
-            Upload UI placeholder {!ready && "(parser not ready)"}
-          </span>
-        </label>
+
+        <PdfImportUploader
+          disabled={saving}
+          uploading={uploading || (saving && !previewOpen)}
+          progress={uploadProgress}
+          onUpload={(files, source) => void handleUpload(files, source)}
+        />
       </GlassCard>
 
       {importJobs.length > 0 && (
@@ -65,20 +107,71 @@ export function FinanceSettings() {
             {importJobs.map((j) => (
               <li
                 key={j.id}
-                className="flex items-center justify-between rounded-lg bg-white/30 px-3 py-2 dark:bg-white/5"
+                className="flex flex-col gap-2 rounded-lg bg-white/30 px-3 py-2 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="capitalize">{j.source}</span>
-                <span className="flex items-center gap-2 text-xs text-zinc-500">
-                  {j.status === "pending" && (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  )}
-                  {j.status} · {formatDateId(j.createdAt.slice(0, 10))}
-                </span>
+                <div className="min-w-0">
+                  <p className="truncate font-medium capitalize">
+                    {j.originalFilename ?? j.source}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {formatDateId(j.createdAt.slice(0, 10))} ·{" "}
+                    {j.extractedCount} extracted
+                    {j.completedAt
+                      ? ` · imported ${formatDateId(j.completedAt.slice(0, 10))}`
+                      : ""}
+                  </p>
+                  {j.errorMessage ? (
+                    <p className="mt-0.5 text-xs text-rose-600">{j.errorMessage}</p>
+                  ) : null}
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
+                      STATUS_STYLES[j.status] ?? STATUS_STYLES.pending,
+                    )}
+                  >
+                    {j.status}
+                  </span>
+                  {j.status === "failed" || j.status === "processing" ? (
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={() => void handleRetry(j.id)}
+                      className="rounded-lg p-1.5 text-zinc-500 hover:bg-white/40"
+                      title="Retry parse"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void finance.removeImportJob(j.id)}
+                    className="rounded-lg p-1.5 text-zinc-500 hover:bg-rose-500/10 hover:text-rose-600"
+                    title="Delete job"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         </GlassCard>
       )}
+
+      <ImportPreviewModal
+        open={previewOpen}
+        filename={previewFilename}
+        rows={previewRows}
+        categories={categories}
+        paymentMethods={paymentMethods}
+        periods={periods}
+        errors={previewErrors}
+        importing={saving}
+        onClose={() => setPreviewOpen(false)}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 }

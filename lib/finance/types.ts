@@ -89,10 +89,12 @@ export interface FinanceImportJob {
   source: ImportSource;
   fileUrl?: string;
   storagePath?: string;
+  originalFilename?: string;
   status: ImportJobStatus;
   errorMessage?: string;
-  parsedCount: number;
+  extractedCount: number;
   createdAt: string;
+  completedAt?: string;
 }
 
 export interface BudgetUsage {

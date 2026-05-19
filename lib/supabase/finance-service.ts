@@ -619,22 +619,84 @@ export async function reorderCategories(
   );
 }
 
-export async function createImportJobPlaceholder(
+export async function createImportJob(
   supabase: SupabaseClient,
   profileId: string,
-  source: FinanceImportJob["source"],
+  input: {
+    source: FinanceImportJob["source"];
+    storagePath: string;
+    fileUrl: string;
+    originalFilename: string;
+    status?: FinanceImportJob["status"];
+    extractedCount?: number;
+    errorMessage?: string;
+    previewJson?: unknown;
+  },
 ): Promise<FinanceImportJob> {
   const { data, error } = await supabase
     .from("finance_import_jobs")
     .insert({
       profile_id: profileId,
-      source,
-      status: "pending",
+      source: input.source,
+      storage_path: input.storagePath,
+      file_url: input.fileUrl,
+      original_filename: input.originalFilename,
+      status: input.status ?? "pending",
+      extracted_count: input.extractedCount ?? 0,
+      error_message: input.errorMessage ?? null,
+      preview_json: input.previewJson ?? null,
     })
     .select()
     .single();
   if (error) throw error;
   return importJobFromDb(data as DbFinanceImportJob);
+}
+
+export async function updateImportJob(
+  supabase: SupabaseClient,
+  jobId: string,
+  patch: Partial<{
+    status: FinanceImportJob["status"];
+    extractedCount: number;
+    errorMessage: string | null;
+    previewJson: unknown;
+    completedAt: string | null;
+  }>,
+): Promise<FinanceImportJob> {
+  const row: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (patch.status) row.status = patch.status;
+  if (patch.extractedCount !== undefined) {
+    row.extracted_count = patch.extractedCount;
+  }
+  if (patch.errorMessage !== undefined) row.error_message = patch.errorMessage;
+  if (patch.previewJson !== undefined) row.preview_json = patch.previewJson;
+  if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
+
+  const { data, error } = await supabase
+    .from("finance_import_jobs")
+    .update(row)
+    .eq("id", jobId)
+    .select()
+    .single();
+  if (error) throw error;
+  return importJobFromDb(data as DbFinanceImportJob);
+}
+
+export async function deleteImportJob(
+  supabase: SupabaseClient,
+  job: FinanceImportJob,
+): Promise<void> {
+  if (job.storagePath) {
+    const { removeFinanceImportFile } = await import("./finance-import-storage");
+    await removeFinanceImportFile(supabase, job.storagePath).catch(() => {});
+  }
+  const { error } = await supabase
+    .from("finance_import_jobs")
+    .delete()
+    .eq("id", job.id);
+  if (error) throw error;
 }
 
 export { resolveProfileId, toISODate };

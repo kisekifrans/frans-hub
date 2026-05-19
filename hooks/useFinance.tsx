@@ -26,24 +26,37 @@ import type {
   FinanceCategory,
   FinanceCategoryType,
   FinanceFilters,
+  FinanceImportJob,
   FinancePageData,
   FinanceSubscription,
   FinanceTransaction,
   FinanceBudgetLimit,
   FinanceTransactionType,
+  ImportSource,
 } from "@/lib/finance/types";
+import type { ImportPreviewRow } from "@/lib/finance/import/types";
+import { extractPdfWithMeta } from "@/lib/finance/import/extract-pdf";
+import { FINANCE_PDF_MAX_BYTES } from "@/lib/finance/import/constants";
+import { parseStatementText } from "@/lib/finance/import/parse-text";
+import { buildPreviewRows } from "@/lib/finance/import/build-preview";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import {
+  uploadFinanceImportPdf,
+  downloadFinanceImportPdf,
+} from "@/lib/supabase/finance-import-storage";
+import {
   createCategory,
-  createImportJobPlaceholder,
+  createImportJob,
   createSubscription,
   createTransaction,
   deleteCategory,
+  deleteImportJob,
   deleteSubscription,
   deleteTransaction,
   fetchFinanceData,
   reorderCategories,
   updateCategory,
+  updateImportJob,
   updatePeriod,
   updateSubscription,
   updateTransaction,
@@ -79,7 +92,28 @@ type FinanceContextValue = FinancePageData & {
   moveCategory: (id: string, direction: "up" | "down") => Promise<void>;
   categoryUsageCounts: Map<string, number>;
   categoriesForType: (type: FinanceTransactionType) => FinanceCategory[];
-  queuePdfImport: (source: "gopay" | "bank" | "shopeepay" | "other") => Promise<void>;
+  processPdfImport: (
+    file: File,
+    source: ImportSource,
+    onProgress?: (n: number) => void,
+  ) => Promise<{
+    job: FinanceImportJob;
+    rows: ImportPreviewRow[];
+    errors: string[];
+  } | null>;
+  confirmPdfImport: (
+    jobId: string,
+    rows: ImportPreviewRow[],
+  ) => Promise<void>;
+  removeImportJob: (jobId: string) => Promise<void>;
+  retryImportJob: (
+    jobId: string,
+    onProgress?: (n: number) => void,
+  ) => Promise<{
+    job: FinanceImportJob;
+    rows: ImportPreviewRow[];
+    errors: string[];
+  } | null>;
   filteredTransactions: FinanceTransaction[];
   currentPeriod: FinancePageData["periods"][0] | undefined;
   budgetUsage: ReturnType<typeof computeBudgetUsage>;
@@ -537,23 +571,250 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     [data],
   );
 
-  const queuePdfImport = useCallback(
-    async (source: "gopay" | "bank" | "shopeepay" | "other") => {
-      if (!data) return;
+  const processPdfImport = useCallback(
+    async (
+      file: File,
+      source: ImportSource,
+      onProgress?: (n: number) => void,
+    ) => {
+      if (!data) return null;
+      if (
+        file.type !== "application/pdf" &&
+        !file.name.toLowerCase().endsWith(".pdf")
+      ) {
+        toast.error("Only PDF files are accepted");
+        return null;
+      }
+      if (file.size > FINANCE_PDF_MAX_BYTES) {
+        toast.error("Max file size is 25MB");
+        return null;
+      }
+
       setSaving(true);
       try {
         const supabase = createClient();
-        const job = await createImportJobPlaceholder(
+        onProgress?.(5);
+
+        const { storagePath, fileUrl } = await uploadFinanceImportPdf(
           supabase,
           data.profileId,
-          source,
+          file,
+          (p) => onProgress?.(Math.min(p, 45)),
         );
+
+        const job = await createImportJob(supabase, data.profileId, {
+          source,
+          storagePath,
+          fileUrl,
+          originalFilename: file.name,
+          status: "processing",
+        });
+
         setData((d) =>
           d ? { ...d, importJobs: [job, ...d.importJobs] } : d,
         );
-        toast.success("Import queued (parser coming soon)");
+
+        onProgress?.(55);
+        const extracted = await extractPdfWithMeta(file, (p) => {
+          const base = 55;
+          const span = 20;
+          onProgress?.(base + Math.round(p.percent * span));
+        });
+        onProgress?.(75);
+
+        const finalText = extracted.text;
+        console.log("===== FINAL PARSED TEXT (hook → parser) =====");
+        console.log(finalText);
+
+        const parsed = parseStatementText(finalText, source);
+        const rows = buildPreviewRows(
+          parsed.transactions,
+          source,
+          data.categories,
+          data.paymentMethods,
+          data.periods,
+        );
+
+        const updated = await updateImportJob(supabase, job.id, {
+          status: rows.length > 0 ? "processing" : "failed",
+          extractedCount: rows.length,
+          errorMessage:
+            rows.length === 0
+              ? parsed.errors[0] ?? "No transactions found"
+              : null,
+          previewJson: rows,
+        });
+
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                importJobs: d.importJobs.map((j) =>
+                  j.id === updated.id ? updated : j,
+                ),
+              }
+            : d,
+        );
+
+        onProgress?.(100);
+        console.log("[finance-import] parsed rows", rows.length);
+
+        if (rows.length === 0) {
+          toast.error(parsed.errors[0] ?? "No transactions found in PDF");
+        }
+
+        return { job: updated, rows, errors: parsed.errors };
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Gagal membuat job");
+        console.error("[finance-import] process failed", e);
+        toast.error(e instanceof Error ? e.message : "PDF import failed");
+        return null;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const confirmPdfImport = useCallback(
+    async (jobId: string, rows: ImportPreviewRow[]) => {
+      if (!data || rows.length === 0) return;
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        const created: FinanceTransaction[] = [];
+
+        for (const row of rows) {
+          if (!row.amount || row.amount <= 0) continue;
+          const t = await createTransaction(
+            supabase,
+            data.profileId,
+            {
+              type: row.type,
+              title: row.title || row.merchant,
+              description: row.rawLine ?? "",
+              amount: row.amount,
+              currency: "IDR",
+              categoryId: row.categoryId,
+              paymentMethodId: row.paymentMethodId,
+              transactionDate: row.transactionDate,
+              periodId: row.periodId,
+              recurring: false,
+              tags: ["pdf-import"],
+              notes: `Imported from ${row.merchant}`,
+            },
+            data.periods,
+          );
+          created.push(t);
+        }
+
+        const updated = await updateImportJob(supabase, jobId, {
+          status: "completed",
+          extractedCount: created.length,
+          completedAt: new Date().toISOString(),
+          previewJson: rows,
+        });
+
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                transactions: [...created, ...d.transactions],
+                importJobs: d.importJobs.map((j) =>
+                  j.id === jobId ? updated : j,
+                ),
+              }
+            : d,
+        );
+
+        toast.success(`Imported ${created.length} transactions`);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Import failed");
+        throw e;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const removeImportJob = useCallback(
+    async (jobId: string) => {
+      if (!data) return;
+      const job = data.importJobs.find((j) => j.id === jobId);
+      if (!job) return;
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        await deleteImportJob(supabase, job);
+        setData((d) =>
+          d
+            ? { ...d, importJobs: d.importJobs.filter((j) => j.id !== jobId) }
+            : d,
+        );
+        toast.success("Import job deleted");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Delete failed");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const retryImportJob = useCallback(
+    async (jobId: string, onProgress?: (n: number) => void) => {
+      if (!data) return null;
+      const job = data.importJobs.find((j) => j.id === jobId);
+      if (!job?.storagePath) {
+        toast.error("No stored PDF for this job");
+        return null;
+      }
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        onProgress?.(10);
+        const blob = await downloadFinanceImportPdf(supabase, job.storagePath);
+        const file = new File(
+          [blob],
+          job.originalFilename ?? "statement.pdf",
+          { type: "application/pdf" },
+        );
+        onProgress?.(30);
+        const extracted = await extractPdfWithMeta(file, (p) => {
+          onProgress?.(30 + Math.round(p.percent * 40));
+        });
+        const parsed = parseStatementText(extracted.text, job.source);
+        const rows = buildPreviewRows(
+          parsed.transactions,
+          job.source,
+          data.categories,
+          data.paymentMethods,
+          data.periods,
+        );
+        const updated = await updateImportJob(supabase, jobId, {
+          status: rows.length > 0 ? "processing" : "failed",
+          extractedCount: rows.length,
+          errorMessage:
+            rows.length === 0
+              ? parsed.errors[0] ?? "No transactions found"
+              : null,
+          previewJson: rows,
+        });
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                importJobs: d.importJobs.map((j) =>
+                  j.id === jobId ? updated : j,
+                ),
+              }
+            : d,
+        );
+        onProgress?.(100);
+        return { job: updated, rows, errors: parsed.errors };
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Retry failed");
+        return null;
       } finally {
         setSaving(false);
       }
@@ -586,7 +847,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     moveCategory,
     categoryUsageCounts,
     categoriesForType,
-    queuePdfImport,
+    processPdfImport,
+    confirmPdfImport,
+    removeImportJob,
+    retryImportJob,
     filteredTransactions,
     currentPeriod,
     budgetUsage,

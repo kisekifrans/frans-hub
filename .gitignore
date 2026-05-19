@@ -22,6 +22,9 @@
 
 # misc
 .DS_Store
+
+# local finance PDF fixtures (keep folder via .gitkeep)
+/test-fixtures/*.pdf
 *.pem
 
 # debug

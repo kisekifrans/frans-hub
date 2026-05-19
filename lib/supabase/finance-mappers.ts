@@ -129,10 +129,12 @@ export function importJobFromDb(row: DbFinanceImportJob): FinanceImportJob {
     source: row.source as FinanceImportJob["source"],
     fileUrl: row.file_url ?? undefined,
     storagePath: row.storage_path ?? undefined,
+    originalFilename: row.original_filename ?? undefined,
     status: row.status as FinanceImportJob["status"],
     errorMessage: row.error_message ?? undefined,
-    parsedCount: row.parsed_count,
+    extractedCount: row.extracted_count ?? row.parsed_count ?? 0,
     createdAt: row.created_at,
+    completedAt: row.completed_at ?? undefined,
   };
 }
 

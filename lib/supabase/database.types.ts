@@ -173,12 +173,18 @@ export interface DbFinanceImportJob {
   source: string;
   file_url: string | null;
   storage_path: string | null;
+  original_filename: string | null;
   status: string;
   error_message: string | null;
-  parsed_count: number;
+  extracted_count: number;
+  parsed_count?: number;
+  preview_json: unknown;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export const FINANCE_IMPORTS_BUCKET = "finance-imports";
 
 export interface DbEdgeCase {
   id: string;
