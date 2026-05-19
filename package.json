@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:gear": "tsx lib/gear/price.test.ts",
-    "test:finance": "tsx lib/finance/dedupe.test.ts && tsx lib/finance/categories.test.ts && tsx lib/finance/subscription-utils.test.ts && tsx lib/finance/transaction-form.test.ts"
+    "test:finance": "tsx lib/finance/dedupe.test.ts && tsx lib/finance/categories.test.ts && tsx lib/finance/subscription-utils.test.ts && tsx lib/finance/transaction-form.test.ts",
+    "test:edgecases": "tsx lib/edgecases/atlas-parse.test.ts && tsx lib/edgecases/storage-paths.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

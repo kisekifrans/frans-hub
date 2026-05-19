@@ -180,4 +180,29 @@ export interface DbFinanceImportJob {
   updated_at: string;
 }
 
+export interface DbEdgeCase {
+  id: string;
+  episode_id: string | null;
+  qa_url: string | null;
+  uploaded_video_path: string | null;
+  thumbnail_path: string | null;
+  project_name: string | null;
+  task_id: string | null;
+  task_description: string | null;
+  title: string;
+  description: string;
+  decision: string | null;
+  reject_reason: string | null;
+  tags: string[];
+  notes: string | null;
+  duration_seconds: number | null;
+  file_size: number | null;
+  mime_type: string | null;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const EDGECASES_STORAGE_BUCKET = "edgecases-videos";
+
 export const STORAGE_BUCKET = "hub-assets";

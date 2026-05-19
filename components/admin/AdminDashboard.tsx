@@ -85,6 +85,12 @@ export function AdminDashboard() {
             >
               QA Admin Audit
             </LocaleLink>
+            <LocaleLink
+              href="/admin/edgecases"
+              className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
+            >
+              Edge Cases
+            </LocaleLink>
             <Link
               href="/tools/quickreply"
               className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
