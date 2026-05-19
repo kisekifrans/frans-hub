@@ -9,14 +9,14 @@ let sharedWorker: Worker | null = null;
 
 async function getOcrWorker(): Promise<Worker> {
   if (sharedWorker) return sharedWorker;
-  const { createWorker } = await import("tesseract.js");
+  const { createWorker, PSM } = await import("tesseract.js");
   try {
     sharedWorker = await createWorker("eng+ind", 1, { logger: () => {} });
   } catch {
     sharedWorker = await createWorker("eng", 1, { logger: () => {} });
   }
   await sharedWorker.setParameters({
-    tessedit_pageseg_mode: "6",
+    tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
   });
   return sharedWorker;
 }
