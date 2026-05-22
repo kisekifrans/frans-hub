@@ -1,4 +1,4 @@
-import { PublicProfile } from "@/components/profile/PublicProfile";
+import { LandingPage } from "@/components/landing/LandingPage";
 import { buildLocalizedMetadata } from "@/lib/i18n/metadata";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -14,5 +14,5 @@ export async function generateMetadata({
 }
 
 export default function HomePage() {
-  return <PublicProfile />;
+  return <LandingPage />;
 }

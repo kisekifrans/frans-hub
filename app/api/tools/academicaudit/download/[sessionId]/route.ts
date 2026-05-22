@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuthenticatedUser } from "@/lib/auth/require-user";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,9 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ sessionId: string }> },
 ) {
+  const auth = await requireAuthenticatedUser();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const { sessionId } = await context.params;
     const res = await fetch(`${apiBase()}/api/v1/audit/${sessionId}/download`);

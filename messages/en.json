@@ -5,8 +5,8 @@
       "description": "Personal hub for links, gear, and creator tools."
     },
     "home": {
-      "title": "Agisna Fransisco | Dev",
-      "description": "Software Engineer · Tech Enthusiast. Links, profile, and projects."
+      "title": "Kawaragi — AI financial companion for your lifestyle",
+      "description": "Understand Indonesian digital spending with beautiful, private, share-ready insights."
     },
     "gear": {
       "title": "Gear & Setup | Agisna Dev",
@@ -30,7 +30,7 @@
     }
   },
   "common": {
-    "brand": "Agisna Dev",
+    "brand": "Kawaragi",
     "verified": "Verified",
     "verifiedTitle": "Verified creator",
     "loading": "Loading…",
@@ -45,13 +45,146 @@
     "backHome": "Back to home",
     "gearShowcase": "Gear showcase",
     "adminPanel": "Admin panel",
+    "signIn": "Sign in",
+    "profileNotFound": "This link is not set up yet",
+    "profileNotFoundHint": "Public URLs use your chosen link name (slug), not your display username. Sign in → Dashboard → Profile to claim a name like /frans.",
+    "profileNotFoundCta": "Set up your link",
     "hubUnavailable": "Hub unavailable. Configure Supabase and run",
-    "poweredBy": "Powered by My Last Cursor Token",
+    "poweredBy": "Kawaragi.io",
     "language": "Language",
-    "themeToggle": "Theme"
+    "themeToggle": "Theme",
+    "linkOpen": "Open"
+  },
+  "publicProfile": {
+    "navLabel": "Profile actions",
+    "login": "Sign in",
+    "createPage": "Create your page",
+    "dashboard": "Dashboard",
+    "editProfile": "Edit profile",
+    "finance": "Finance",
+    "owner": {
+      "sectionLabel": "Owner home",
+      "welcomeTitle": "✨ Your account is ready",
+      "welcomeSubtitle": "Add your first link or explore your financial insights.",
+      "emptyLinks": "No links yet — add one to bring your page to life.",
+      "emptyBio": "Add a short bio so visitors know you.",
+      "setupHint": "A couple more touches and your page feels complete.",
+      "actionAddLink": "Add link",
+      "actionAddLinkHint": "Open editor",
+      "actionFinance": "Finance",
+      "actionFinanceHint": "PDF & insights",
+      "actionEdit": "Edit profile",
+      "actionEditHint": "Name & bio",
+      "actionCustomize": "Customize",
+      "actionCustomizeHint": "Theme & look",
+      "viewPublicHint": "Manage in dashboard",
+      "emptyBlocksTitle": "Your page is still empty",
+      "emptyBlocksHint": "Add a link, text, or embed — visitors will see it here.",
+      "emptyBlocksCta": "Add first content"
+    }
   },
   "home": {
     "tagline": "Software Engineer | Tech Enthusiast"
+  },
+  "landing": {
+    "brand": "Kawaragi",
+    "nav": {
+      "signIn": "Sign in"
+    },
+    "hero": {
+      "eyebrow": "Finance, lifestyle edition",
+      "title": "Your money, easier to read",
+      "subtitle": "E-wallet or bank PDF. Spending as short stories.",
+      "step1": "Upload a statement PDF.",
+      "step2": "Daily, weekly, monthly, yearly patterns.",
+      "step3": "Share your recap with people close to you.",
+      "ctaPrimary": "Start free",
+      "ctaSecondary": "See recap",
+      "ctaHelper": "One PDF. Start right away.",
+      "note": "No e-wallet or bank login."
+    },
+    "heroInsights": {
+      "weekend": {
+        "emoji": "🌙",
+        "tag": "Weekend",
+        "message": "Weekends were heavier on spending this week."
+      },
+      "shopeeFood": {
+        "emoji": "🍱",
+        "tag": "Late month",
+        "message": "ShopeeFood keeps showing up lately."
+      },
+      "peakHour": {
+        "emoji": "🕘",
+        "tag": "Peak hour",
+        "message": "Busiest time: 9:00 PM."
+      },
+      "gopay": {
+        "emoji": "🟢",
+        "tag": "Wallet",
+        "message": "GoPay became your main wallet this month."
+      },
+      "coffee": {
+        "emoji": "☕",
+        "tag": "Night",
+        "message": "Late-night coffee is up this week."
+      },
+      "saved": {
+        "emoji": "✨",
+        "tag": "May",
+        "message": "You saved more than last month."
+      }
+    },
+    "local": {
+      "title": "Built for Indonesian wallets",
+      "subtitle": "GoPay, OVO, Dana, ShopeePay.",
+      "footer": "Indonesian copy. Patterns that fit local life.",
+      "payments": {
+        "gopay": "GoPay",
+        "ovo": "OVO",
+        "dana": "Dana",
+        "shopeePay": "ShopeePay"
+      }
+    },
+    "recap": {
+      "sectionTitle": "Monthly recap",
+      "sectionSubtitle": "Screenshot. Share. Done.",
+      "badge": "May 2026",
+      "auraEditorial": "Aura",
+      "auraType": "Digital Night Owl",
+      "headline": "Soft Saving Era",
+      "mood": "Night Owl Spending · GoPay Era · Weekend Eater",
+      "statSpend": "Spent",
+      "statSpendValue": "4.2M",
+      "statSaved": "Saved",
+      "statSavedValue": "+18%",
+      "statSavedCaption": "Main Character Saver",
+      "statTop": "Wallet",
+      "statTopValue": "GoPay",
+      "soundtrackLabel": "Aura soundtrack",
+      "soundtrack": "Joji — Glimpse of Us",
+      "shareCta": "Share your aura",
+      "ambientTime": "23:48",
+      "ambientWeekend": "Weekend",
+      "ambientQris": "QRIS",
+      "ambientShopeeFood": "ShopeeFood",
+      "ambientMidnight": "Late checkout",
+      "ambientWallet": "GoPay",
+      "ambientCoffee": "2x coffee",
+      "card2": "Late-night coffee is up",
+      "card3": "More mindful before checkout"
+    },
+    "trust": {
+      "title": "Privacy first",
+      "pdf": "PDFs deleted after processing.",
+      "private": "Only you see your data.",
+      "noBank": "No bank login required."
+    },
+    "footer": {
+      "tagline": "Finance that feels light.",
+      "cta": "Get started on Kawaragi",
+      "exampleHub": "See an example page"
+    }
   },
   "gear": {
     "title": "Setup & Gear",

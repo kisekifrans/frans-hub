@@ -2,7 +2,10 @@
 
 import { useCallback } from "react";
 import { extractPdfText } from "@/lib/finance/import/extract-pdf";
-import { FINANCE_PDF_MAX_BYTES } from "@/lib/finance/import/constants";
+import {
+  pdfFileTooLargeMessage,
+  validatePdfUpload,
+} from "@/lib/security/upload-validation";
 import { parseStatementText } from "@/lib/finance/import/parse-text";
 import { buildPreviewRows } from "@/lib/finance/import/build-preview";
 import type { ImportPreviewRow } from "@/lib/finance/import/types";
@@ -14,15 +17,10 @@ import type {
 } from "@/lib/finance/types";
 
 export function usePdfImport() {
-  const validateFile = useCallback((file: File): string | null => {
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      return "Only PDF files are accepted";
-    }
-    if (file.size > FINANCE_PDF_MAX_BYTES) {
-      return "Max file size is 25MB";
-    }
-    return null;
-  }, []);
+  const validateFile = useCallback(
+    (file: File): string | null => validatePdfUpload(file),
+    [],
+  );
 
   const extractAndParse = useCallback(
     async (

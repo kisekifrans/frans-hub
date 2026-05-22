@@ -46,6 +46,7 @@ import {
   transactionFromDb,
   transactionToDb,
 } from "./finance-mappers";
+import { resolveProfileIdForUser } from "./resolve-profile";
 
 const PROFILE_SLUG = "main";
 const seedingProfiles = new Set<string>();
@@ -79,16 +80,10 @@ async function withSeedLock(
 }
 
 async function resolveProfileId(supabase: SupabaseClient): Promise<string> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("slug", PROFILE_SLUG)
-    .single();
-  if (error || !data) throw new Error("Profile not found");
-  return data.id as string;
+  return resolveProfileIdForUser(supabase);
 }
 
-async function seedDefaults(
+export async function seedFinanceDefaults(
   supabase: SupabaseClient,
   profileId: string,
 ): Promise<void> {
@@ -183,7 +178,7 @@ export async function fetchFinanceData(
   supabase: SupabaseClient,
 ): Promise<FinancePageData> {
   const profileId = await resolveProfileId(supabase);
-  await seedDefaults(supabase, profileId);
+  await seedFinanceDefaults(supabase, profileId);
   await ensureYearPeriods(supabase, profileId);
 
   const [
@@ -314,6 +309,7 @@ export async function updateTransaction(
     .from("finance_transactions")
     .update(row)
     .eq("id", item.id)
+    .eq("profile_id", profileId)
     .select()
     .single();
   if (error) throw error;
@@ -322,12 +318,14 @@ export async function updateTransaction(
 
 export async function deleteTransaction(
   supabase: SupabaseClient,
+  profileId: string,
   id: string,
 ): Promise<void> {
   const { error } = await supabase
     .from("finance_transactions")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("profile_id", profileId);
   if (error) throw error;
 }
 
@@ -388,6 +386,7 @@ export async function upsertBudgetLimit(
 
 export async function updatePeriod(
   supabase: SupabaseClient,
+  profileId: string,
   period: FinanceBudgetPeriod,
 ): Promise<FinanceBudgetPeriod> {
   const { data, error } = await supabase
@@ -401,6 +400,7 @@ export async function updatePeriod(
       updated_at: new Date().toISOString(),
     })
     .eq("id", period.id)
+    .eq("profile_id", profileId)
     .select()
     .single();
   if (error) throw error;
@@ -435,6 +435,7 @@ export async function createSubscription(
 
 export async function updateSubscription(
   supabase: SupabaseClient,
+  profileId: string,
   sub: FinanceSubscription,
 ): Promise<FinanceSubscription> {
   const { data, error } = await supabase
@@ -453,6 +454,7 @@ export async function updateSubscription(
       updated_at: new Date().toISOString(),
     })
     .eq("id", sub.id)
+    .eq("profile_id", profileId)
     .select()
     .single();
   if (error) throw error;
@@ -461,12 +463,14 @@ export async function updateSubscription(
 
 export async function deleteSubscription(
   supabase: SupabaseClient,
+  profileId: string,
   id: string,
 ): Promise<void> {
   const { error } = await supabase
     .from("finance_subscriptions")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("profile_id", profileId);
   if (error) throw error;
 }
 
@@ -832,8 +836,18 @@ export async function createImportJob(
   return importJobFromDb(data as DbFinanceImportJob);
 }
 
+export async function purgeFinanceImportPdf(
+  supabase: SupabaseClient,
+  storagePath: string | null | undefined,
+): Promise<void> {
+  if (!storagePath) return;
+  const { removeFinanceImportFile } = await import("./finance-import-storage");
+  await removeFinanceImportFile(supabase, storagePath).catch(() => {});
+}
+
 export async function updateImportJob(
   supabase: SupabaseClient,
+  profileId: string,
   jobId: string,
   patch: Partial<{
     status: FinanceImportJob["status"];
@@ -858,6 +872,7 @@ export async function updateImportJob(
     .from("finance_import_jobs")
     .update(row)
     .eq("id", jobId)
+    .eq("profile_id", profileId)
     .select()
     .single();
   if (error) throw error;
@@ -866,16 +881,15 @@ export async function updateImportJob(
 
 export async function deleteImportJob(
   supabase: SupabaseClient,
+  profileId: string,
   job: FinanceImportJob,
 ): Promise<void> {
-  if (job.storagePath) {
-    const { removeFinanceImportFile } = await import("./finance-import-storage");
-    await removeFinanceImportFile(supabase, job.storagePath).catch(() => {});
-  }
+  await purgeFinanceImportPdf(supabase, job.storagePath);
   const { error } = await supabase
     .from("finance_import_jobs")
     .delete()
-    .eq("id", job.id);
+    .eq("id", job.id)
+    .eq("profile_id", profileId);
   if (error) throw error;
 }
 

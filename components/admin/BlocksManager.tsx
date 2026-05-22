@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
+import { BlocksEmptyState } from "@/components/dashboard/BlocksEmptyState";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { ThumbnailFocusEditor } from "@/components/admin/ThumbnailFocusEditor";
@@ -101,15 +102,21 @@ export function BlocksManager({
           strategy={verticalListSortingStrategy}
         >
           <ul className="space-y-3">
-            {sorted.map((block) => (
-              <SortableBlockEditor
-                key={block.id}
-                block={block}
-                profileId={profileId}
-                onPatch={onPatch}
-                onRemove={onRemove}
-              />
-            ))}
+            {sorted.length === 0 ? (
+              <li>
+                <BlocksEmptyState onAddLink={() => onAdd("link")} />
+              </li>
+            ) : (
+              sorted.map((block) => (
+                <SortableBlockEditor
+                  key={block.id}
+                  block={block}
+                  profileId={profileId}
+                  onPatch={onPatch}
+                  onRemove={onRemove}
+                />
+              ))
+            )}
           </ul>
         </SortableContext>
       </DndContext>

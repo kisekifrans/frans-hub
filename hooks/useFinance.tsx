@@ -42,7 +42,10 @@ import type {
 } from "@/lib/finance/types";
 import type { ImportPreviewRow } from "@/lib/finance/import/types";
 import { extractPdfWithMeta } from "@/lib/finance/import/extract-pdf";
-import { FINANCE_PDF_MAX_BYTES } from "@/lib/finance/import/constants";
+import {
+  pdfImportUserErrorMessage,
+  validatePdfMagic,
+} from "@/lib/security/upload-validation";
 import { parseStatementText } from "@/lib/finance/import/parse-text";
 import { buildPreviewRows } from "@/lib/finance/import/build-preview";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -59,6 +62,7 @@ import {
   deleteImportJob,
   deleteSubscription,
   deleteTransaction,
+  purgeFinanceImportPdf,
   fetchFinanceData,
   createPaymentMethod,
   deletePaymentMethod,
@@ -349,7 +353,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setSaving(true);
       try {
         const supabase = createClient();
-        await deleteTransaction(supabase, id);
+        await deleteTransaction(supabase, data.profileId, id);
         toast.success("Transaksi dihapus");
       } catch (e) {
         setData((d) => (d ? { ...d, transactions: prev } : d));
@@ -408,7 +412,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setSaving(true);
       try {
         const supabase = createClient();
-        const saved = await updatePeriod(supabase, {
+        const saved = await updatePeriod(supabase, data.profileId, {
           ...period,
           salaryReceived: salary,
         });
@@ -467,7 +471,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setSaving(true);
       try {
         const supabase = createClient();
-        const saved = await updateSubscription(supabase, sub);
+        const saved = await updateSubscription(supabase, data.profileId, sub);
         setData((d) =>
           d
             ? {
@@ -491,10 +495,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   );
 
   const removeSubscription = useCallback(async (id: string) => {
+    if (!data) return;
     setSaving(true);
     try {
       const supabase = createClient();
-      await deleteSubscription(supabase, id);
+      await deleteSubscription(supabase, data.profileId, id);
       setData((d) =>
         d
           ? { ...d, subscriptions: d.subscriptions.filter((s) => s.id !== id) }
@@ -506,7 +511,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [data]);
 
   const addCategory = useCallback(
     async (input: {
@@ -775,37 +780,50 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       onProgress?: (n: number) => void,
     ) => {
       if (!data) return null;
-      if (
-        file.type !== "application/pdf" &&
-        !file.name.toLowerCase().endsWith(".pdf")
-      ) {
-        toast.error("Only PDF files are accepted");
-        return null;
-      }
-      if (file.size > FINANCE_PDF_MAX_BYTES) {
-        toast.error("Max file size is 25MB");
+      const pdfError = await validatePdfMagic(file);
+      if (pdfError) {
+        toast.error(pdfError);
         return null;
       }
 
       setSaving(true);
+      const supabase = createClient();
+      let storagePath: string | null = null;
+      let jobId: string | null = null;
+      let storagePurged = false;
+
+      const syncFailedJob = (updated: FinanceImportJob) => {
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                importJobs: d.importJobs.map((j) =>
+                  j.id === updated.id ? updated : j,
+                ),
+              }
+            : d,
+        );
+      };
+
       try {
-        const supabase = createClient();
         onProgress?.(5);
 
-        const { storagePath, fileUrl } = await uploadFinanceImportPdf(
+        const uploaded = await uploadFinanceImportPdf(
           supabase,
           data.profileId,
           file,
           (p) => onProgress?.(Math.min(p, 45)),
         );
+        storagePath = uploaded.storagePath;
 
         const job = await createImportJob(supabase, data.profileId, {
           source,
-          storagePath,
-          fileUrl,
+          storagePath: uploaded.storagePath,
+          fileUrl: uploaded.fileUrl,
           originalFilename: file.name,
           status: "processing",
         });
+        jobId = job.id;
 
         setData((d) =>
           d ? { ...d, importJobs: [job, ...d.importJobs] } : d,
@@ -832,40 +850,49 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           data.periods,
         );
 
-        const updated = await updateImportJob(supabase, job.id, {
+        const noRowsMessage =
+          parsed.errors[0] ?? "No transactions found in this PDF.";
+        const updated = await updateImportJob(supabase, data.profileId, job.id, {
           status: rows.length > 0 ? "processing" : "failed",
           extractedCount: rows.length,
-          errorMessage:
-            rows.length === 0
-              ? parsed.errors[0] ?? "No transactions found"
-              : null,
+          errorMessage: rows.length === 0 ? noRowsMessage : null,
           previewJson: rows,
         });
 
-        setData((d) =>
-          d
-            ? {
-                ...d,
-                importJobs: d.importJobs.map((j) =>
-                  j.id === updated.id ? updated : j,
-                ),
-              }
-            : d,
-        );
+        await purgeFinanceImportPdf(supabase, storagePath);
+        storagePurged = true;
+        syncFailedJob(updated);
 
         onProgress?.(100);
         console.log("[finance-import] parsed rows", rows.length);
 
         if (rows.length === 0) {
-          toast.error(parsed.errors[0] ?? "No transactions found in PDF");
+          toast.error(noRowsMessage);
         }
 
         return { job: updated, rows, errors: parsed.errors };
       } catch (e) {
         console.error("[finance-import] process failed", e);
-        toast.error(e instanceof Error ? e.message : "PDF import failed");
+        const message = pdfImportUserErrorMessage(e);
+        if (jobId) {
+          try {
+            const failed = await updateImportJob(
+              supabase,
+              data.profileId,
+              jobId,
+              { status: "failed", errorMessage: message },
+            );
+            syncFailedJob(failed);
+          } catch (updateErr) {
+            console.error("[finance-import] failed to mark job", updateErr);
+          }
+        }
+        toast.error(message);
         return null;
       } finally {
+        if (storagePath && !storagePurged) {
+          await purgeFinanceImportPdf(supabase, storagePath);
+        }
         setSaving(false);
       }
     },
@@ -904,12 +931,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           created.push(t);
         }
 
-        const updated = await updateImportJob(supabase, jobId, {
+        const updated = await updateImportJob(supabase, data.profileId, jobId, {
           status: "completed",
           extractedCount: created.length,
           completedAt: new Date().toISOString(),
           previewJson: rows,
         });
+
+        const jobRow = data.importJobs.find((j) => j.id === jobId);
+        if (jobRow?.storagePath) {
+          await purgeFinanceImportPdf(supabase, jobRow.storagePath);
+        }
 
         setData((d) =>
           d
@@ -942,7 +974,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setSaving(true);
       try {
         const supabase = createClient();
-        await deleteImportJob(supabase, job);
+        await deleteImportJob(supabase, data.profileId, job);
         setData((d) =>
           d
             ? { ...d, importJobs: d.importJobs.filter((j) => j.id !== jobId) }
@@ -967,15 +999,39 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
       setSaving(true);
+      const supabase = createClient();
+      const storagePath = job.storagePath;
+      let storagePurged = false;
+
       try {
-        const supabase = createClient();
         onProgress?.(10);
-        const blob = await downloadFinanceImportPdf(supabase, job.storagePath);
+        const blob = await downloadFinanceImportPdf(supabase, storagePath);
         const file = new File(
           [blob],
           job.originalFilename ?? "statement.pdf",
           { type: "application/pdf" },
         );
+        const pdfError = await validatePdfMagic(file);
+        if (pdfError) {
+          toast.error(pdfError);
+          const failed = await updateImportJob(
+            supabase,
+            data.profileId,
+            jobId,
+            { status: "failed", errorMessage: pdfError },
+          );
+          setData((d) =>
+            d
+              ? {
+                  ...d,
+                  importJobs: d.importJobs.map((j) =>
+                    j.id === jobId ? failed : j,
+                  ),
+                }
+              : d,
+          );
+          return null;
+        }
         onProgress?.(30);
         const extracted = await extractPdfWithMeta(file, (p) => {
           onProgress?.(30 + Math.round(p.percent * 40));
@@ -988,15 +1044,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           data.paymentMethods,
           data.periods,
         );
-        const updated = await updateImportJob(supabase, jobId, {
+        const noRowsMessage =
+          parsed.errors[0] ?? "No transactions found in this PDF.";
+        const updated = await updateImportJob(supabase, data.profileId, jobId, {
           status: rows.length > 0 ? "processing" : "failed",
           extractedCount: rows.length,
-          errorMessage:
-            rows.length === 0
-              ? parsed.errors[0] ?? "No transactions found"
-              : null,
+          errorMessage: rows.length === 0 ? noRowsMessage : null,
           previewJson: rows,
         });
+        await purgeFinanceImportPdf(supabase, storagePath);
+        storagePurged = true;
         setData((d) =>
           d
             ? {
@@ -1008,11 +1065,39 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             : d,
         );
         onProgress?.(100);
+        if (rows.length === 0) {
+          toast.error(noRowsMessage);
+        }
         return { job: updated, rows, errors: parsed.errors };
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Retry failed");
+        console.error("[finance-import] retry failed", e);
+        const message = pdfImportUserErrorMessage(e);
+        try {
+          const failed = await updateImportJob(
+            supabase,
+            data.profileId,
+            jobId,
+            { status: "failed", errorMessage: message },
+          );
+          setData((d) =>
+            d
+              ? {
+                  ...d,
+                  importJobs: d.importJobs.map((j) =>
+                    j.id === jobId ? failed : j,
+                  ),
+                }
+              : d,
+          );
+        } catch (updateErr) {
+          console.error("[finance-import] failed to mark job on retry", updateErr);
+        }
+        toast.error(message);
         return null;
       } finally {
+        if (!storagePurged) {
+          await purgeFinanceImportPdf(supabase, storagePath);
+        }
         setSaving(false);
       }
     },

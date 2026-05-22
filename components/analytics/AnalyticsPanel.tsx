@@ -103,13 +103,13 @@ function AnalyticsPanelInner({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <StatCard
-          label="Total views"
+          label="Page opens"
           value={stats.totalViews.toLocaleString()}
           icon={Eye}
           accent="violet"
         />
         <StatCard
-          label="Link clicks"
+          label="Link taps"
           value={stats.totalClicks.toLocaleString()}
           icon={MousePointerClick}
           accent="cyan"
@@ -131,11 +131,10 @@ function AnalyticsPanelInner({
       {!hasActivity ? (
         <GlassCard padding="md" className="text-center">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-            Belum ada data analitik
+            Your audience hasn&apos;t shown up yet
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            Bagikan link hub Anda untuk mulai melacak kunjungan, klik, dan
-            wawasan pengunjung.
+            Share your page — you&apos;ll see what people open and tap first.
           </p>
         </GlassCard>
       ) : (
@@ -165,8 +164,8 @@ function AnalyticsPanelInner({
           ) : (
             <GlassCard padding="md" className="text-center">
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Breakdown perangkat dan tautan populer akan muncul setelah ada
-                lebih banyak interaksi.
+                Device breakdown and your hottest links show up once traffic
+                picks up.
               </p>
             </GlassCard>
           )}

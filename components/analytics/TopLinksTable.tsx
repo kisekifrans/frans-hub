@@ -13,7 +13,7 @@ export function TopLinksTable({ links }: TopLinksTableProps) {
     <GlassCard padding="md" className="col-span-full">
       <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-200">
         <Trophy className="h-4 w-4 text-amber-500" />
-        Top performing links
+        What visitors tap most
       </h3>
       {links.length === 0 ? (
         <p className="text-sm text-zinc-500">No link clicks in this period yet.</p>
@@ -24,7 +24,7 @@ export function TopLinksTable({ links }: TopLinksTableProps) {
               <tr className="border-b border-white/15 text-xs uppercase tracking-wide text-zinc-500">
                 <th className="pb-2 pr-4 font-medium">#</th>
                 <th className="pb-2 pr-4 font-medium">Link</th>
-                <th className="pb-2 pr-4 text-right font-medium">Clicks</th>
+                <th className="pb-2 pr-4 text-right font-medium">Taps</th>
                 <th className="pb-2 text-right font-medium">Share</th>
               </tr>
             </thead>

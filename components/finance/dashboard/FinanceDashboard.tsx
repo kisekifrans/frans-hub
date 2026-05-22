@@ -17,8 +17,11 @@ import { PeriodSelector } from "@/components/finance/shared/PeriodSelector";
 import { TransactionList } from "@/components/finance/transactions/TransactionList";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useFinance } from "@/hooks/useFinance";
+import { FinancialFeed } from "@/components/finance/feed/FinancialFeed";
 import { formatMoney } from "@/lib/finance/format";
 import { subscriptionMonthlyTotal } from "@/lib/finance/analytics";
+import { buildFinancialFeed } from "@/lib/finance/insights-feed";
+import { useMemo } from "react";
 
 export function FinanceDashboard() {
   const finance = useFinance();
@@ -29,9 +32,32 @@ export function FinanceDashboard() {
     budgetUsage,
     subscriptions,
     transactions,
+    categories,
+    paymentMethods,
     currentPeriod,
     currentPeriodId,
   } = finance;
+
+  const feedInsights = useMemo(
+    () =>
+      buildFinancialFeed({
+        transactions: transactions.filter(
+          (t) => !currentPeriodId || t.periodId === currentPeriodId,
+        ),
+        categories,
+        paymentMethods,
+        budgetUsage,
+        periodLabel: currentPeriod?.name,
+      }),
+    [
+      transactions,
+      categories,
+      paymentMethods,
+      budgetUsage,
+      currentPeriodId,
+      currentPeriod?.name,
+    ],
+  );
 
   const recent = transactions
     .filter((t) => !currentPeriodId || t.periodId === currentPeriodId)
@@ -45,6 +71,8 @@ export function FinanceDashboard() {
   return (
     <div className="space-y-6">
       <PeriodSelector />
+
+      <FinancialFeed insights={feedInsights} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <FinanceStatCard

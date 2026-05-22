@@ -136,6 +136,7 @@ export function profileFromDb(
   blocks: ProfileBlock[],
 ): Profile {
   return {
+    slug: row.slug,
     username: row.username,
     displayName: row.display_name,
     bio: row.bio,

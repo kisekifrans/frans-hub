@@ -5,8 +5,8 @@
       "description": "Situs hub pribadi untuk tautan, gear, dan alat kreator."
     },
     "home": {
-      "title": "Agisna Fransisco | Dev",
-      "description": "Software Engineer · Tech Enthusiast. Tautan, profil, dan proyek."
+      "title": "Kawaragi — Teman finansial AI untuk gaya hidupmu",
+      "description": "Pahami kebiasaan belanja digital Indonesia dengan insight yang indah, privat, dan siap dibagikan."
     },
     "gear": {
       "title": "Gear & Setup | Agisna Dev",
@@ -30,7 +30,7 @@
     }
   },
   "common": {
-    "brand": "Agisna Dev",
+    "brand": "Kawaragi",
     "verified": "Terverifikasi",
     "verifiedTitle": "Kreator terverifikasi",
     "loading": "Memuat…",
@@ -45,13 +45,146 @@
     "backHome": "Kembali ke beranda",
     "gearShowcase": "Gear showcase",
     "adminPanel": "Panel admin",
+    "signIn": "Masuk",
+    "profileNotFound": "Link ini belum diatur",
+    "profileNotFoundHint": "URL publik memakai nama link (slug), bukan username tampilan. Masuk → Dashboard → Profile untuk mengklaim nama seperti /frans.",
+    "profileNotFoundCta": "Atur link saya",
     "hubUnavailable": "Hub tidak tersedia. Konfigurasi Supabase dan jalankan",
-    "poweredBy": "Powered by My Last Cursor Token",
+    "poweredBy": "Kawaragi.io",
     "language": "Bahasa",
-    "themeToggle": "Tema"
+    "themeToggle": "Tema",
+    "linkOpen": "Buka"
+  },
+  "publicProfile": {
+    "navLabel": "Aksi profil",
+    "login": "Masuk",
+    "createPage": "Buat halamanmu",
+    "dashboard": "Dashboard",
+    "editProfile": "Edit profil",
+    "finance": "Finansial",
+    "owner": {
+      "sectionLabel": "Beranda pemilik",
+      "welcomeTitle": "✨ Akunmu siap dipakai",
+      "welcomeSubtitle": "Mulai tambahkan link atau lihat insight finansialmu.",
+      "emptyLinks": "Belum ada link — tambahkan yang pertama biar halamanmu hidup.",
+      "emptyBio": "Ceritain sedikit tentang dirimu di bio.",
+      "setupHint": "Satu atau dua langkah lagi, halamanmu makin lengkap.",
+      "actionAddLink": "Tambah link",
+      "actionAddLinkHint": "Buka editor",
+      "actionFinance": "Finansial",
+      "actionFinanceHint": "PDF & insight",
+      "actionEdit": "Edit profil",
+      "actionEditHint": "Nama & bio",
+      "actionCustomize": "Kustomisasi",
+      "actionCustomizeHint": "Tema & tampilan",
+      "viewPublicHint": "Kelola di dashboard",
+      "emptyBlocksTitle": "Halamanmu masih kosong",
+      "emptyBlocksHint": "Tambahkan link, teks, atau embed pertama — pengunjung akan melihatnya di sini.",
+      "emptyBlocksCta": "Tambah konten pertama"
+    }
   },
   "home": {
     "tagline": "Software Engineer | Tech Enthusiast"
+  },
+  "landing": {
+    "brand": "Kawaragi",
+    "nav": {
+      "signIn": "Masuk"
+    },
+    "hero": {
+      "eyebrow": "Finansial, gaya hidup",
+      "title": "Uangmu, lebih mudah dibaca",
+      "subtitle": "PDF e-wallet atau bank. Pola belanja jadi cerita singkat.",
+      "step1": "Unggah PDF statement.",
+      "step2": "Pola harian, mingguan, sampai tahunan.",
+      "step3": "Bagikan recap ke orang terdekat.",
+      "ctaPrimary": "Mulai gratis",
+      "ctaSecondary": "Lihat recap",
+      "ctaHelper": "Satu PDF. Langsung mulai.",
+      "note": "Tanpa login e-wallet atau bank."
+    },
+    "heroInsights": {
+      "weekend": {
+        "emoji": "🌙",
+        "tag": "Weekend",
+        "message": "Weekend kamu lebih boros minggu ini."
+      },
+      "shopeeFood": {
+        "emoji": "🍱",
+        "tag": "Akhir bulan",
+        "message": "ShopeeFood lebih sering muncul akhir-akhir ini."
+      },
+      "peakHour": {
+        "emoji": "🕘",
+        "tag": "Jam ramai",
+        "message": "Jam transaksi paling sering: 21.00."
+      },
+      "gopay": {
+        "emoji": "🟢",
+        "tag": "Dompet",
+        "message": "GoPay jadi dompet utama bulan ini."
+      },
+      "coffee": {
+        "emoji": "☕",
+        "tag": "Malam",
+        "message": "Ngopi malam meningkat minggu ini."
+      },
+      "saved": {
+        "emoji": "✨",
+        "tag": "Mei",
+        "message": "Hemat lebih banyak dari bulan lalu."
+      }
+    },
+    "local": {
+      "title": "Untuk dompet digital Indonesia",
+      "subtitle": "GoPay, OVO, Dana, ShopeePay.",
+      "footer": "Bahasa Indonesia. Pola belanja yang relevan.",
+      "payments": {
+        "gopay": "GoPay",
+        "ovo": "OVO",
+        "dana": "Dana",
+        "shopeePay": "ShopeePay"
+      }
+    },
+    "recap": {
+      "sectionTitle": "Recap bulanan",
+      "sectionSubtitle": "Screenshot. Share. Selesai.",
+      "badge": "Mei 2026",
+      "auraEditorial": "Aura",
+      "auraType": "Digital Night Owl",
+      "headline": "Soft Saving Era",
+      "mood": "Night Owl Spending · GoPay Era · Weekend Eater",
+      "statSpend": "Keluar",
+      "statSpendValue": "4,2 jt",
+      "statSaved": "Hemat",
+      "statSavedValue": "+18%",
+      "statSavedCaption": "Main Character Hemat",
+      "statTop": "Dompet",
+      "statTopValue": "GoPay",
+      "soundtrackLabel": "Aura soundtrack",
+      "soundtrack": "Joji — Glimpse of Us",
+      "shareCta": "Bagikan auramu",
+      "ambientTime": "23:48",
+      "ambientWeekend": "Weekend",
+      "ambientQris": "QRIS",
+      "ambientShopeeFood": "ShopeeFood",
+      "ambientMidnight": "Late checkout",
+      "ambientWallet": "GoPay",
+      "ambientCoffee": "2x kopi",
+      "card2": "Ngopi malam naik",
+      "card3": "Lebih sadar sebelum checkout"
+    },
+    "trust": {
+      "title": "Privasi dulu",
+      "pdf": "PDF dihapus setelah diproses.",
+      "private": "Hanya kamu yang lihat datamu.",
+      "noBank": "Tanpa login bank."
+    },
+    "footer": {
+      "tagline": "Finansial yang terasa ringan.",
+      "cta": "Mulai di Kawaragi",
+      "exampleHub": "Lihat contoh halaman"
+    }
   },
   "gear": {
     "title": "Setup & Gear",

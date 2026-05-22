@@ -13,15 +13,15 @@ export function ApiStatusBanner() {
   useEffect(() => {
     fetch("/api/tools/academicaudit/health")
       .then((r) => r.json())
-      .then((data: { ok?: boolean; message?: string; apiUrl?: string }) => {
-        if (!data.apiUrl && data.message?.includes("belum")) {
+      .then((data: { ok?: boolean; message?: string }) => {
+        if (data.message?.includes("belum")) {
           setStatus("missing");
           setDetail(data.message ?? "");
           return;
         }
         if (data.ok) {
           setStatus("ok");
-          setDetail(data.apiUrl ?? "");
+          setDetail("Backend connected");
           return;
         }
         setStatus("down");

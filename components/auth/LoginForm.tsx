@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Loader2, Mail, Lock } from "lucide-react";
+import { buildOAuthCallbackUrl } from "@/lib/auth/oauth-redirect";
 import { createClient } from "@/lib/supabase/client";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -12,19 +13,49 @@ import { cn } from "@/lib/utils";
 type Mode = "password" | "magic";
 
 const errorMessages: Record<string, string> = {
-  unauthorized:
-    "Access denied. Only the authorized admin account can use this panel.",
+  unauthorized: "You do not have access to that area.",
   auth: "Sign-in failed. Please try again.",
+  auth_reused:
+    "That sign-in link was already used (refresh or double tab). Close other tabs, then try Google again once.",
   config: "Authentication is not configured. Check your environment variables.",
   magic: "Check your email for the sign-in link.",
 };
+
+async function postLoginRedirect(next: string): Promise<void> {
+  await fetch("/api/auth/bootstrap", { method: "POST" });
+  const sessionRes = await fetch("/api/auth/session");
+  if (!sessionRes.ok) {
+    throw new Error("session");
+  }
+  const session = (await sessionRes.json()) as {
+    isSiteAdmin?: boolean;
+    needsUsernameOnboarding?: boolean;
+    profile?: { slug: string } | null;
+  };
+
+  if (session.needsUsernameOnboarding) {
+    window.location.href = "/onboarding/username";
+    return;
+  }
+
+  const wantsAdmin = next.includes("/admin");
+  if (session.isSiteAdmin && wantsAdmin) {
+    window.location.href = next;
+    return;
+  }
+  if (next.startsWith("/finance") || next.startsWith("/dashboard")) {
+    window.location.href = next;
+    return;
+  }
+  window.location.href = session.isSiteAdmin ? "/id/admin" : "/dashboard";
+}
 
 interface LoginFormProps {
   error?: string;
   next?: string;
 }
 
-export function LoginForm({ error, next = "/admin" }: LoginFormProps) {
+export function LoginForm({ error, next = "/dashboard" }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<Mode>("password");
@@ -34,26 +65,11 @@ export function LoginForm({ error, next = "/admin" }: LoginFormProps) {
   );
   const [success, setSuccess] = useState(error === "magic");
 
-  const redirectTo = `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback?next=${encodeURIComponent(next)}`;
-
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = () => {
     setLoading("google");
     setMessage(null);
-    try {
-      const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          queryParams: { prompt: "select_account" },
-        },
-      });
-      if (authError) setMessage(authError.message);
-    } catch {
-      setMessage(errorMessages.config);
-    } finally {
-      setLoading(null);
-    }
+    // Server route sets redirectTo from Host header (fixes localhost → agisna.dev)
+    window.location.href = `/api/auth/google?next=${encodeURIComponent(next)}`;
   };
 
   const signInWithPassword = async (e: React.FormEvent) => {
@@ -71,12 +87,7 @@ export function LoginForm({ error, next = "/admin" }: LoginFormProps) {
         setMessage(authError.message);
         return;
       }
-      const verify = await fetch("/api/auth/verify");
-      if (!verify.ok) {
-        setMessage(errorMessages.unauthorized);
-        return;
-      }
-      window.location.href = next;
+      await postLoginRedirect(next);
     } catch {
       setMessage(errorMessages.config);
     } finally {
@@ -91,6 +102,7 @@ export function LoginForm({ error, next = "/admin" }: LoginFormProps) {
     setSuccess(false);
     try {
       const supabase = createClient();
+      const redirectTo = buildOAuthCallbackUrl(window.location.origin, next);
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: { emailRedirectTo: redirectTo },
@@ -118,19 +130,33 @@ export function LoginForm({ error, next = "/admin" }: LoginFormProps) {
         <div className="mb-8 text-center">
           <Link
             href="/"
-            className="text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300"
+            className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white"
           >
-            Agisna Dev
+            Kawaragi<span className="text-violet-600 dark:text-violet-400">.io</span>
           </Link>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-            Admin sign in
+            Sign in
           </h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Authorized administrators only
+            Your links and finance — one account
           </p>
         </div>
 
         <GlassCard padding="lg" className="w-full max-w-md space-y-6">
+          {process.env.NODE_ENV === "development" && (
+            <p className="rounded-xl border border-amber-200/60 bg-amber-50/80 px-3 py-2 text-xs leading-relaxed text-amber-900 dark:border-amber-500/25 dark:bg-amber-950/40 dark:text-amber-100">
+              Local dev: open{" "}
+              <code className="rounded bg-amber-100/80 px-1 dark:bg-amber-900/50">
+                http://localhost:3000/login
+              </code>{" "}
+              (not agisna.dev). Ensure Supabase Redirect URLs include{" "}
+              <code className="rounded bg-amber-100/80 px-1 dark:bg-amber-900/50">
+                http://localhost:3000/auth/callback
+              </code>
+              . After Google, you should return to localhost — not agisna.dev.
+            </p>
+          )}
+
           {message && (
             <p
               className={cn(

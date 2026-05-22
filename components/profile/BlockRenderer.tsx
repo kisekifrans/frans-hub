@@ -8,10 +8,11 @@ import { TikTokEmbed } from "./TikTokEmbed";
 
 interface BlockRendererProps {
   block: ProfileBlock;
+  featured?: boolean;
   onLinkClick?: (blockId: string) => void;
 }
 
-export function BlockRenderer({ block, onLinkClick }: BlockRendererProps) {
+export function BlockRenderer({ block, featured, onLinkClick }: BlockRendererProps) {
   if (!block.enabled) return null;
 
   switch (block.type) {
@@ -19,6 +20,7 @@ export function BlockRenderer({ block, onLinkClick }: BlockRendererProps) {
       return (
         <LinkBlockCard
           block={block}
+          featured={featured}
           onClick={() => onLinkClick?.(block.id)}
         />
       );

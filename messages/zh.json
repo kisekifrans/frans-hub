@@ -5,8 +5,8 @@
       "description": "个人链接、装备与创作者工具主页。"
     },
     "home": {
-      "title": "Agisna Fransisco | Dev",
-      "description": "软件工程师 · 科技爱好者。链接、个人资料与项目。"
+      "title": "Kawaragi — 生活方式 AI 财务伙伴",
+      "description": "以美观、私密、可分享的洞察，了解印尼数字消费习惯。"
     },
     "gear": {
       "title": "装备与桌面 | Agisna Dev",
@@ -30,7 +30,7 @@
     }
   },
   "common": {
-    "brand": "Agisna Dev",
+    "brand": "Kawaragi",
     "verified": "已认证",
     "verifiedTitle": "已认证创作者",
     "loading": "加载中…",
@@ -45,13 +45,146 @@
     "backHome": "返回首页",
     "gearShowcase": "装备展示",
     "adminPanel": "管理后台",
+    "signIn": "登录",
+    "profileNotFound": "此链接尚未设置",
+    "profileNotFoundHint": "公开链接使用你选择的 slug，不是显示用户名。登录后在 Dashboard → Profile 中设置，例如 /frans。",
+    "profileNotFoundCta": "设置我的链接",
     "hubUnavailable": "主页不可用。请配置 Supabase 并运行",
-    "poweredBy": "Powered by My Last Cursor Token",
+    "poweredBy": "Kawaragi.io",
     "language": "语言",
-    "themeToggle": "主题"
+    "themeToggle": "主题",
+    "linkOpen": "打开"
+  },
+  "publicProfile": {
+    "navLabel": "主页操作",
+    "login": "登录",
+    "createPage": "创建你的页面",
+    "dashboard": "控制台",
+    "editProfile": "编辑资料",
+    "finance": "财务",
+    "owner": {
+      "sectionLabel": "所有者主页",
+      "welcomeTitle": "✨ 你的账户已就绪",
+      "welcomeSubtitle": "添加第一个链接，或查看你的财务洞察。",
+      "emptyLinks": "还没有链接——添加一个，让页面活起来。",
+      "emptyBio": "写一句简介，让访客了解你。",
+      "setupHint": "再完善一点，页面就更完整了。",
+      "actionAddLink": "添加链接",
+      "actionAddLinkHint": "打开编辑器",
+      "actionFinance": "财务",
+      "actionFinanceHint": "PDF 与洞察",
+      "actionEdit": "编辑资料",
+      "actionEditHint": "名称与简介",
+      "actionCustomize": "自定义",
+      "actionCustomizeHint": "主题与外观",
+      "viewPublicHint": "在控制台管理",
+      "emptyBlocksTitle": "页面还是空的",
+      "emptyBlocksHint": "添加链接、文字或嵌入——访客会在这里看到。",
+      "emptyBlocksCta": "添加第一个内容"
+    }
   },
   "home": {
     "tagline": "软件工程师 | 科技爱好者"
+  },
+  "landing": {
+    "brand": "Kawaragi",
+    "nav": {
+      "signIn": "登录"
+    },
+    "hero": {
+      "eyebrow": "生活方式版财务",
+      "title": "金钱，更好读懂",
+      "subtitle": "GoPay 或银行 PDF。消费习惯变成短故事。",
+      "step1": "上传账单 PDF",
+      "step2": "查看每周模式",
+      "step3": "想分享就发 recap",
+      "ctaPrimary": "免费开始",
+      "ctaSecondary": "看 recap",
+      "ctaHelper": "注册，上传一份 PDF，即可开始。",
+      "note": "无需银行密码。PDF 处理后删除。"
+    },
+    "heroInsights": {
+      "weekend": {
+        "emoji": "🌙",
+        "tag": "周末",
+        "message": "这个周末花得更多。"
+      },
+      "shopeeFood": {
+        "emoji": "🍱",
+        "tag": "月末",
+        "message": "最近 ShopeeFood 出现更频繁。"
+      },
+      "peakHour": {
+        "emoji": "🕘",
+        "tag": "高峰",
+        "message": "最常交易时间：21:00。"
+      },
+      "gopay": {
+        "emoji": "🟢",
+        "tag": "钱包",
+        "message": "GoPay 成为本月主力钱包。"
+      },
+      "coffee": {
+        "emoji": "☕",
+        "tag": "夜间",
+        "message": "本周夜间咖啡支出上升。"
+      },
+      "saved": {
+        "emoji": "✨",
+        "tag": "五月",
+        "message": "比上个月存得更多。"
+      }
+    },
+    "local": {
+      "title": "为印尼数字钱包而生",
+      "subtitle": "GoPay、OVO、Dana、ShopeePay。",
+      "footer": "印尼语。贴近当地的消费模式。",
+      "payments": {
+        "gopay": "GoPay",
+        "ovo": "OVO",
+        "dana": "Dana",
+        "shopeePay": "ShopeePay"
+      }
+    },
+    "recap": {
+      "sectionTitle": "月度 recap",
+      "sectionSubtitle": "像 Wrapped。截图即可。",
+      "badge": "2026 年 5 月",
+      "auraEditorial": "Aura",
+      "auraType": "Digital Night Owl",
+      "headline": "Soft Saving Era",
+      "mood": "夜间消费 · GoPay 时代 · 周末外食",
+      "statSpend": "支出",
+      "statSpendValue": "4.2M",
+      "statSaved": "储蓄",
+      "statSavedValue": "+18%",
+      "statSavedCaption": "省钱主角",
+      "statTop": "钱包",
+      "statTopValue": "GoPay",
+      "soundtrackLabel": "Aura 配乐",
+      "soundtrack": "Joji — Glimpse of Us",
+      "shareCta": "分享你的 aura",
+      "ambientTime": "23:48",
+      "ambientWeekend": "Weekend",
+      "ambientQris": "QRIS",
+      "ambientShopeeFood": "ShopeeFood",
+      "ambientMidnight": "Late checkout",
+      "ambientWallet": "GoPay",
+      "ambientCoffee": "2x 咖啡",
+      "card2": "夜间咖啡上升",
+      "card3": "结账前更清醒"
+    },
+    "trust": {
+      "title": "隐私优先",
+      "pdf": "PDF 处理后删除。",
+      "private": "只有你能看到数据。",
+      "noBank": "无需银行登录。"
+    },
+    "footer": {
+      "tagline": "轻盈的个人财务。",
+      "cta": "开始使用 Kawaragi",
+      "exampleHub": "查看示例页面"
+    }
   },
   "gear": {
     "title": "桌面与装备",

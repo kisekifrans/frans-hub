@@ -312,6 +312,458 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+/* Landing — clearer light-mode layering */
+.landing-insight-card {
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow:
+    0 10px 32px rgba(91, 33, 182, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.dark .landing-insight-card {
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* —— Recap memory artifact —— */
+
+/*
+ * Atmosphere = radial light on full-width section only.
+ * Stage is transparent (no box-painted backgrounds).
+ * No overlay divs, no sized pseudo panels, no backdrop-filter on hero.
+ */
+
+.landing-recap-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.75rem 0 2.25rem;
+  background-color: transparent;
+  background-image:
+    radial-gradient(ellipse 75% 58% at 50% 56%, rgba(237, 233, 254, 0.22) 0%, transparent 78%),
+    radial-gradient(ellipse 48% 40% at 22% 44%, rgba(251, 207, 232, 0.09) 0%, transparent 72%),
+    radial-gradient(ellipse 44% 38% at 80% 52%, rgba(196, 181, 253, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 34% at 58% 30%, rgba(244, 114, 182, 0.05) 0%, transparent 68%);
+  background-repeat: no-repeat;
+}
+
+.dark .landing-recap-section {
+  background-image:
+    radial-gradient(ellipse 72% 55% at 50% 56%, rgba(59, 7, 100, 0.28) 0%, transparent 78%),
+    radial-gradient(ellipse 46% 38% at 20% 42%, rgba(88, 28, 135, 0.12) 0%, transparent 72%),
+    radial-gradient(ellipse 42% 36% at 82% 50%, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+}
+
+.landing-recap-stage {
+  position: relative;
+  background: transparent;
+}
+
+/* Fading memories — soft orbit, no pill chrome */
+.landing-recap-fragment {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: rgba(91, 33, 182, 0.7);
+  opacity: 0.14;
+  filter: blur(0.6px);
+  text-shadow: 0 0 28px rgba(167, 139, 250, 0.28);
+}
+
+.landing-recap-fragment--faint {
+  opacity: 0.1;
+  filter: blur(0.9px);
+}
+
+.landing-recap-fragment--tl {
+  top: 0;
+  left: -6%;
+  transform: rotate(-7deg);
+}
+
+.landing-recap-fragment--tr {
+  top: 2%;
+  right: -8%;
+  transform: rotate(6deg);
+}
+
+.landing-recap-fragment--tc {
+  top: 14%;
+  left: 38%;
+  transform: rotate(-2deg);
+}
+
+.landing-recap-fragment--ml {
+  top: 42%;
+  left: -12%;
+  transform: rotate(-5deg);
+}
+
+.landing-recap-fragment--mr {
+  top: 38%;
+  right: -10%;
+  transform: rotate(4deg);
+}
+
+.landing-recap-fragment--bl {
+  bottom: 22%;
+  left: -8%;
+  transform: rotate(-3deg);
+}
+
+.landing-recap-fragment--br {
+  bottom: 8%;
+  right: -6%;
+  transform: rotate(5deg);
+}
+
+.landing-recap-fragment--bc {
+  bottom: 2%;
+  left: 28%;
+  transform: rotate(-4deg);
+}
+
+@media (min-width: 640px) {
+  .landing-recap-fragment {
+    font-size: 11px;
+    opacity: 0.16;
+  }
+
+  .landing-recap-fragment--faint {
+    opacity: 0.11;
+  }
+
+  .landing-recap-fragment--tl {
+    left: -10%;
+  }
+
+  .landing-recap-fragment--tr {
+    right: -12%;
+  }
+
+  .landing-recap-fragment--ml {
+    left: -14%;
+  }
+
+  .landing-recap-fragment--mr {
+    right: -12%;
+  }
+}
+
+.dark .landing-recap-fragment {
+  color: rgba(216, 180, 254, 0.6);
+  opacity: 0.12;
+}
+
+.dark .landing-recap-fragment--faint {
+  opacity: 0.09;
+}
+
+/* Hero card — solid surface, ambient glow via shadow only (not a layer) */
+.landing-recap-hero {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(196, 181, 253, 0.5);
+  box-shadow:
+    0 24px 56px rgba(139, 92, 246, 0.12),
+    0 8px 28px rgba(244, 114, 182, 0.06),
+    0 0 100px 24px rgba(167, 139, 250, 0.07),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.landing-recap-inner {
+  background:
+    radial-gradient(ellipse 90% 55% at 85% 0%, rgba(253, 186, 116, 0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 10% 100%, rgba(167, 139, 250, 0.22) 0%, transparent 50%),
+    linear-gradient(152deg, #f5f0ff 0%, #ede4ff 38%, #fce7f3 72%, #e9e0ff 100%);
+  color: rgb(39 25 71);
+}
+
+.landing-recap-shine {
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    transparent 42%,
+    transparent 58%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+}
+
+.landing-recap-vignette {
+  box-shadow: inset 0 0 80px rgba(139, 92, 246, 0.06);
+}
+
+.landing-recap-badge {
+  color: rgba(91, 33, 182, 0.55);
+}
+
+.landing-recap-aura-label {
+  color: rgba(91, 33, 182, 0.45);
+}
+
+.landing-recap-aura-type {
+  color: rgba(76, 29, 149, 0.85);
+}
+
+.landing-recap-headline {
+  color: rgb(30 15 60);
+  text-shadow: 0 1px 24px rgba(139, 92, 246, 0.15);
+}
+
+.landing-recap-mood {
+  color: rgba(76, 29, 149, 0.72);
+}
+
+.landing-recap-stat-hero {
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(167, 243, 208, 0.45) 50%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  box-shadow:
+    0 10px 28px rgba(16, 185, 129, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.landing-recap-hero-metric {
+  font-size: 2.35rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(4 120 87);
+  text-shadow: 0 0 32px rgba(52, 211, 153, 0.35);
+}
+
+.landing-recap-stat {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  color: rgb(39 25 71);
+}
+
+.landing-recap-soundtrack {
+  border: 1px solid rgba(196, 181, 253, 0.45);
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.landing-recap-sound-icon {
+  background: rgba(139, 92, 246, 0.12);
+  color: rgb(109 40 217);
+}
+
+.landing-recap-share {
+  position: relative;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(237, 233, 254, 0.55) 100%);
+  color: rgb(76 29 149);
+  box-shadow:
+    0 8px 24px rgba(124, 58, 237, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.landing-recap-share-glow {
+  background: radial-gradient(ellipse at 50% 0%, rgba(167, 139, 250, 0.35) 0%, transparent 70%);
+  opacity: 0.7;
+}
+
+.landing-recap-share:hover {
+  box-shadow:
+    0 12px 32px rgba(124, 58, 237, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Dark: cinematic midnight aura */
+.dark .landing-recap-hero {
+  background: rgba(30, 15, 55, 0.94);
+  border-color: rgba(167, 139, 250, 0.28);
+  box-shadow:
+    0 32px 72px rgba(0, 0, 0, 0.65),
+    0 0 72px rgba(124, 58, 237, 0.22),
+    0 0 24px rgba(236, 72, 153, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .landing-recap-inner {
+  background:
+    radial-gradient(ellipse 80% 45% at 90% 5%, rgba(236, 72, 153, 0.18) 0%, transparent 50%),
+    radial-gradient(ellipse 65% 55% at 5% 95%, rgba(59, 130, 246, 0.12) 0%, transparent 48%),
+    linear-gradient(158deg, #3b0764 0%, #4c1d95 32%, #581c87 58%, #2e1065 100%);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dark .landing-recap-shine {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    transparent 38%,
+    transparent 62%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+}
+
+.dark .landing-recap-vignette {
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.35);
+}
+
+.dark .landing-recap-badge {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dark .landing-recap-aura-label {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.dark .landing-recap-aura-type {
+  color: rgba(237, 233, 254, 0.88);
+}
+
+.dark .landing-recap-headline {
+  color: #fff;
+  text-shadow: 0 2px 40px rgba(167, 139, 250, 0.35);
+}
+
+.dark .landing-recap-mood {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.dark .landing-recap-stat-hero {
+  border-color: rgba(52, 211, 153, 0.35);
+  background: linear-gradient(
+    165deg,
+    rgba(16, 185, 129, 0.22) 0%,
+    rgba(0, 0, 0, 0.35) 45%,
+    rgba(52, 211, 153, 0.12) 100%
+  );
+  box-shadow:
+    0 12px 36px rgba(16, 185, 129, 0.15),
+    0 0 40px rgba(52, 211, 153, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.dark .landing-recap-hero-metric {
+  color: rgb(110 231 183);
+  text-shadow: 0 0 48px rgba(52, 211, 153, 0.45);
+}
+
+.dark .landing-recap-stat {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dark .landing-recap-soundtrack {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .landing-recap-sound-icon {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(216, 180, 254, 0.95);
+}
+
+.dark .landing-recap-share {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  color: #fff;
+  box-shadow:
+    0 10px 36px rgba(124, 58, 237, 0.25),
+    0 0 32px rgba(167, 139, 250, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dark .landing-recap-share-glow {
+  background: radial-gradient(ellipse at 50% 0%, rgba(167, 139, 250, 0.45) 0%, transparent 68%);
+  opacity: 0.85;
+}
+
+.dark .landing-recap-share:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+}
+
+/* Soundtrack visualizer */
+.landing-recap-wave {
+  height: calc(var(--wave-h) * 24px);
+  min-height: 4px;
+}
+
+.landing-recap-wave--active {
+  animation: recap-wave 1.2s ease-in-out infinite;
+  animation-delay: var(--wave-delay);
+}
+
+@keyframes recap-wave {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.landing-header {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+.landing-main {
+  padding-bottom: max(4rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+}
+
+.profile-shell {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+}
+
+.landing-cta-primary {
+  background: rgb(124 58 237);
+}
+
+.dark .landing-cta-primary {
+  background: rgb(109 40 217);
+}
+
+.dark .landing-cta-secondary {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark .landing-payment-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-insight-card,
+  .landing-recap-fragment,
+  .landing-recap-wave--active {
+    animation: none !important;
+  }
+}
+
 .tiktok-embed,
 .instagram-media {
   margin: 0 auto !important;

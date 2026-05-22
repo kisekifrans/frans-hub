@@ -21,6 +21,8 @@ interface PdfImportUploaderProps {
   onUpload: (files: File[], source: ImportSource) => void;
 }
 
+const PDF_MAX_MB = Math.round(FINANCE_PDF_MAX_BYTES / 1024 / 1024);
+
 export function PdfImportUploader({
   disabled,
   uploading,
@@ -115,7 +117,7 @@ export function PdfImportUploader({
               Drag & drop PDF statements here
             </p>
             <p className="mt-1 text-xs text-zinc-500">
-              GoPay · Bank · ShopeePay · Generic · max 25MB
+              GoPay · Bank · ShopeePay · Generic · max {PDF_MAX_MB}MB
             </p>
             <button
               type="button"

@@ -11,5 +11,5 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
 
-  return <LoginForm error={params.error} next={params.next ?? "/admin"} />;
+  return <LoginForm error={params.error} next={params.next ?? "/dashboard"} />;
 }

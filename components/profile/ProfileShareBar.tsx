@@ -11,9 +11,11 @@ import { MotionDiv } from "@/components/ui/motion";
 
 interface ProfileShareBarProps {
   username: string;
+  /** Public path slug — share link becomes /{slug} */
+  slug?: string;
 }
 
-export function ProfileShareBar({ username }: ProfileShareBarProps) {
+export function ProfileShareBar({ username, slug }: ProfileShareBarProps) {
   const t = useTranslations("common");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
@@ -22,8 +24,12 @@ export function ProfileShareBar({ username }: ProfileShareBarProps) {
 
   const hubUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/${locale}`
-      : `https://${username}.hub`;
+      ? slug
+        ? `${window.location.origin}/${slug}`
+        : `${window.location.origin}/${locale}`
+      : slug
+        ? `https://agisna.dev/${slug}`
+        : `https://${username}.hub`;
 
   useEffect(() => {
     if (!open) return;

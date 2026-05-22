@@ -15,10 +15,11 @@ import { cn } from "@/lib/utils";
 
 interface LinkBlockCardProps {
   block: LinkBlock;
+  featured?: boolean;
   onClick?: () => void;
 }
 
-export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
+export function LinkBlockCard({ block, featured, onClick }: LinkBlockCardProps) {
   const t = useTranslations("common");
   const [copied, setCopied] = useState(false);
   const hasThumbnail = isValidImageSrc(block.thumbnailUrl);
@@ -52,11 +53,17 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
   };
 
   return (
-    <MotionDiv whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.99 }}>
+    <MotionDiv whileHover={{ scale: featured ? 1.02 : 1.012 }} whileTap={{ scale: 0.985 }}>
       <GlassCard
         hover
         padding="none"
-        className="group w-full overflow-hidden"
+        className={cn(
+          "group w-full overflow-hidden transition-shadow duration-300",
+          "hover:shadow-lg hover:shadow-violet-500/10 dark:hover:shadow-violet-900/20",
+          featured &&
+            "ring-1 ring-violet-400/35 shadow-md shadow-violet-500/10 dark:ring-violet-400/25",
+          hasUrl && "cursor-pointer",
+        )}
       >
         <div className={cn(isBanner ? "" : "px-4 pt-3.5 pb-2")}>
           <div
@@ -69,10 +76,7 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
                 openBlockLink(e);
               }
             }}
-            className={cn(
-              "block outline-none",
-              hasUrl && "cursor-pointer",
-            )}
+            className="block outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-xl"
           >
             {isBanner && hasThumbnail && (
               <div className="relative mb-0 aspect-[2/1] w-full overflow-hidden">
@@ -121,10 +125,21 @@ export function LinkBlockCard({ block, onClick }: LinkBlockCardProps) {
                   {block.title}
                 </span>
               </div>
-              <ExternalLink
-                className="pointer-events-none h-4 w-4 shrink-0 text-zinc-400 transition group-hover:text-violet-500"
-                aria-hidden
-              />
+              <div className="flex shrink-0 items-center gap-1.5">
+                {hasUrl && (
+                  <span className="hidden text-[11px] font-medium text-violet-600 opacity-0 transition group-hover:opacity-100 sm:inline dark:text-violet-400">
+                    {t("linkOpen")}
+                  </span>
+                )}
+                <ExternalLink
+                  className={cn(
+                    "pointer-events-none h-4 w-4 shrink-0 text-zinc-400 transition",
+                    hasUrl &&
+                      "group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-violet-500 dark:group-hover:text-violet-400",
+                  )}
+                  aria-hidden
+                />
+              </div>
             </div>
           </div>
 

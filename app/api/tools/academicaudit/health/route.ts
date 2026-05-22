@@ -16,13 +16,11 @@ export async function GET() {
     const data = await res.json().catch(() => ({}));
     return NextResponse.json({
       ok: res.ok,
-      apiUrl: url,
       backend: data,
     });
   } catch {
     return NextResponse.json({
       ok: false,
-      apiUrl: url,
       message:
         "Tidak bisa terhubung ke API. Pastikan backend berjalan (localhost:8000 atau URL deploy).",
     });

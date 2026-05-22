@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuthenticatedUser } from "@/lib/auth/require-user";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -12,6 +13,9 @@ function apiBase(): string {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireAuthenticatedUser();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const form = await request.formData();
     const file = form.get("file");

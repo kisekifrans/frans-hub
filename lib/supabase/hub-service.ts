@@ -10,6 +10,7 @@ import { buildAnalyticsReport, periodStart } from "@/lib/analytics-report";
 import { DEFAULT_DATA } from "@/lib/defaults";
 import type { DbBlock, DbProfile } from "./database.types";
 import { STORAGE_BUCKET } from "./database.types";
+import { getSiteProfileSlug } from "@/lib/config/site-profile";
 import {
   blockFromDb,
   blockTitlesFromProfile,
@@ -18,23 +19,17 @@ import {
   profileToDb,
 } from "./mappers";
 
-const PROFILE_SLUG = "main";
+export type FetchHubOptions = {
+  includeDisabled?: boolean;
+  /** When false, unpublished profiles are hidden from public slug pages. */
+  requirePublished?: boolean;
+};
 
-export async function fetchHub(
+async function loadHubFromProfileRow(
   supabase: SupabaseClient,
-  options?: { includeDisabled?: boolean },
+  profileRow: DbProfile,
+  options?: FetchHubOptions,
 ): Promise<{ profile: Profile; profileId: string; analytics: AnalyticsSnapshot }> {
-  const { data: profileRow, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("slug", PROFILE_SLUG)
-    .single();
-
-  if (profileError || !profileRow) {
-    await seedHub(supabase);
-    return fetchHub(supabase, options);
-  }
-
   let blocksQuery = supabase
     .from("blocks")
     .select("*")
@@ -49,7 +44,7 @@ export async function fetchHub(
   if (blocksError) throw blocksError;
 
   const blocks = (blockRows as DbBlock[]).map(blockFromDb);
-  const profile = profileFromDb(profileRow as DbProfile, blocks);
+  const profile = profileFromDb(profileRow, blocks);
   const analytics = await fetchAnalytics(supabase, profileRow.id, {
     blockTitles: blockTitlesFromProfile(blocks),
   });
@@ -59,6 +54,70 @@ export async function fetchHub(
     profileId: profileRow.id,
     analytics,
   };
+}
+
+export async function fetchHubBySlug(
+  supabase: SupabaseClient,
+  slug: string,
+  options?: FetchHubOptions,
+): Promise<{ profile: Profile; profileId: string; analytics: AnalyticsSnapshot } | null> {
+  const { data: profileRow, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (profileError) throw profileError;
+  if (!profileRow) return null;
+
+  const published = (profileRow as DbProfile & { is_published?: boolean })
+    .is_published;
+  if (options?.requirePublished && published === false) return null;
+
+  return loadHubFromProfileRow(supabase, profileRow as DbProfile, options);
+}
+
+export async function fetchHubForUser(
+  supabase: SupabaseClient,
+  options?: FetchHubOptions,
+): Promise<{ profile: Profile; profileId: string; analytics: AnalyticsSnapshot }> {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError) throw authError;
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: profileRow, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!profileRow) {
+    throw new Error("No profile for this account. Try signing in again.");
+  }
+
+  return loadHubFromProfileRow(supabase, profileRow as DbProfile, {
+    ...options,
+    includeDisabled: true,
+  });
+}
+
+/** Site marketing hub (`main` slug). */
+export async function fetchHub(
+  supabase: SupabaseClient,
+  options?: FetchHubOptions,
+): Promise<{ profile: Profile; profileId: string; analytics: AnalyticsSnapshot }> {
+  const siteSlug = getSiteProfileSlug();
+  const hub = await fetchHubBySlug(supabase, siteSlug, options);
+  if (hub) return hub;
+
+  await seedHub(supabase);
+  const retry = await fetchHubBySlug(supabase, siteSlug, options);
+  if (!retry) throw new Error("Profile not found");
+  return retry;
 }
 
 export interface FetchAnalyticsOptions {
@@ -99,8 +158,13 @@ export async function saveProfile(
   supabase: SupabaseClient,
   profileId: string,
   profile: Profile,
+  slug?: string,
 ): Promise<void> {
-  const row = profileToDb(profile, profileId, PROFILE_SLUG);
+  const row = profileToDb(
+    profile,
+    profileId,
+    slug ?? profile.slug ?? getSiteProfileSlug(),
+  );
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -164,9 +228,14 @@ export async function updateBlock(
 
 export async function deleteBlock(
   supabase: SupabaseClient,
+  profileId: string,
   blockId: string,
 ): Promise<void> {
-  const { error } = await supabase.from("blocks").delete().eq("id", blockId);
+  const { error } = await supabase
+    .from("blocks")
+    .delete()
+    .eq("id", blockId)
+    .eq("profile_id", profileId);
   if (error) throw error;
 }
 
@@ -231,7 +300,7 @@ async function seedHub(supabase: SupabaseClient): Promise<void> {
   const { data: profile, error } = await supabase
     .from("profiles")
     .insert({
-      slug: PROFILE_SLUG,
+      slug: getSiteProfileSlug(),
       username: seed.username,
       display_name: seed.displayName,
       bio: seed.bio,

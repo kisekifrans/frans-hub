@@ -8,6 +8,7 @@ import {
   createBlock,
   deleteBlock,
   fetchHub,
+  fetchHubForUser,
   reorderBlocks,
   saveProfile,
   updateBlock,
@@ -50,7 +51,9 @@ function createEmptyBlock(type: BlockType, order: number): ProfileBlock {
   }
 }
 
-export function useHub() {
+export type UseHubMode = "main" | "user";
+
+export function useHub(mode: UseHubMode = "main") {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsSnapshot | null>(null);
@@ -74,7 +77,10 @@ export function useHub() {
     setLoading(true);
     try {
       const supabase = getClient();
-      const hub = await fetchHub(supabase, { includeDisabled: true });
+      const hub =
+        mode === "user"
+          ? await fetchHubForUser(supabase, { includeDisabled: true })
+          : await fetchHub(supabase, { includeDisabled: true });
       setProfile(hub.profile);
       setProfileId(hub.profileId);
       setAnalytics(hub.analytics);
@@ -83,7 +89,7 @@ export function useHub() {
     } finally {
       setLoading(false);
     }
-  }, [getClient]);
+  }, [getClient, mode]);
 
   useEffect(() => {
     load();
@@ -114,7 +120,7 @@ export function useHub() {
       const next = { ...profile, ...patch };
       setProfile(next);
       try {
-        await saveProfile(getClient(), profileId, next);
+        await saveProfile(getClient(), profileId, next, next.slug);
         toast.success("Profile saved");
       } catch (e) {
         setProfile(prev);
@@ -204,7 +210,7 @@ export function useHub() {
 
   const removeBlock = useCallback(
     async (id: string) => {
-      if (!profile) return;
+      if (!profile || !profileId) return;
       const prev = profile;
       setProfile({
         ...profile,
@@ -212,7 +218,7 @@ export function useHub() {
       });
       setSaving(true);
       try {
-        await deleteBlock(getClient(), id);
+        await deleteBlock(getClient(), profileId, id);
         toast.success("Block removed");
       } catch (e) {
         setProfile(prev);

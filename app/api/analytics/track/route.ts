@@ -1,8 +1,26 @@
 import { NextResponse } from "next/server";
+import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { parseUserAgent } from "@/lib/parse-user-agent";
 
+const ANALYTICS_LIMIT = 120;
+const ANALYTICS_WINDOW_MS = 60_000;
+
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  const limited = rateLimit(`analytics:${ip}`, ANALYTICS_LIMIT, ANALYTICS_WINDOW_MS);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: limited.retryAfterSec
+          ? { "Retry-After": String(limited.retryAfterSec) }
+          : undefined,
+      },
+    );
+  }
+
   try {
     const body = await request.json();
     const profileId = body.profileId as string | undefined;

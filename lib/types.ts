@@ -68,6 +68,7 @@ export const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string }[] = [
 ];
 
 export interface Profile {
+  slug?: string;
   username: string;
   displayName: string;
   bio: string;

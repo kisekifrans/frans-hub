@@ -51,11 +51,11 @@ export function TrendChart({ title, series, className }: TrendChartProps) {
         <div className="flex gap-3 text-xs text-zinc-500">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-violet-500" />
-            Views
+            Opens
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-cyan-500" />
-            Clicks
+            Taps
           </span>
         </div>
       </div>
@@ -63,7 +63,7 @@ export function TrendChart({ title, series, className }: TrendChartProps) {
       {!hasTrend ? (
         <div className="flex h-36 flex-col items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/20 px-4 text-center dark:bg-white/5 sm:h-40">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Belum cukup data untuk menampilkan tren
+            Not enough visits yet — share your page and check back
           </p>
           <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
             Statistik ringkasan di atas tetap diperbarui seiring kunjungan baru.
