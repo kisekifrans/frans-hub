@@ -21,7 +21,7 @@ export function TransactionFilters() {
     filters,
     setFilters,
     categories,
-    paymentMethods,
+    paymentMethodsForPicker,
     currentPeriodId,
   } = finance;
 
@@ -100,7 +100,7 @@ export function TransactionFilters() {
           className="rounded-xl border border-white/30 bg-white/40 px-3 py-2 text-sm dark:bg-white/5"
         >
           <option value="">All methods</option>
-          {paymentMethods.map((m) => (
+          {paymentMethodsForPicker.map((m) => (
             <option key={m.id} value={m.id}>
               {m.icon} {m.name}
             </option>

@@ -1,5 +1,13 @@
 export type FinanceTransactionType = "income" | "expense";
 export type FinanceCategoryType = "income" | "expense" | "both";
+
+export type FinancePaymentMethodType =
+  | "cash"
+  | "bank"
+  | "ewallet"
+  | "crypto"
+  | "card"
+  | "other";
 export type BillingCycle = "weekly" | "monthly" | "yearly";
 export type ImportSource = "gopay" | "bank" | "shopeepay" | "other";
 export type ImportJobStatus = "pending" | "processing" | "completed" | "failed";
@@ -32,7 +40,17 @@ export interface FinancePaymentMethod {
   id: string;
   name: string;
   icon: string;
+  color: string;
+  type: FinancePaymentMethodType;
   order: number;
+  isFavorite?: boolean;
+  isDefault?: boolean;
+}
+
+export interface PaymentMethodUsageInfo {
+  transactions: number;
+  subscriptions: number;
+  total: number;
 }
 
 export interface FinanceBudgetPeriod {

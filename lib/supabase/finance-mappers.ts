@@ -57,7 +57,28 @@ export function paymentMethodFromDb(
     id: row.id,
     name: row.name,
     icon: row.icon,
+    color: row.color ?? "#8b5cf6",
+    type: (row.method_type ?? "other") as FinancePaymentMethod["type"],
     order: row.sort_order,
+    isFavorite: row.is_favorite ?? false,
+    isDefault: row.is_default ?? false,
+  };
+}
+
+export function paymentMethodToDb(
+  m: FinancePaymentMethod,
+  profileId: string,
+): Omit<DbFinancePaymentMethod, "created_at"> {
+  return {
+    id: m.id,
+    profile_id: profileId,
+    name: m.name.trim(),
+    icon: m.icon,
+    color: m.color,
+    method_type: m.type,
+    sort_order: m.order,
+    is_favorite: m.isFavorite ?? false,
+    is_default: m.isDefault ?? false,
   };
 }
 

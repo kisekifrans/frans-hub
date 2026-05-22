@@ -20,12 +20,18 @@ import {
   computeCategoryUsageCounts,
   sortCategoriesForPicker,
 } from "@/lib/finance/categories";
+import {
+  computePaymentMethodUsageCounts,
+  sortPaymentMethodsForPicker,
+} from "@/lib/finance/payment-methods";
 import { findPeriodForDate } from "@/lib/finance/periods";
 import { toISODate } from "@/lib/finance/format";
 import type {
   FinanceCategory,
   FinanceCategoryType,
   FinanceFilters,
+  FinancePaymentMethod,
+  FinancePaymentMethodType,
   FinanceImportJob,
   FinancePageData,
   FinanceSubscription,
@@ -54,8 +60,13 @@ import {
   deleteSubscription,
   deleteTransaction,
   fetchFinanceData,
+  createPaymentMethod,
+  deletePaymentMethod,
   reorderCategories,
+  reorderPaymentMethods,
+  setPaymentMethodFavorite,
   updateCategory,
+  updatePaymentMethod,
   updateImportJob,
   updatePeriod,
   updateSubscription,
@@ -92,6 +103,18 @@ type FinanceContextValue = FinancePageData & {
   moveCategory: (id: string, direction: "up" | "down") => Promise<void>;
   categoryUsageCounts: Map<string, number>;
   categoriesForType: (type: FinanceTransactionType) => FinanceCategory[];
+  addPaymentMethod: (input: {
+    name: string;
+    icon: string;
+    color: string;
+    type: FinancePaymentMethodType;
+  }) => Promise<void>;
+  savePaymentMethod: (method: FinancePaymentMethod) => Promise<void>;
+  removePaymentMethod: (id: string) => Promise<void>;
+  movePaymentMethod: (id: string, direction: "up" | "down") => Promise<void>;
+  togglePaymentMethodFavorite: (id: string, isFavorite: boolean) => Promise<void>;
+  paymentMethodUsageCounts: Map<string, number>;
+  paymentMethodsForPicker: FinancePaymentMethod[];
   processPdfImport: (
     file: File,
     source: ImportSource,
@@ -219,6 +242,25 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     },
     [data, categoryUsageCounts],
   );
+
+  const paymentMethodUsageCounts = useMemo(
+    () =>
+      data
+        ? computePaymentMethodUsageCounts(
+            data.transactions,
+            data.subscriptions,
+          )
+        : new Map<string, number>(),
+    [data],
+  );
+
+  const paymentMethodsForPicker = useMemo(() => {
+    if (!data) return [];
+    return sortPaymentMethodsForPicker(
+      data.paymentMethods,
+      paymentMethodUsageCounts,
+    );
+  }, [data, paymentMethodUsageCounts]);
 
   const addTransaction = useCallback(
     async (input: Omit<FinanceTransaction, "id" | "createdAt">) => {
@@ -571,6 +613,161 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     [data],
   );
 
+  const addPaymentMethod = useCallback(
+    async (input: {
+      name: string;
+      icon: string;
+      color: string;
+      type: FinancePaymentMethodType;
+    }) => {
+      if (!data) return;
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        const created = await createPaymentMethod(
+          supabase,
+          data.profileId,
+          input,
+        );
+        setData((d) =>
+          d
+            ? { ...d, paymentMethods: [...d.paymentMethods, created] }
+            : d,
+        );
+        toast.success("Metode pembayaran ditambahkan");
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : "Gagal menambah metode pembayaran",
+        );
+        throw e;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const savePaymentMethod = useCallback(
+    async (method: FinancePaymentMethod) => {
+      if (!data) return;
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        const saved = await updatePaymentMethod(
+          supabase,
+          data.profileId,
+          method,
+        );
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                paymentMethods: d.paymentMethods.map((m) =>
+                  m.id === saved.id ? saved : m,
+                ),
+              }
+            : d,
+        );
+        toast.success("Metode pembayaran disimpan");
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : "Gagal menyimpan metode pembayaran",
+        );
+        throw e;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const removePaymentMethod = useCallback(
+    async (id: string) => {
+      if (!data) return;
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        await deletePaymentMethod(supabase, data.profileId, id);
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                paymentMethods: d.paymentMethods.filter((m) => m.id !== id),
+              }
+            : d,
+        );
+        toast.success("Metode pembayaran dihapus");
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : "Gagal menghapus metode pembayaran",
+        );
+        throw e;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const movePaymentMethod = useCallback(
+    async (id: string, direction: "up" | "down") => {
+      if (!data) return;
+      const sorted = [...data.paymentMethods].sort((a, b) => a.order - b.order);
+      const idx = sorted.findIndex((m) => m.id === id);
+      if (idx < 0) return;
+      const swap = direction === "up" ? idx - 1 : idx + 1;
+      if (swap < 0 || swap >= sorted.length) return;
+      const next = [...sorted];
+      [next[idx], next[swap]] = [next[swap], next[idx]];
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        const reordered = await reorderPaymentMethods(
+          supabase,
+          data.profileId,
+          next.map((m) => m.id),
+        );
+        setData((d) => (d ? { ...d, paymentMethods: reordered } : d));
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Gagal mengurutkan");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
+  const togglePaymentMethodFavorite = useCallback(
+    async (id: string, isFavorite: boolean) => {
+      if (!data) return;
+      setSaving(true);
+      try {
+        const supabase = createClient();
+        const saved = await setPaymentMethodFavorite(
+          supabase,
+          data.profileId,
+          id,
+          isFavorite,
+        );
+        setData((d) =>
+          d
+            ? {
+                ...d,
+                paymentMethods: d.paymentMethods.map((m) =>
+                  m.id === saved.id ? saved : m,
+                ),
+              }
+            : d,
+        );
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Gagal memperbarui favorit");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [data],
+  );
+
   const processPdfImport = useCallback(
     async (
       file: File,
@@ -847,6 +1044,13 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     moveCategory,
     categoryUsageCounts,
     categoriesForType,
+    addPaymentMethod,
+    savePaymentMethod,
+    removePaymentMethod,
+    movePaymentMethod,
+    togglePaymentMethodFavorite,
+    paymentMethodUsageCounts,
+    paymentMethodsForPicker,
     processPdfImport,
     confirmPdfImport,
     removeImportJob,

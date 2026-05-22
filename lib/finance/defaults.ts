@@ -1,4 +1,8 @@
-import type { FinanceCategory, FinancePaymentMethod } from "@/lib/finance/types";
+import type {
+  FinanceCategory,
+  FinancePaymentMethod,
+  FinancePaymentMethodType,
+} from "@/lib/finance/types";
 
 export const DEFAULT_EXPENSE_CATEGORIES: Omit<
   FinanceCategory,
@@ -26,17 +30,48 @@ export const DEFAULT_INCOME_CATEGORIES: Omit<
   { name: "Other Income", icon: "✨", color: "#84cc16", type: "income" },
 ];
 
-export const DEFAULT_PAYMENT_METHODS: Omit<
+type DefaultPayment = Omit<
   FinancePaymentMethod,
-  "id" | "order"
->[] = [
-  { name: "Cash", icon: "💵" },
-  { name: "BCA", icon: "🏦" },
-  { name: "GoPay", icon: "🟢" },
-  { name: "OVO", icon: "🟣" },
-  { name: "Dana", icon: "🔵" },
-  { name: "ShopeePay", icon: "🧡" },
-  { name: "QRIS", icon: "📱" },
-  { name: "Steam Wallet", icon: "🎮" },
-  { name: "Crypto", icon: "₿" },
-].map((m) => ({ ...m, order: 0 }));
+  "id" | "order" | "isFavorite"
+>;
+
+export const DEFAULT_PAYMENT_METHODS: DefaultPayment[] = [
+  { name: "Cash", icon: "💵", color: "#22c55e", type: "cash", isDefault: true },
+  { name: "BCA", icon: "🏦", color: "#3b82f6", type: "bank", isDefault: true },
+  { name: "GoPay", icon: "🟢", color: "#22c55e", type: "ewallet", isDefault: true },
+  { name: "OVO", icon: "🟣", color: "#8b5cf6", type: "ewallet", isDefault: true },
+  { name: "DANA", icon: "🔵", color: "#0ea5e9", type: "ewallet", isDefault: true },
+  {
+    name: "ShopeePay",
+    icon: "🟠",
+    color: "#f97316",
+    type: "ewallet",
+    isDefault: true,
+  },
+  { name: "QRIS", icon: "📱", color: "#06b6d4", type: "card", isDefault: true },
+  {
+    name: "Steam Wallet",
+    icon: "🎮",
+    color: "#8b5cf6",
+    type: "ewallet",
+    isDefault: true,
+  },
+  { name: "Crypto", icon: "₿", color: "#71717a", type: "crypto", isDefault: true },
+];
+
+export function defaultPaymentMethodType(
+  name: string,
+): FinancePaymentMethodType {
+  const n = name.toLowerCase();
+  if (n === "cash") return "cash";
+  if (n === "bca" || n.includes("bank")) return "bank";
+  if (n === "crypto" || n === "btc") return "crypto";
+  if (n === "qris") return "card";
+  if (
+    ["gopay", "ovo", "dana", "shopeepay", "steam wallet"].includes(n) ||
+    n.includes("pay")
+  ) {
+    return "ewallet";
+  }
+  return "other";
+}

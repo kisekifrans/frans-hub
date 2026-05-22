@@ -1,4 +1,5 @@
 import { suggestCategory } from "./category-matcher";
+import { resolvePaymentMethodFromLabel } from "@/lib/finance/payment-methods";
 import { findPeriodForDate } from "@/lib/finance/periods";
 import type { ImportPreviewRow, ParsedTransactionDraft } from "./types";
 import type {
@@ -28,17 +29,11 @@ function matchPaymentMethodId(
   methods: FinancePaymentMethod[],
   fallback?: FinancePaymentMethod,
 ): { id?: string; name?: string } {
-  if (!label) {
-    return { id: fallback?.id, name: fallback?.name };
+  const resolved = resolvePaymentMethodFromLabel(label, methods, fallback);
+  if (!label?.trim()) {
+    return { id: resolved?.id, name: resolved?.name };
   }
-  const exact = methods.find(
-    (m) => m.name.toLowerCase() === label.toLowerCase(),
-  );
-  if (exact) return { id: exact.id, name: exact.name };
-  if (/gopay/i.test(label)) {
-    const gp = methods.find((m) => m.name.toLowerCase() === "gopay");
-    if (gp) return { id: gp.id, name: gp.name };
-  }
+  if (resolved) return { id: resolved.id, name: resolved.name };
   return { id: fallback?.id, name: label };
 }
 

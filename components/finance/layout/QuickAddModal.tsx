@@ -25,7 +25,7 @@ export function QuickAddModal({ open, onClose }: QuickAddModalProps) {
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState(toISODate());
 
-  const paymentMethods = finance?.paymentMethods ?? [];
+  const paymentMethods = finance?.paymentMethodsForPicker ?? [];
   const currentPeriodId = finance?.currentPeriodId ?? null;
   const addTransaction = finance?.addTransaction;
   const saving = finance?.saving ?? false;
@@ -194,22 +194,34 @@ export function QuickAddModal({ open, onClose }: QuickAddModalProps) {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {paymentMethods.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setPaymentMethodId(m.id)}
-                      className={cn(
-                        "rounded-full px-2.5 py-1 text-xs transition",
-                        paymentMethodId === m.id
-                          ? "bg-zinc-800 text-white dark:bg-white dark:text-zinc-900"
-                          : "text-zinc-500 hover:bg-white/30",
-                      )}
-                    >
-                      {m.icon} {m.name}
-                    </button>
-                  ))}
+                <div>
+                  <p className="mb-1.5 text-xs text-zinc-500">Payment method</p>
+                  <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto sm:max-h-36">
+                    {paymentMethods.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setPaymentMethodId(m.id)}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition",
+                          paymentMethodId === m.id
+                            ? "text-white shadow-sm"
+                            : "glass-card text-zinc-600 dark:text-zinc-300",
+                        )}
+                        style={
+                          paymentMethodId === m.id
+                            ? { backgroundColor: m.color }
+                            : undefined
+                        }
+                      >
+                        <span>{m.icon}</span>
+                        <span className="max-w-[8rem] truncate">{m.name}</span>
+                        {m.isFavorite ? (
+                          <span className="text-[10px] opacity-80">★</span>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

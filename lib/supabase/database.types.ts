@@ -104,7 +104,11 @@ export interface DbFinancePaymentMethod {
   profile_id: string;
   name: string;
   icon: string;
+  color: string;
+  method_type: string;
   sort_order: number;
+  is_favorite: boolean;
+  is_default: boolean;
   created_at: string;
 }
 

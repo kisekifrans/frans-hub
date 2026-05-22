@@ -51,7 +51,7 @@ export function TransactionEditModal({
   const open = Boolean(transaction && mode);
   const saving = finance?.saving ?? false;
   const categoriesForType = finance?.categoriesForType;
-  const paymentMethods = finance?.paymentMethods ?? [];
+  const paymentMethods = finance?.paymentMethodsForPicker ?? [];
 
   const filteredCategories = useMemo(() => {
     if (categoriesForType) return categoriesForType(type);
@@ -260,18 +260,23 @@ export function TransactionEditModal({
                   ))}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
                   {paymentMethods.map((m) => (
                     <button
                       key={m.id}
                       type="button"
                       onClick={() => setPaymentMethodId(m.id)}
                       className={cn(
-                        "rounded-full px-2.5 py-1 text-xs",
+                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium",
                         paymentMethodId === m.id
-                          ? "bg-zinc-800 text-white dark:bg-white dark:text-zinc-900"
-                          : "text-zinc-500 hover:bg-white/30",
+                          ? "text-white"
+                          : "glass-card text-zinc-600 dark:text-zinc-300",
                       )}
+                      style={
+                        paymentMethodId === m.id
+                          ? { backgroundColor: m.color }
+                          : undefined
+                      }
                     >
                       {m.icon} {m.name}
                     </button>

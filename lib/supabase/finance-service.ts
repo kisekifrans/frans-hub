@@ -8,6 +8,7 @@ import { generateSalaryPeriodsForYear } from "@/lib/finance/periods";
 import { findPeriodForDate } from "@/lib/finance/periods";
 import { toISODate } from "@/lib/finance/format";
 import { normalizeCategoryEmoji } from "@/lib/finance/categories";
+import { normalizePaymentEmoji } from "@/lib/finance/payment-methods";
 import type {
   CategoryUsageInfo,
   FinanceBudgetLimit,
@@ -15,8 +16,10 @@ import type {
   FinanceCategory,
   FinanceImportJob,
   FinancePageData,
+  FinancePaymentMethod,
   FinanceSubscription,
   FinanceTransaction,
+  PaymentMethodUsageInfo,
 } from "@/lib/finance/types";
 import type {
   DbFinanceBudgetLimit,
@@ -37,6 +40,7 @@ import {
   importJobFromDb,
   limitFromDb,
   paymentMethodFromDb,
+  paymentMethodToDb,
   periodFromDb,
   subscriptionFromDb,
   transactionFromDb,
@@ -131,7 +135,11 @@ async function seedDefaults(
         profile_id: profileId,
         name: m.name,
         icon: m.icon,
+        color: m.color,
+        method_type: m.type,
         sort_order: i,
+        is_default: m.isDefault ?? true,
+        is_favorite: false,
       });
       if (error && !isUniqueViolation(error)) throw error;
     }
@@ -590,6 +598,178 @@ export async function deleteCategory(
     .eq("id", categoryId)
     .eq("profile_id", profileId);
   if (error) throw error;
+}
+
+export async function getPaymentMethodUsage(
+  supabase: SupabaseClient,
+  profileId: string,
+  paymentMethodId: string,
+): Promise<PaymentMethodUsageInfo> {
+  const [txRes, subRes] = await Promise.all([
+    supabase
+      .from("finance_transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profileId)
+      .eq("payment_method_id", paymentMethodId),
+    supabase
+      .from("finance_subscriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profileId)
+      .eq("payment_method_id", paymentMethodId),
+  ]);
+
+  if (txRes.error) throw txRes.error;
+  if (subRes.error) throw subRes.error;
+
+  const transactions = txRes.count ?? 0;
+  const subscriptions = subRes.count ?? 0;
+  return {
+    transactions,
+    subscriptions,
+    total: transactions + subscriptions,
+  };
+}
+
+export async function createPaymentMethod(
+  supabase: SupabaseClient,
+  profileId: string,
+  input: {
+    name: string;
+    icon: string;
+    color: string;
+    type: FinancePaymentMethod["type"];
+    order?: number;
+    isFavorite?: boolean;
+  },
+): Promise<FinancePaymentMethod> {
+  let sortOrder = input.order;
+  if (sortOrder == null) {
+    const { data: last } = await supabase
+      .from("finance_payment_methods")
+      .select("sort_order")
+      .eq("profile_id", profileId)
+      .order("sort_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    sortOrder = ((last as { sort_order: number } | null)?.sort_order ?? -1) + 1;
+  }
+
+  const row = {
+    profile_id: profileId,
+    name: input.name.trim(),
+    icon: normalizePaymentEmoji(input.icon),
+    color: input.color,
+    method_type: input.type,
+    sort_order: sortOrder,
+    is_favorite: input.isFavorite ?? false,
+    is_default: false,
+  };
+
+  const { data, error } = await supabase
+    .from("finance_payment_methods")
+    .insert(row)
+    .select()
+    .single();
+  if (error) throw error;
+  return paymentMethodFromDb(data as DbFinancePaymentMethod);
+}
+
+export async function updatePaymentMethod(
+  supabase: SupabaseClient,
+  profileId: string,
+  method: FinancePaymentMethod,
+): Promise<FinancePaymentMethod> {
+  const row = paymentMethodToDb(
+    {
+      ...method,
+      icon: normalizePaymentEmoji(method.icon),
+      name: method.name.trim(),
+    },
+    profileId,
+  );
+  const { data, error } = await supabase
+    .from("finance_payment_methods")
+    .update({
+      name: row.name,
+      icon: row.icon,
+      color: row.color,
+      method_type: row.method_type,
+      sort_order: row.sort_order,
+      is_favorite: row.is_favorite,
+    })
+    .eq("id", method.id)
+    .eq("profile_id", profileId)
+    .select()
+    .single();
+  if (error) throw error;
+  return paymentMethodFromDb(data as DbFinancePaymentMethod);
+}
+
+export async function deletePaymentMethod(
+  supabase: SupabaseClient,
+  profileId: string,
+  paymentMethodId: string,
+): Promise<void> {
+  const usage = await getPaymentMethodUsage(
+    supabase,
+    profileId,
+    paymentMethodId,
+  );
+  if (usage.total > 0) {
+    throw new Error(
+      `Metode pembayaran masih dipakai (${usage.transactions} transaksi, ${usage.subscriptions} langganan). Hapus atau pindahkan dulu.`,
+    );
+  }
+  const { error } = await supabase
+    .from("finance_payment_methods")
+    .delete()
+    .eq("id", paymentMethodId)
+    .eq("profile_id", profileId);
+  if (error) throw error;
+}
+
+export async function reorderPaymentMethods(
+  supabase: SupabaseClient,
+  profileId: string,
+  orderedIds: string[],
+): Promise<FinancePaymentMethod[]> {
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from("finance_payment_methods")
+      .update({ sort_order: index })
+      .eq("id", id)
+      .eq("profile_id", profileId),
+  );
+  const results = await Promise.all(updates);
+  const err = results.find((r) => r.error)?.error;
+  if (err) throw err;
+
+  const { data, error } = await supabase
+    .from("finance_payment_methods")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("sort_order");
+  if (error) throw error;
+  return dedupePaymentMethods(
+    (data as DbFinancePaymentMethod[]).map(paymentMethodFromDb),
+  );
+}
+
+export async function setPaymentMethodFavorite(
+  supabase: SupabaseClient,
+  profileId: string,
+  paymentMethodId: string,
+  isFavorite: boolean,
+): Promise<FinancePaymentMethod> {
+  const { data, error } = await supabase
+    .from("finance_payment_methods")
+    .update({ is_favorite: isFavorite })
+    .eq("id", paymentMethodId)
+    .eq("profile_id", profileId)
+    .select()
+    .single();
+  if (error) throw error;
+  return paymentMethodFromDb(data as DbFinancePaymentMethod);
 }
 
 export async function reorderCategories(

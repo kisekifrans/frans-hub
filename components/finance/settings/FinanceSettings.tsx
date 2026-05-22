@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { RefreshCw, Trash2 } from "lucide-react";
 import { CategoryManager } from "@/components/finance/categories/CategoryManager";
+import { PaymentMethodManager } from "@/components/finance/payment-methods/PaymentMethodManager";
 import { ImportPreviewModal } from "@/components/finance/import/ImportPreviewModal";
 import { PdfImportUploader } from "@/components/finance/import/PdfImportUploader";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -82,6 +83,8 @@ export function FinanceSettings() {
   return (
     <div className="space-y-6">
       <CategoryManager />
+
+      <PaymentMethodManager />
 
       <GlassCard padding="md" className="space-y-4">
         <div>
