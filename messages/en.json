@@ -171,6 +171,17 @@
       "pageLink2": "Shop my picks",
       "pageLink3": "Read my notes"
     },
+    "gear": {
+      "eyebrow": "For gamers & setup nerds",
+      "title": "Show off the gear behind your aura.",
+      "subtitle": "Curate the mouse, keys, audio, and screen that power your vibe. Visitors can tap each piece to know what you actually use.",
+      "cta": "See a setup",
+      "helper": "Optional. Hidden until you turn it on.",
+      "chip1": "Mouse · daily driver",
+      "chip2": "Keyboard · feel & sound",
+      "chip3": "Audio · IEMs / headphones",
+      "chip4": "Display · main screen"
+    },
     "local": {
       "title": "Built for Indonesian wallets",
       "subtitle": "GoPay, OVO, Dana, ShopeePay.",
@@ -238,7 +249,9 @@
     "migrationHint": "supabase/migrations/008_gear.sql",
     "featuredBadge": "Featured",
     "footerPath": "/gear",
-    "priceUnavailable": "Price not available"
+    "priceUnavailable": "Price not available",
+    "notFoundTitle": "No setup here yet",
+    "notFoundBody": "This creator hasn't shared their gear yet. Check back later."
   },
   "academicaudit": {
     "title": "AI Academic Audit",

@@ -171,6 +171,17 @@
       "pageLink2": "购物推荐",
       "pageLink3": "阅读笔记"
     },
+    "gear": {
+      "eyebrow": "为玩家与桌面爱好者",
+      "title": "把你光环背后的装备秀出来。",
+      "subtitle": "把陪伴你的鼠标、键盘、音频与显示器整理成卡片，访客一点即可看到细节。",
+      "cta": "看个示例",
+      "helper": "可选。开启之前对所有人隐藏。",
+      "chip1": "鼠标 · 每日主力",
+      "chip2": "键盘 · 手感与声音",
+      "chip3": "音频 · 耳塞 / 耳机",
+      "chip4": "显示器 · 主屏"
+    },
     "local": {
       "title": "为印尼数字钱包而生",
       "subtitle": "GoPay、OVO、Dana、ShopeePay。",
@@ -238,7 +249,9 @@
     "migrationHint": "supabase/migrations/008_gear.sql",
     "featuredBadge": "精选",
     "footerPath": "/gear",
-    "priceUnavailable": "价格暂无"
+    "priceUnavailable": "价格暂无",
+    "notFoundTitle": "暂无设备展示",
+    "notFoundBody": "该创作者尚未分享他们的装备，稍后再来看看。"
   },
   "academicaudit": {
     "title": "AI 学术审计",

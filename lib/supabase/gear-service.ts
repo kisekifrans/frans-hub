@@ -24,6 +24,11 @@ import {
 
 const PROFILE_SLUG = "main";
 
+type ProfileResolution = {
+  id: string;
+  gear_enabled?: boolean | null;
+};
+
 async function resolveProfileId(supabase: SupabaseClient): Promise<string> {
   const { data, error } = await supabase
     .from("profiles")
@@ -32,6 +37,39 @@ async function resolveProfileId(supabase: SupabaseClient): Promise<string> {
     .single();
   if (error || !data) throw new Error("Profile not found");
   return data.id as string;
+}
+
+async function resolveProfileBySlug(
+  supabase: SupabaseClient,
+  slug: string,
+): Promise<ProfileResolution | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, gear_enabled")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as ProfileResolution | null) ?? null;
+}
+
+async function resolveOwnedProfile(
+  supabase: SupabaseClient,
+): Promise<ProfileResolution> {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, gear_enabled")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("No profile for this account.");
+  return data as ProfileResolution;
 }
 
 async function seedGearCategories(
@@ -55,68 +93,125 @@ async function seedGearCategories(
   });
 }
 
+/**
+ * Core loader: given a resolved profile id, parallel-fetch the gear shape.
+ * Used by every public/owner/site fetcher below.
+ */
+async function loadGearForProfile(
+  supabase: SupabaseClient,
+  profileId: string,
+  options: { includeDisabled?: boolean; seedIfEmpty?: boolean } = {},
+): Promise<GearPageData & { profileId: string }> {
+  // Parallel: profile + settings + categories + items. Previously 4 sequential
+  // round-trips for /gear; now ~1 round-trip's worth.
+  const [profileRes, settingsRes, catRes, itemRes] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", profileId).single(),
+    supabase
+      .from("gear_page_settings")
+      .select("*")
+      .eq("profile_id", profileId)
+      .maybeSingle(),
+    supabase
+      .from("gear_categories")
+      .select("*")
+      .eq("profile_id", profileId)
+      .order("sort_order", { ascending: true }),
+    options.includeDisabled
+      ? supabase
+          .from("gear_items")
+          .select("*")
+          .eq("profile_id", profileId)
+          .order("sort_order", { ascending: true })
+      : supabase
+          .from("gear_items")
+          .select("*")
+          .eq("profile_id", profileId)
+          .eq("enabled", true)
+          .order("sort_order", { ascending: true }),
+  ]);
+
+  if (profileRes.error || !profileRes.data) {
+    throw profileRes.error ?? new Error("No profile");
+  }
+  if (catRes.error) throw catRes.error;
+  if (itemRes.error) throw itemRes.error;
+
+  let catRows = catRes.data ?? [];
+  if (options.seedIfEmpty && catRows.length === 0) {
+    await seedGearCategories(supabase, profileId);
+    const reseed = await supabase
+      .from("gear_categories")
+      .select("*")
+      .eq("profile_id", profileId)
+      .order("sort_order", { ascending: true });
+    if (reseed.error) throw reseed.error;
+    catRows = reseed.data ?? [];
+  }
+
+  return {
+    profileId,
+    profile: gearProfileFromDb(profileRes.data as DbProfile),
+    settings: gearSettingsFromDb(settingsRes.data as DbGearPageSettings | null),
+    categories: (catRows as DbGearCategory[]).map(gearCategoryFromDb),
+    items: (itemRes.data as DbGearItem[]).map(gearItemFromDb),
+  };
+}
+
+/** Legacy: site marketing gear (slug = "main"). Kept so /gear still works. */
 export async function fetchGearPage(
   supabase: SupabaseClient,
   options?: { includeDisabled?: boolean },
 ): Promise<GearPageData & { profileId: string }> {
   const profileId = await resolveProfileId(supabase);
+  return loadGearForProfile(supabase, profileId, {
+    includeDisabled: options?.includeDisabled,
+    seedIfEmpty: true,
+  });
+}
 
-  const { data: profileRow, error: profileError } = await supabase
+/**
+ * Public gear page for a specific creator's slug.
+ * Returns null when the profile doesn't exist or hasn't opted in to gear.
+ * RLS handles the actual data-access guard; this also avoids spending a
+ * round-trip when we already know the page should not be shown.
+ */
+export async function fetchGearPageBySlug(
+  supabase: SupabaseClient,
+  slug: string,
+): Promise<(GearPageData & { profileId: string }) | null> {
+  const resolved = await resolveProfileBySlug(supabase, slug);
+  if (!resolved) return null;
+  if (!resolved.gear_enabled) return null;
+  return loadGearForProfile(supabase, resolved.id, { includeDisabled: false });
+}
+
+/**
+ * Owner-mode fetch for the dashboard. Loads the signed-in user's gear
+ * including disabled items so they can edit them. Auto-seeds default
+ * categories on first load.
+ */
+export async function fetchGearPageForUser(
+  supabase: SupabaseClient,
+): Promise<GearPageData & { profileId: string; gearEnabled: boolean }> {
+  const resolved = await resolveOwnedProfile(supabase);
+  const page = await loadGearForProfile(supabase, resolved.id, {
+    includeDisabled: true,
+    seedIfEmpty: true,
+  });
+  return { ...page, gearEnabled: Boolean(resolved.gear_enabled) };
+}
+
+/** Toggle the user's public gear visibility. Owner-only. */
+export async function setGearEnabledForUser(
+  supabase: SupabaseClient,
+  enabled: boolean,
+): Promise<void> {
+  const resolved = await resolveOwnedProfile(supabase);
+  const { error } = await supabase
     .from("profiles")
-    .select("*")
-    .eq("id", profileId)
-    .single();
-  if (profileError || !profileRow) throw profileError ?? new Error("No profile");
-
-  const { data: settingsRow } = await supabase
-    .from("gear_page_settings")
-    .select("*")
-    .eq("profile_id", profileId)
-    .maybeSingle();
-
-  let { data: catRows, error: catError } = await supabase
-    .from("gear_categories")
-    .select("*")
-    .eq("profile_id", profileId)
-    .order("sort_order", { ascending: true });
-
-  if (catError) throw catError;
-
-  if (!catRows?.length) {
-    await seedGearCategories(supabase, profileId);
-    const res = await supabase
-      .from("gear_categories")
-      .select("*")
-      .eq("profile_id", profileId)
-      .order("sort_order", { ascending: true });
-    catRows = res.data;
-    catError = res.error;
-    if (catError) throw catError;
-  }
-
-  let itemsQuery = supabase
-    .from("gear_items")
-    .select("*")
-    .eq("profile_id", profileId)
-    .order("sort_order", { ascending: true });
-
-  if (!options?.includeDisabled) {
-    itemsQuery = itemsQuery.eq("enabled", true);
-  }
-
-  const { data: itemRows, error: itemError } = await itemsQuery;
-  if (itemError) throw itemError;
-
-  const categories = (catRows as DbGearCategory[]).map(gearCategoryFromDb);
-  const items = (itemRows as DbGearItem[]).map(gearItemFromDb);
-
-  return {
-    profileId,
-    profile: gearProfileFromDb(profileRow as DbProfile),
-    settings: gearSettingsFromDb(settingsRow as DbGearPageSettings | null),
-    categories,
-    items,
-  };
+    .update({ gear_enabled: enabled })
+    .eq("id", resolved.id);
+  if (error) throw error;
 }
 
 export async function saveGearPageSettings(

@@ -15,9 +15,11 @@ import {
   deleteGearCategory,
   deleteGearItem,
   fetchGearPage,
+  fetchGearPageForUser,
   saveGearCategories,
   reorderGearItems,
   saveGearPageSettings,
+  setGearEnabledForUser,
   updateGearItem,
 } from "@/lib/supabase/gear-service";
 import { generateId } from "@/lib/utils";
@@ -28,8 +30,11 @@ function newItemId() {
     : generateId("gear");
 }
 
-export function useGearAdmin() {
+export type GearAdminMode = "site" | "user";
+
+export function useGearAdmin(mode: GearAdminMode = "site") {
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [gearEnabled, setGearEnabled] = useState(false);
   const [settings, setSettings] = useState<GearPageSettings>({
     setupDescription: "",
   });
@@ -60,17 +65,48 @@ export function useGearAdmin() {
     setLoading(true);
     try {
       const supabase = getClient();
-      const page = await fetchGearPage(supabase, { includeDisabled: true });
-      setProfileId(page.profileId);
-      setSettings(page.settings);
-      setCategories(page.categories);
-      setItems(page.items);
+      if (mode === "user") {
+        const page = await fetchGearPageForUser(supabase);
+        setProfileId(page.profileId);
+        setGearEnabled(page.gearEnabled);
+        setSettings(page.settings);
+        setCategories(page.categories);
+        setItems(page.items);
+      } else {
+        const page = await fetchGearPage(supabase, { includeDisabled: true });
+        setProfileId(page.profileId);
+        setGearEnabled(true); // site profile is always public for gear
+        setSettings(page.settings);
+        setCategories(page.categories);
+        setItems(page.items);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Gagal memuat gear.");
     } finally {
       setLoading(false);
     }
-  }, [getClient]);
+  }, [getClient, mode]);
+
+  const toggleGearEnabled = useCallback(
+    async (next: boolean) => {
+      if (mode !== "user") return;
+      setSaving(true);
+      const prev = gearEnabled;
+      setGearEnabled(next);
+      try {
+        await setGearEnabledForUser(getClient(), next);
+        toast.success(
+          next ? "Gear page is now public" : "Gear page hidden",
+        );
+      } catch (e) {
+        setGearEnabled(prev);
+        toast.error(e instanceof Error ? e.message : "Couldn't update");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [mode, gearEnabled, getClient],
+  );
 
   useEffect(() => {
     load();
@@ -279,12 +315,15 @@ export function useGearAdmin() {
 
   return {
     profileId,
+    gearEnabled,
+    mode,
     settings,
     categories,
     items,
     loading,
     saving,
     saveSettings,
+    toggleGearEnabled,
     addCategory,
     removeCategory,
     reorderCategories,

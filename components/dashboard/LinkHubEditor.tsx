@@ -8,6 +8,7 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 import { AuraTeaserCard } from "@/components/dashboard/AuraTeaserCard";
 import { PublicLinkSlugField } from "@/components/dashboard/PublicLinkSlugField";
 import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
+import { GearManager } from "@/components/admin/gear/GearManager";
 import { ThemePicker } from "@/components/profile/ThemePicker";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -39,7 +40,9 @@ export function LinkHubEditor() {
     refreshAnalytics,
   } = useHub("user");
 
-  const [tab, setTab] = useState<"analytics" | "blocks" | "profile">("blocks");
+  const [tab, setTab] = useState<
+    "analytics" | "blocks" | "profile" | "gear"
+  >("blocks");
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -121,6 +124,7 @@ export function LinkHubEditor() {
             [
               ["blocks", "Blocks"],
               ["profile", "Profile"],
+              ["gear", "Setup"],
               ["analytics", "Analytics"],
             ] as const
           ).map(([key, label]) => (
@@ -169,6 +173,14 @@ export function LinkHubEditor() {
             />
             <AuraTeaserCard />
           </div>
+        )}
+
+        {tab === "gear" && (
+          <GearManager
+            mode="user"
+            publicHref={publicPath ? `${publicPath}/gear` : "/gear"}
+            publicLabel={publicPath ? `${publicPath}/gear` : "/gear"}
+          />
         )}
 
         {tab === "profile" && (

@@ -171,6 +171,17 @@
       "pageLink2": "Belanja pilihanku",
       "pageLink3": "Baca catatanku"
     },
+    "gear": {
+      "eyebrow": "Buat gamer & setup nerd",
+      "title": "Pamerin gear di balik aura kamu.",
+      "subtitle": "Kurasi mouse, keyboard, audio, dan layar yang nemenin kamu. Visitor bisa tap setiap item untuk lihat detailnya.",
+      "cta": "Lihat setup",
+      "helper": "Opsional. Tersembunyi sampai kamu aktifkan.",
+      "chip1": "Mouse · daily driver",
+      "chip2": "Keyboard · feel & sound",
+      "chip3": "Audio · IEM / headphone",
+      "chip4": "Layar · monitor utama"
+    },
     "local": {
       "title": "Untuk dompet digital Indonesia",
       "subtitle": "GoPay, OVO, Dana, ShopeePay.",
@@ -238,7 +249,9 @@
     "migrationHint": "supabase/migrations/008_gear.sql",
     "featuredBadge": "Unggulan",
     "footerPath": "/gear",
-    "priceUnavailable": "Harga tidak tersedia"
+    "priceUnavailable": "Harga tidak tersedia",
+    "notFoundTitle": "Setup belum tersedia",
+    "notFoundBody": "Kreator ini belum membagikan gear mereka. Coba lagi nanti."
   },
   "academicaudit": {
     "title": "AI Academic Audit",

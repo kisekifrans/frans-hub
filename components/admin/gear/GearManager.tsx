@@ -23,7 +23,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GearItemEditor } from "@/components/admin/gear/GearItemEditor";
 import { sortGearCategories } from "@/lib/gear/group";
 import type { GearCategory, GearItem } from "@/lib/gear/types";
-import { useGearAdmin } from "@/hooks/useGearAdmin";
+import { Eye, EyeOff } from "lucide-react";
+import { useGearAdmin, type GearAdminMode } from "@/hooks/useGearAdmin";
 import { cn } from "@/lib/utils";
 
 function SortableGearItem({
@@ -78,8 +79,20 @@ function SortableGearItem({
   );
 }
 
-export function GearManager() {
-  const gear = useGearAdmin();
+export interface GearManagerProps {
+  mode?: GearAdminMode;
+  /** Public URL to link to (e.g. "/id/gear" or "/id/u/<slug>/gear"). */
+  publicHref?: string;
+  /** Visible label shown next to "Public:". */
+  publicLabel?: string;
+}
+
+export function GearManager({
+  mode = "site",
+  publicHref = "/id/gear",
+  publicLabel = "/gear",
+}: GearManagerProps = {}) {
+  const gear = useGearAdmin(mode);
   const [newCategory, setNewCategory] = useState("");
 
   const sensors = useSensors(
@@ -94,6 +107,7 @@ export function GearManager() {
   }
 
   const categories = sortGearCategories(gear.categories);
+  const isUserMode = mode === "user";
 
   const handleItemDragEnd = (categoryId: string) => (event: DragEndEvent) => {
     const { active, over } = event;
@@ -111,17 +125,67 @@ export function GearManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-zinc-500">
-          Kelola gear showcase. Publik:{" "}
-          <Link href="/id/gear" className="font-medium text-violet-600 underline dark:text-violet-300">
-            /gear
-          </Link>
-        </p>
-        {gear.saving ? (
-          <span className="text-xs text-violet-600">Menyimpan…</span>
-        ) : null}
-      </div>
+      {isUserMode ? (
+        <GlassCard padding="lg" className="space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                Your setup, your way
+              </h3>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                Showcase the gear behind your aura. Visitors see it at{" "}
+                <Link
+                  href={publicHref}
+                  className="font-medium text-violet-600 underline dark:text-violet-300"
+                >
+                  {publicLabel}
+                </Link>
+                .
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={gear.saving}
+              onClick={() => void gear.toggleGearEnabled(!gear.gearEnabled)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                gear.gearEnabled
+                  ? "bg-violet-600 text-white"
+                  : "bg-white/40 text-zinc-600 hover:bg-white/60 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10",
+              )}
+            >
+              {gear.gearEnabled ? (
+                <>
+                  <Eye className="h-3.5 w-3.5" />
+                  Public
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-3.5 w-3.5" />
+                  Hidden
+                </>
+              )}
+            </button>
+          </div>
+          {!gear.gearEnabled ? (
+            <p className="text-xs text-zinc-500">
+              Your gear page is hidden. Toggle to <b>Public</b> when you&apos;re ready.
+            </p>
+          ) : null}
+        </GlassCard>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-zinc-500">
+            Kelola gear showcase. Publik:{" "}
+            <Link href={publicHref} className="font-medium text-violet-600 underline dark:text-violet-300">
+              {publicLabel}
+            </Link>
+          </p>
+          {gear.saving ? (
+            <span className="text-xs text-violet-600">Menyimpan…</span>
+          ) : null}
+        </div>
+      )}
 
       <GlassCard padding="lg" className="max-w-2xl space-y-3">
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">

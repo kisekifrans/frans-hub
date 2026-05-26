@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Link as LocaleLink } from "@/i18n/navigation";
 import { HeroInsightCards } from "@/components/landing/HeroInsightCards";
+import { GearTeaser } from "@/components/landing/GearTeaser";
 import { IdentityShowcase } from "@/components/landing/IdentityShowcase";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingUserNav } from "@/components/landing/LandingUserNav";
@@ -109,6 +110,9 @@ export function LandingPage() {
 
         {/* Identity showcase — your page, your vibe */}
         <IdentityShowcase />
+
+        {/* Setup & gear teaser — opt-in showcase for gamer / setup enthusiasts. */}
+        <GearTeaser />
 
         {/* Aura recap (positioned as bonus emotional layer, not primary product) */}
         <section

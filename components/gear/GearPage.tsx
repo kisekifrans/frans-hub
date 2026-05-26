@@ -13,14 +13,34 @@ import {
   groupGearByCategory,
 } from "@/lib/gear/group";
 
-export function GearPage() {
+export interface GearPageProps {
+  /** When set, loads gear for the given creator slug instead of the site profile. */
+  slug?: string;
+}
+
+export function GearPage({ slug }: GearPageProps = {}) {
   const t = useTranslations("gear");
-  const { data, profileId, loading, error } = usePublicGear();
+  const { data, profileId, loading, error, notFound } = usePublicGear(slug);
 
   if (loading) {
     return (
       <PageShell variant="violet" contentClassName="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+      </PageShell>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <PageShell variant="violet" contentClassName="flex min-h-screen items-center justify-center p-6 text-center">
+        <div className="max-w-sm space-y-3">
+          <p className="text-base font-semibold text-zinc-900 dark:text-white">
+            {t("notFoundTitle")}
+          </p>
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            {t("notFoundBody")}
+          </p>
+        </div>
       </PageShell>
     );
   }

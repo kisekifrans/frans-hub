@@ -18,6 +18,8 @@ export interface DbProfile {
   verified: boolean;
   social_links: DbSocialLink[];
   theme: DbTheme;
+  gear_enabled?: boolean | null;
+  is_published?: boolean | null;
   created_at: string;
   updated_at: string;
 }
