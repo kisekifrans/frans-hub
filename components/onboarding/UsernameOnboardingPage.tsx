@@ -17,6 +17,7 @@ export function UsernameOnboardingPage() {
   const router = useRouter();
   const session = useSession();
   const [initial, setInitial] = useState("");
+  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     if (session.loading) return;
@@ -48,7 +49,7 @@ export function UsernameOnboardingPage() {
     if (initial) picker.setUsername(initial);
   }, [initial]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (session.loading) {
+  if (session.loading || claiming) {
     return (
       <PageShell contentClassName="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
@@ -72,7 +73,20 @@ export function UsernameOnboardingPage() {
           <GlassCard padding="lg" className="shadow-xl shadow-violet-500/10">
             <UsernamePicker
               picker={picker}
-              onSuccess={() => router.replace("/dashboard")}
+              onSuccess={() => {
+                // Cached session.needsUsernameOnboarding is still true here.
+                // Refresh first, then hard-navigate so the dashboard mounts
+                // with a fresh SessionProvider state. router.replace would
+                // re-use the stale cache and bounce us back into onboarding.
+                setClaiming(true);
+                void (async () => {
+                  try {
+                    await session.refresh();
+                  } finally {
+                    window.location.href = "/dashboard";
+                  }
+                })();
+              }}
             />
           </GlassCard>
         </motion.div>

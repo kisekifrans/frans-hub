@@ -142,8 +142,10 @@ export async function ensureUserProfile(
 
   const profileId = created.id as string;
 
-  const { seedFinanceDefaults } = await import("@/lib/supabase/finance-service");
-  await seedFinanceDefaults(supabase, profileId).catch(() => {});
+  // NOTE: finance defaults are seeded lazily by `bootstrapFinanceState` the
+  // first time the user opens /finance. We don't seed here because the seed
+  // (~23 sequential inserts) would block the OAuth callback redirect by
+  // several seconds and most users will set up links before finance anyway.
 
   return {
     id: profileId,

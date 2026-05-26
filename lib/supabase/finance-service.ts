@@ -88,45 +88,68 @@ export async function seedFinanceDefaults(
   profileId: string,
 ): Promise<void> {
   await withSeedLock(profileId, async () => {
+    // Batched seed: 2 SELECTs + up to 2 bulk INSERTs total, regardless of how
+    // many defaults exist. Previous loop did 2×N round-trips which made first
+    // /finance load (and signup, when this used to block the callback) take
+    // 5-15s on Indonesia→Singapore latency.
+
     const cats = [
       ...DEFAULT_EXPENSE_CATEGORIES,
       ...DEFAULT_INCOME_CATEGORIES,
     ];
-    for (let i = 0; i < cats.length; i++) {
-      const c = cats[i];
-      const { data: existing } = await supabase
-        .from("finance_categories")
-        .select("id")
-        .eq("profile_id", profileId)
-        .eq("type", c.type)
-        .ilike("name", c.name)
-        .maybeSingle();
 
-      if (existing) continue;
+    const { data: existingCats } = await supabase
+      .from("finance_categories")
+      .select("name, type")
+      .eq("profile_id", profileId);
 
-      const { error } = await supabase.from("finance_categories").insert({
+    const existingCatKeys = new Set(
+      (existingCats ?? []).map(
+        (c: { name?: string; type?: string }) =>
+          `${(c.type ?? "").toLowerCase()}::${(c.name ?? "").toLowerCase()}`,
+      ),
+    );
+
+    const catRows = cats
+      .map((c, i) => ({ c, i }))
+      .filter(
+        ({ c }) =>
+          !existingCatKeys.has(
+            `${c.type.toLowerCase()}::${c.name.toLowerCase()}`,
+          ),
+      )
+      .map(({ c, i }) => ({
         profile_id: profileId,
         name: c.name,
         icon: c.icon,
         color: c.color,
         type: c.type,
         sort_order: i,
-      });
+      }));
+
+    if (catRows.length) {
+      const { error } = await supabase
+        .from("finance_categories")
+        .insert(catRows);
+      // Tolerate races between concurrent first-visit seeds.
       if (error && !isUniqueViolation(error)) throw error;
     }
 
-    for (let i = 0; i < DEFAULT_PAYMENT_METHODS.length; i++) {
-      const m = DEFAULT_PAYMENT_METHODS[i];
-      const { data: existing } = await supabase
-        .from("finance_payment_methods")
-        .select("id")
-        .eq("profile_id", profileId)
-        .ilike("name", m.name)
-        .maybeSingle();
+    const { data: existingMethods } = await supabase
+      .from("finance_payment_methods")
+      .select("name")
+      .eq("profile_id", profileId);
 
-      if (existing) continue;
+    const existingMethodNames = new Set(
+      (existingMethods ?? []).map((m: { name?: string }) =>
+        (m.name ?? "").toLowerCase(),
+      ),
+    );
 
-      const { error } = await supabase.from("finance_payment_methods").insert({
+    const methodRows = DEFAULT_PAYMENT_METHODS
+      .map((m, i) => ({ m, i }))
+      .filter(({ m }) => !existingMethodNames.has(m.name.toLowerCase()))
+      .map(({ m, i }) => ({
         profile_id: profileId,
         name: m.name,
         icon: m.icon,
@@ -135,7 +158,12 @@ export async function seedFinanceDefaults(
         sort_order: i,
         is_default: m.isDefault ?? true,
         is_favorite: false,
-      });
+      }));
+
+    if (methodRows.length) {
+      const { error } = await supabase
+        .from("finance_payment_methods")
+        .insert(methodRows);
       if (error && !isUniqueViolation(error)) throw error;
     }
   });
