@@ -39,6 +39,19 @@ async function resolveProfileId(supabase: SupabaseClient): Promise<string> {
   return data.id as string;
 }
 
+/**
+ * PG error code 42703 = undefined_column. Surfaces when the gear_enabled
+ * column hasn't been created yet (migration 021 not applied). We treat the
+ * missing column the same as gear_enabled = false so the dashboard still
+ * loads and we can show a "run the migration" hint instead of crashing.
+ */
+function isMissingGearEnabledColumn(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: string; message?: string };
+  if (e.code === "42703") return true;
+  return Boolean(e.message?.includes("gear_enabled"));
+}
+
 async function resolveProfileBySlug(
   supabase: SupabaseClient,
   slug: string,
@@ -48,7 +61,21 @@ async function resolveProfileBySlug(
     .select("id, gear_enabled")
     .eq("slug", slug)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isMissingGearEnabledColumn(error)) {
+      // Pre-migration fallback: pretend gear is disabled until 021 runs.
+      const { data: idOnly, error: idErr } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (idErr) throw idErr;
+      return idOnly
+        ? ({ id: (idOnly as { id: string }).id, gear_enabled: false })
+        : null;
+    }
+    throw error;
+  }
   return (data as ProfileResolution | null) ?? null;
 }
 
@@ -67,7 +94,19 @@ async function resolveOwnedProfile(
     .select("id, gear_enabled")
     .eq("user_id", user.id)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isMissingGearEnabledColumn(error)) {
+      const { data: idOnly, error: idErr } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (idErr) throw idErr;
+      if (!idOnly) throw new Error("No profile for this account.");
+      return { id: (idOnly as { id: string }).id, gear_enabled: false };
+    }
+    throw error;
+  }
   if (!data) throw new Error("No profile for this account.");
   return data as ProfileResolution;
 }
@@ -138,14 +177,20 @@ async function loadGearForProfile(
 
   let catRows = catRes.data ?? [];
   if (options.seedIfEmpty && catRows.length === 0) {
-    await seedGearCategories(supabase, profileId);
-    const reseed = await supabase
-      .from("gear_categories")
-      .select("*")
-      .eq("profile_id", profileId)
-      .order("sort_order", { ascending: true });
-    if (reseed.error) throw reseed.error;
-    catRows = reseed.data ?? [];
+    // Seed best-effort. Pre-migration the old admin-only RLS will reject the
+    // INSERT for normal users; in that case we surface an empty list rather
+    // than crashing the whole page.
+    try {
+      await seedGearCategories(supabase, profileId);
+      const reseed = await supabase
+        .from("gear_categories")
+        .select("*")
+        .eq("profile_id", profileId)
+        .order("sort_order", { ascending: true });
+      if (!reseed.error) catRows = reseed.data ?? [];
+    } catch {
+      // swallow — UI will render the empty-categories state
+    }
   }
 
   return {

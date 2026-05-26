@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
 import { AnalyticsPanel } from "@/components/analytics/AnalyticsPanel";
@@ -40,9 +41,22 @@ export function LinkHubEditor() {
     refreshAnalytics,
   } = useHub("user");
 
-  const [tab, setTab] = useState<
-    "analytics" | "blocks" | "profile" | "gear"
-  >("blocks");
+  type DashboardTab = "analytics" | "blocks" | "profile" | "gear";
+
+  const searchParams = useSearchParams();
+  const initialTab: DashboardTab = (() => {
+    const requested = searchParams?.get("tab");
+    if (
+      requested === "blocks" ||
+      requested === "profile" ||
+      requested === "gear" ||
+      requested === "analytics"
+    ) {
+      return requested;
+    }
+    return "blocks";
+  })();
+  const [tab, setTab] = useState<DashboardTab>(initialTab);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -178,8 +192,8 @@ export function LinkHubEditor() {
         {tab === "gear" && (
           <GearManager
             mode="user"
-            publicHref={publicPath ? `${publicPath}/gear` : "/gear"}
-            publicLabel={publicPath ? `${publicPath}/gear` : "/gear"}
+            publicHref={profile.slug ? `/hub/${profile.slug}/gear` : "/gear"}
+            publicLabel={profile.slug ? `/${profile.slug}/gear` : "/gear"}
           />
         )}
 

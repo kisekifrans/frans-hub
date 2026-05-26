@@ -23,9 +23,103 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GearItemEditor } from "@/components/admin/gear/GearItemEditor";
 import { sortGearCategories } from "@/lib/gear/group";
 import type { GearCategory, GearItem } from "@/lib/gear/types";
-import { Eye, EyeOff } from "lucide-react";
+import {
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Headphones,
+  Keyboard,
+  Loader2,
+  Monitor,
+  Mouse,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { useGearAdmin, type GearAdminMode } from "@/hooks/useGearAdmin";
 import { cn } from "@/lib/utils";
+
+function UserGearWelcome({
+  gearEnabled,
+  publicHref,
+  publicLabel,
+  onTurnPublic,
+  saving,
+}: {
+  gearEnabled: boolean;
+  publicHref: string;
+  publicLabel: string;
+  onTurnPublic: () => void;
+  saving: boolean;
+}) {
+  return (
+    <GlassCard
+      padding="lg"
+      className="relative overflow-hidden border-violet-200/40 bg-gradient-to-br from-white/60 via-violet-50/35 to-fuchsia-50/35 dark:from-zinc-900/45 dark:via-violet-950/30 dark:to-fuchsia-950/30"
+    >
+      <div
+        className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-violet-500/15 blur-3xl"
+        aria-hidden
+      />
+      <div className="relative space-y-4">
+        <div>
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-300">
+            <Sparkles className="h-3 w-3" aria-hidden />
+            Setup studio
+          </p>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-[1.4rem]">
+            Welcome to your setup page.
+          </h2>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            Three steps. Add gear, pick a couple of favorites to feature, and
+            flip it public when you&apos;re ready.
+          </p>
+        </div>
+
+        <div className="grid gap-2.5 sm:grid-cols-3">
+          {[
+            { Icon: Mouse, label: "1. Add categories & items" },
+            { Icon: Keyboard, label: "2. Set a few as featured" },
+            { Icon: Monitor, label: "3. Toggle public to share" },
+          ].map(({ Icon, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-2.5 rounded-xl border border-white/40 bg-white/40 px-3 py-2.5 text-[11px] font-medium text-zinc-700 backdrop-blur-sm dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-zinc-200"
+            >
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-700 dark:text-violet-200">
+                <Icon className="h-3.5 w-3.5" aria-hidden />
+              </span>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/40 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-600 dark:bg-white/5 dark:text-zinc-300">
+            <Headphones className="h-3 w-3" aria-hidden />
+            Mouse · Keyboard · Audio · Display
+          </span>
+          {gearEnabled ? (
+            <Link
+              href={publicHref}
+              className="text-[11px] font-medium text-violet-600 underline dark:text-violet-300"
+            >
+              View live: {publicLabel}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={onTurnPublic}
+              className="rounded-full bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-violet-500"
+            >
+              Make it public when ready
+            </button>
+          )}
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
 
 function SortableGearItem({
   item,
@@ -100,14 +194,58 @@ export function GearManager({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  if (gear.loading || !gear.profileId) {
+  const isUserMode = mode === "user";
+
+  if (gear.loading) {
     return (
-      <p className="text-sm text-zinc-500">Memuat gear admin…</p>
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
+        <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
+        Loading your setup…
+      </div>
+    );
+  }
+
+  if (gear.loadError || !gear.profileId) {
+    // Detect the most common cause: migration 021 hasn't been applied yet.
+    const looksLikeMissingMigration =
+      gear.loadError?.toLowerCase().includes("gear_enabled") ||
+      gear.loadError?.includes("42703");
+
+    return (
+      <GlassCard padding="lg" className="space-y-3">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+              {looksLikeMissingMigration
+                ? "Setup is almost ready"
+                : "Couldn't load your setup"}
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {looksLikeMissingMigration ? (
+                <>
+                  Your account is fine — your gear table just needs one last
+                  migration to come online. Try again in a minute, or refresh.
+                </>
+              ) : (
+                gear.loadError ?? "Something went wrong fetching your gear."
+              )}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => void gear.reload()}
+          className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Try again
+        </button>
+      </GlassCard>
     );
   }
 
   const categories = sortGearCategories(gear.categories);
-  const isUserMode = mode === "user";
 
   const handleItemDragEnd = (categoryId: string) => (event: DragEndEvent) => {
     const { active, over } = event;
@@ -123,8 +261,20 @@ export function GearManager({
     gear.reorderItemsInCategory(categoryId, reordered);
   };
 
+  const showWelcome = isUserMode && gear.items.length === 0;
+
   return (
     <div className="space-y-6">
+      {showWelcome && (
+        <UserGearWelcome
+          gearEnabled={gear.gearEnabled}
+          publicHref={publicHref}
+          publicLabel={publicLabel}
+          saving={gear.saving}
+          onTurnPublic={() => void gear.toggleGearEnabled(true)}
+        />
+      )}
+
       {isUserMode ? (
         <GlassCard padding="lg" className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-3">

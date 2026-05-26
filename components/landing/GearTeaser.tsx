@@ -9,8 +9,10 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import NextLink from "next/link";
 import { Link } from "@/i18n/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { useOptionalSession } from "@/components/providers/SessionProvider";
 
 type ChipDef = {
   id: string;
@@ -57,6 +59,13 @@ const CHIPS: ChipDef[] = [
 export function GearTeaser() {
   const t = useTranslations("landing.gear");
   const reduceMotion = useReducedMotion() ?? false;
+  const session = useOptionalSession();
+  const isAuthed = Boolean(session?.authenticated);
+  // Logged-in users land directly on their Setup tab so they can start adding
+  // their own gear. Guests get to see the site's curated example.
+  const ctaHref = isAuthed ? "/dashboard?tab=gear" : "/gear";
+  const ctaLabel = isAuthed ? t("ctaSignedIn") : t("cta");
+  const helperLabel = isAuthed ? t("helperSignedIn") : t("helper");
 
   return (
     <motion.section
@@ -96,15 +105,25 @@ export function GearTeaser() {
               {t("subtitle")}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Link
-                href="/gear"
-                className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-violet-500/25 transition hover:bg-violet-500"
-              >
-                {t("cta")}
-                <span aria-hidden>→</span>
-              </Link>
+              {isAuthed ? (
+                <NextLink
+                  href={ctaHref}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-violet-500/25 transition hover:bg-violet-500"
+                >
+                  {ctaLabel}
+                  <span aria-hidden>→</span>
+                </NextLink>
+              ) : (
+                <Link
+                  href={ctaHref}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-violet-500/25 transition hover:bg-violet-500"
+                >
+                  {ctaLabel}
+                  <span aria-hidden>→</span>
+                </Link>
+              )}
               <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                {t("helper")}
+                {helperLabel}
               </span>
             </div>
           </div>

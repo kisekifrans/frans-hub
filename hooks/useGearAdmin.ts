@@ -42,6 +42,7 @@ export function useGearAdmin(mode: GearAdminMode = "site") {
   const [items, setItems] = useState<GearItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [client, setClient] = useState<SupabaseClient | null>(null);
   const itemsRef = useRef<GearItem[]>([]);
 
@@ -59,10 +60,11 @@ export function useGearAdmin(mode: GearAdminMode = "site") {
   const load = useCallback(async () => {
     if (!isSupabaseConfigured()) {
       setLoading(false);
-      toast.error("Supabase belum dikonfigurasi.");
+      setLoadError("Supabase is not configured.");
       return;
     }
     setLoading(true);
+    setLoadError(null);
     try {
       const supabase = getClient();
       if (mode === "user") {
@@ -81,7 +83,10 @@ export function useGearAdmin(mode: GearAdminMode = "site") {
         setItems(page.items);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Gagal memuat gear.");
+      const message = e instanceof Error ? e.message : "Couldn't load gear.";
+      setLoadError(message);
+      // Only toast in site mode; user mode shows an inline error card.
+      if (mode === "site") toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -317,6 +322,7 @@ export function useGearAdmin(mode: GearAdminMode = "site") {
     profileId,
     gearEnabled,
     mode,
+    loadError,
     settings,
     categories,
     items,
