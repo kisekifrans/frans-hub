@@ -8,8 +8,12 @@ export type UserProfileRow = {
   user_id: string | null;
   username: string;
   display_name: string;
+  avatar_url: string | null;
   slug_changed_at?: string | null;
 };
+
+const PROFILE_COLUMNS =
+  "id, slug, user_id, username, display_name, avatar_url, slug_changed_at";
 
 /** Profile owned by the signed-in user (default workspace). */
 export async function getProfileForUser(
@@ -18,7 +22,7 @@ export async function getProfileForUser(
 ): Promise<UserProfileRow | null> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, slug, user_id, username, display_name, slug_changed_at")
+    .select(PROFILE_COLUMNS)
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -36,7 +40,7 @@ export async function getProfileBySlug(
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, slug, user_id, username, display_name, slug_changed_at")
+    .select(PROFILE_COLUMNS)
     .eq("slug", normalized)
     .maybeSingle();
 

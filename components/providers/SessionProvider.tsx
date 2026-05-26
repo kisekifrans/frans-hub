@@ -20,6 +20,7 @@ export type SessionProfile = {
   slug: string;
   username: string;
   displayName: string;
+  avatarUrl: string | null;
   slugChangedAt: string | null;
 };
 
@@ -57,6 +58,7 @@ type SessionResponse = {
     slug: string;
     username: string;
     displayName: string;
+    avatarUrl?: string | null;
     slugChangedAt?: string | null;
   } | null;
 };
@@ -96,6 +98,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
                 slug: data.profile.slug,
                 username: data.profile.username,
                 displayName: data.profile.displayName,
+                avatarUrl: data.profile.avatarUrl ?? null,
                 slugChangedAt: data.profile.slugChangedAt ?? null,
               }
             : null,

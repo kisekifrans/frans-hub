@@ -5,10 +5,10 @@ import { ArrowRight, Lock, Shield, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Link as LocaleLink } from "@/i18n/navigation";
-import { MemberAreaLink } from "@/components/auth/MemberAreaLink";
 import { HeroInsightCards } from "@/components/landing/HeroInsightCards";
 import { IdentityShowcase } from "@/components/landing/IdentityShowcase";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { LandingUserNav } from "@/components/landing/LandingUserNav";
 import { RecapPreview } from "@/components/landing/RecapPreview";
 import {
   LANDING_PAYMENT_KEYS,
@@ -47,13 +47,7 @@ export function LandingPage() {
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <LanguageSwitcher />
             <ThemeToggle />
-            <MemberAreaLink
-              next="/dashboard"
-              className="touch-manipulation rounded-full bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition active:scale-[0.98] hover:bg-violet-500 sm:px-3.5 sm:py-1.5"
-              aria-label={t("nav.signIn")}
-            >
-              {t("nav.signIn")}
-            </MemberAreaLink>
+            <LandingUserNav />
           </div>
         </div>
       </LandingHeader>

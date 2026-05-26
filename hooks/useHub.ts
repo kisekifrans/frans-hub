@@ -31,23 +31,19 @@ function createEmptyBlock(type: BlockType, order: number): ProfileBlock {
       ? crypto.randomUUID()
       : generateId(type);
   const base = { id, type, enabled: true, order };
+  // URLs start empty; the user fills them in via the inline editor.
+  // Don't pre-fill with "https://" or example URLs — the security validator
+  // (lib/security/block-url.ts) rejects bare schemes, and example URLs
+  // become accidental broken-link spam if the user adds and forgets to edit.
   switch (type) {
     case "link":
-      return { ...base, type: "link", title: "New link", url: "https://" };
+      return { ...base, type: "link", title: "New link", url: "" };
     case "gif":
       return { ...base, type: "gif", url: "", caption: "" };
     case "tiktok":
-      return {
-        ...base,
-        type: "tiktok",
-        url: "https://www.tiktok.com/@user/video/0",
-      };
+      return { ...base, type: "tiktok", url: "" };
     case "instagram":
-      return {
-        ...base,
-        type: "instagram",
-        url: "https://www.instagram.com/p/example/",
-      };
+      return { ...base, type: "instagram", url: "" };
   }
 }
 

@@ -98,6 +98,10 @@ async function pickAvailableSlug(
  * blocks because:
  *   1. Anonymous visitors of /<newuser> see spam-looking demo links.
  *   2. Empty state copy already prompts the user to add their first link.
+ *
+ * Existing users also get their Google profile picture backfilled if their
+ * stored avatar is empty (covers accounts created before Google-meta
+ * extraction was added).
  */
 export async function ensureUserProfile(
   supabase: SupabaseClient,
@@ -105,12 +109,31 @@ export async function ensureUserProfile(
 ): Promise<BootstrappedProfile> {
   const { data: existing, error: existingError } = await supabase
     .from("profiles")
-    .select("id, slug")
+    .select("id, slug, avatar_url, display_name")
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (existingError) throw existingError;
   if (existing) {
+    // One-shot backfill of avatar / display name from Google metadata when the
+    // stored values are missing. Doesn't overwrite anything the user has set.
+    const patches: Record<string, string> = {};
+    if (!existing.avatar_url) {
+      const fromGoogle = avatarUrlFromUser(user);
+      if (fromGoogle) patches.avatar_url = fromGoogle;
+    }
+    if (!existing.display_name || existing.display_name === "Frans Hub") {
+      const fromGoogle = displayNameFromUser(user, existing.slug as string);
+      if (fromGoogle && fromGoogle !== existing.display_name) {
+        patches.display_name = fromGoogle;
+      }
+    }
+    if (Object.keys(patches).length > 0) {
+      await supabase
+        .from("profiles")
+        .update(patches)
+        .eq("id", existing.id as string);
+    }
     return {
       id: existing.id as string,
       slug: existing.slug as string,

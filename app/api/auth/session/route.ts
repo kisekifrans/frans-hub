@@ -36,6 +36,7 @@ export async function GET() {
             slug: profile.slug,
             username: profile.username,
             displayName: profile.display_name,
+            avatarUrl: profile.avatar_url ?? null,
             slugChangedAt: profile.slug_changed_at ?? null,
           }
         : null,
