@@ -67,7 +67,8 @@ function MemoryGhost({
 
 export function RecapPreview() {
   const t = useTranslations("landing.recap");
-  const reduceMotion = useReducedMotion();
+  // useReducedMotion() returns boolean | null on first paint; coerce once.
+  const reduceMotion = useReducedMotion() ?? false;
   const [storyOpen, setStoryOpen] = useState(false);
 
   return (
@@ -92,7 +93,7 @@ export function RecapPreview() {
           className="relative z-10 w-full"
         >
           <RecapCard
-            reduceMotion={reduceMotion ?? false}
+            reduceMotion={reduceMotion}
             onShareClick={() => setStoryOpen(true)}
           />
         </motion.div>

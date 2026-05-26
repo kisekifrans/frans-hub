@@ -113,7 +113,9 @@ function InsightCard({
 }
 
 export function HeroInsightCards() {
-  const reduceMotion = useReducedMotion();
+  // useReducedMotion() returns boolean | null while it resolves; treat null as
+  // "motion ok" so the first frame still animates.
+  const reduceMotion = useReducedMotion() ?? false;
 
   return (
     <div

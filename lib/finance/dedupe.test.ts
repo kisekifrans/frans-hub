@@ -27,8 +27,8 @@ assert.equal(
 
 assert.equal(
   dedupePaymentMethods([
-    { id: "a", name: "BCA", icon: "🏦", order: 0 },
-    { id: "b", name: "bca", icon: "🏦", order: 1 },
+    { id: "a", name: "BCA", icon: "🏦", color: "#3b82f6", type: "bank", order: 0 },
+    { id: "b", name: "bca", icon: "🏦", color: "#3b82f6", type: "bank", order: 1 },
   ]).length,
   1,
 );
