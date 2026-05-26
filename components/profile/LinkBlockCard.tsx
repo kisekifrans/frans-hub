@@ -11,6 +11,7 @@ import { thumbnailFocusStyle } from "@/lib/thumbnail-focus";
 import { openLinkUrl } from "@/lib/thumbnail-crop";
 import type { LinkBlock } from "@/lib/types";
 import { isValidImageSrc } from "@/lib/image-utils";
+import { validateBlockUrl } from "@/lib/security/block-url";
 import { cn } from "@/lib/utils";
 
 interface LinkBlockCardProps {
@@ -26,7 +27,9 @@ export function LinkBlockCard({ block, featured, onClick }: LinkBlockCardProps) 
   const layout = block.thumbnailLayout ?? "side";
   const isBanner = hasThumbnail && layout === "banner";
   const thumbStyle = thumbnailFocusStyle(block.thumbnailFocus);
-  const hasUrl = Boolean(block.url?.trim());
+  const validated = validateBlockUrl("link", block.url);
+  const safeUrl = validated.ok ? validated.url : "";
+  const hasUrl = Boolean(safeUrl);
 
   const openBlockLink = useCallback(
     (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -34,16 +37,17 @@ export function LinkBlockCard({ block, featured, onClick }: LinkBlockCardProps) 
       e.stopPropagation();
       if (!hasUrl) return;
       onClick?.();
-      openLinkUrl(block.url);
+      openLinkUrl(safeUrl);
     },
-    [block.url, hasUrl, onClick],
+    [safeUrl, hasUrl, onClick],
   );
 
   const copyLink = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!hasUrl) return;
     try {
-      await navigator.clipboard.writeText(block.url);
+      await navigator.clipboard.writeText(safeUrl);
       setCopied(true);
       toast.success("Link copied");
       setTimeout(() => setCopied(false), 2000);

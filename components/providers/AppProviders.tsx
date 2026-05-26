@@ -1,5 +1,6 @@
 "use client";
 
+import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ToasterProvider } from "@/components/providers/ToasterProvider";
 
@@ -10,8 +11,10 @@ import { ToasterProvider } from "@/components/providers/ToasterProvider";
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      {children}
-      <ToasterProvider />
+      <SessionProvider>
+        {children}
+        <ToasterProvider />
+      </SessionProvider>
     </ThemeProvider>
   );
 }

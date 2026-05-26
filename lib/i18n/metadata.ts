@@ -5,7 +5,15 @@ import { routing, type AppLocale } from "@/i18n/routing";
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://agisna.dev";
 
-type PageKey = "home" | "gear" | "academicaudit" | "signature" | "typing" | "typingmonster";
+type PageKey =
+  | "home"
+  | "gear"
+  | "academicaudit"
+  | "signature"
+  | "typing"
+  | "typingmonster"
+  | "privacy"
+  | "terms";
 
 const pathByPage: Record<PageKey, string> = {
   home: "",
@@ -14,6 +22,8 @@ const pathByPage: Record<PageKey, string> = {
   signature: "/signature",
   typing: "/typing",
   typingmonster: "/typingmonster",
+  privacy: "/privacy",
+  terms: "/terms",
 };
 
 export async function buildLocalizedMetadata(

@@ -335,9 +335,6 @@ export function parseGopayText(text: string): ParsedTransactionDraft[] {
   const fullText = repairExtractedTxnIds(text);
   const blocks = splitBlocksByTxnId(fullText);
 
-  console.log("===== BLOCKS =====");
-  console.log(blocks);
-
   let carryDate = new Date().toISOString().slice(0, 10);
   const parsed: ParsedTransactionDraft[] = [];
 
@@ -354,10 +351,5 @@ export function parseGopayText(text: string): ParsedTransactionDraft[] {
     }
   }
 
-  const rows = dedupeDrafts(parsed);
-
-  console.log("===== PARSED ROWS =====");
-  console.log(rows);
-
-  return rows;
+  return dedupeDrafts(parsed);
 }

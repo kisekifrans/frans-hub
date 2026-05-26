@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuthenticatedUser } from "@/lib/auth/require-user";
+import { isSiteAdmin } from "@/lib/auth/site-admin";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -15,9 +17,33 @@ export async function GET(
 ) {
   const auth = await requireAuthenticatedUser();
   if (auth instanceof NextResponse) return auth;
+  const { user } = auth;
+
+  const { sessionId } = await context.params;
+  if (!sessionId || sessionId.length > 200) {
+    return NextResponse.json({ error: "Invalid session id" }, { status: 400 });
+  }
+
+  const supabase = await createClient();
+  const [{ data: owned }, admin] = await Promise.all([
+    supabase
+      .from("academicaudit_sessions")
+      .select("user_id")
+      .eq("session_id", sessionId)
+      .maybeSingle(),
+    isSiteAdmin(supabase, user.id, user.email),
+  ]);
+
+  const isOwner =
+    !!owned && (owned as { user_id: string }).user_id === user.id;
+  if (!isOwner && !admin) {
+    return NextResponse.json(
+      { error: "Laporan tidak ditemukan." },
+      { status: 404 },
+    );
+  }
 
   try {
-    const { sessionId } = await context.params;
     const res = await fetch(`${apiBase()}/api/v1/audit/${sessionId}/download`);
 
     if (!res.ok) {
@@ -39,8 +65,10 @@ export async function GET(
         "Content-Disposition": disposition,
       },
     });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Kesalahan server.";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: "Kesalahan server." },
+      { status: 500 },
+    );
   }
 }

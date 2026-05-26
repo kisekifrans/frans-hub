@@ -56,6 +56,14 @@ async function loadHubFromProfileRow(
   };
 }
 
+/**
+ * Columns safe to expose to anonymous viewers of /<slug> pages.
+ * Never include `user_id`, `plan_id`, `country_code`, `slug_changed_at`,
+ * or any future PII column here.
+ */
+const PUBLIC_PROFILE_COLUMNS =
+  "id, slug, username, display_name, bio, avatar_url, avatar_storage_path, verified, social_links, theme, is_published, created_at, updated_at";
+
 export async function fetchHubBySlug(
   supabase: SupabaseClient,
   slug: string,
@@ -63,7 +71,7 @@ export async function fetchHubBySlug(
 ): Promise<{ profile: Profile; profileId: string; analytics: AnalyticsSnapshot } | null> {
   const { data: profileRow, error: profileError } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PUBLIC_PROFILE_COLUMNS)
     .eq("slug", slug)
     .maybeSingle();
 

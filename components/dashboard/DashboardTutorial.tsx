@@ -85,10 +85,10 @@ export function DashboardTutorial({
 
       <div className="pr-6 sm:pr-8">
         <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-violet-600/90 dark:text-violet-300/90">
-          Link studio
+          Your internet corner
         </p>
         <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-[1.35rem]">
-          Start building your corner of the internet
+          One link becomes your whole vibe
         </h2>
         <p className="mt-1.5 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
           Your page is live. Three tabs — skip anytime.

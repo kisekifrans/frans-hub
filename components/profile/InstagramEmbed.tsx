@@ -3,12 +3,16 @@
 import { useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { LazyEmbed } from "@/components/profile/LazyEmbed";
+import { validateBlockUrl } from "@/lib/security/block-url";
 
 interface InstagramEmbedProps {
   url: string;
 }
 
 export function InstagramEmbed({ url }: InstagramEmbedProps) {
+  const validated = validateBlockUrl("instagram", url);
+  const safeUrl = validated.ok ? validated.url : "";
+
   useEffect(() => {
     const existing = document.querySelector(
       'script[src="//www.instagram.com/embed.js"]',
@@ -25,7 +29,9 @@ export function InstagramEmbed({ url }: InstagramEmbedProps) {
     script.src = "//www.instagram.com/embed.js";
     script.async = true;
     document.body.appendChild(script);
-  }, [url]);
+  }, [safeUrl]);
+
+  if (!safeUrl) return null;
 
   return (
     <LazyEmbed className="w-full">
@@ -33,7 +39,7 @@ export function InstagramEmbed({ url }: InstagramEmbedProps) {
         <div className="flex w-full justify-center">
           <blockquote
             className="instagram-media !max-w-full"
-            data-instgrm-permalink={url}
+            data-instgrm-permalink={safeUrl}
             data-instgrm-version="14"
             style={{
               background: "transparent",
@@ -45,7 +51,7 @@ export function InstagramEmbed({ url }: InstagramEmbedProps) {
               width: "100%",
             }}
           >
-            <a href={url} target="_blank" rel="noopener noreferrer">
+            <a href={safeUrl} target="_blank" rel="noopener noreferrer">
               View on Instagram
             </a>
           </blockquote>

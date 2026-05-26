@@ -1,16 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Check, Loader2, Sparkles, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { UsernameSuggestions } from "@/components/onboarding/UsernameSuggestions";
 import type { UsernamePickerState } from "@/hooks/useUsernamePicker";
 import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from "@/lib/auth/username";
+import { staticSiteHost } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
-
-const siteHost =
-  typeof window !== "undefined"
-    ? window.location.host
-    : "agisna.dev";
 
 type Props = {
   picker: UsernamePickerState;
@@ -43,6 +40,11 @@ export function UsernamePicker({
     save,
     previewPath,
   } = picker;
+
+  const [siteHost, setSiteHost] = useState<string>(staticSiteHost());
+  useEffect(() => {
+    if (typeof window !== "undefined") setSiteHost(window.location.host);
+  }, []);
 
   const handleSave = async () => {
     const result = await save();

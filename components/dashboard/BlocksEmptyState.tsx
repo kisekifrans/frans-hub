@@ -15,10 +15,10 @@ export function BlocksEmptyState({ onAddLink }: BlocksEmptyStateProps) {
       />
       <Sparkles className="relative mx-auto h-5 w-5 text-violet-500/80 dark:text-violet-300/80" />
       <p className="relative mt-3 text-sm font-semibold text-zinc-900 dark:text-white">
-        This is where your story starts
+        Your page is already alive. Now give it a vibe.
       </p>
-      <p className="relative mx-auto mt-1.5 max-w-[16rem] text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-        One link is enough. Momentum beats perfection.
+      <p className="relative mx-auto mt-1.5 max-w-[18rem] text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+        One link becomes your whole internet aura.
       </p>
       {onAddLink && (
         <button

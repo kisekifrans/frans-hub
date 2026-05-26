@@ -12,6 +12,14 @@
       "title": "Gear & Setup | Agisna Dev",
       "description": "Gear gaming, setup streaming, dan periferal — kurasi kreator."
     },
+    "privacy": {
+      "title": "Kebijakan Privasi | Kawaragi",
+      "description": "Bagaimana Kawaragi mengumpulkan, menggunakan, dan melindungi data Anda."
+    },
+    "terms": {
+      "title": "Syarat Layanan | Kawaragi",
+      "description": "Syarat yang mengatur penggunaan Kawaragi."
+    },
     "academicaudit": {
       "title": "AI Academic Audit | Analisis Pola Tulisan",
       "description": "Analisis pola tulisan akademik Bahasa Indonesia dari PDF. Indikator probabilistik, bukan deteksi AI pasti."
@@ -61,18 +69,21 @@
     "createPage": "Buat halamanmu",
     "dashboard": "Dashboard",
     "editProfile": "Edit profil",
-    "finance": "Finansial",
+    "finance": "Aura",
+    "aura": "Aura",
     "owner": {
       "sectionLabel": "Beranda pemilik",
-      "welcomeTitle": "✨ Akunmu siap dipakai",
-      "welcomeSubtitle": "Mulai tambahkan link atau lihat insight finansialmu.",
-      "emptyLinks": "Belum ada link — tambahkan yang pertama biar halamanmu hidup.",
+      "welcomeTitle": "✨ Halamanmu sudah hidup",
+      "welcomeSubtitle": "Drop link, bangun vibe-mu — dan lihat auramu hidup.",
+      "emptyLinks": "Belum ada link — drop satu biar halamanmu hidup.",
       "emptyBio": "Ceritain sedikit tentang dirimu di bio.",
       "setupHint": "Satu atau dua langkah lagi, halamanmu makin lengkap.",
       "actionAddLink": "Tambah link",
       "actionAddLinkHint": "Buka editor",
-      "actionFinance": "Finansial",
-      "actionFinanceHint": "PDF & insight",
+      "actionFinance": "Aura",
+      "actionFinanceHint": "Recap bulanan",
+      "actionAura": "Aura",
+      "actionAuraHint": "Recap bulanan",
       "actionEdit": "Edit profil",
       "actionEditHint": "Nama & bio",
       "actionCustomize": "Kustomisasi",
@@ -81,6 +92,16 @@
       "emptyBlocksTitle": "Halamanmu masih kosong",
       "emptyBlocksHint": "Tambahkan link, teks, atau embed pertama — pengunjung akan melihatnya di sini.",
       "emptyBlocksCta": "Tambah konten pertama"
+    }
+  },
+  "dashboard": {
+    "aura": {
+      "eyebrow": "Lapisan bonus",
+      "label": "Aura kamu",
+      "type": "Soft Saving Era",
+      "metric": "+18% hemat bulan ini",
+      "detail": "GoPay jadi dompet utamamu.",
+      "cta": "Buka aura"
     }
   },
   "home": {
@@ -92,48 +113,63 @@
       "signIn": "Masuk"
     },
     "hero": {
-      "eyebrow": "Finansial, gaya hidup",
-      "title": "Uangmu, lebih mudah dibaca",
-      "subtitle": "PDF e-wallet atau bank. Pola belanja jadi cerita singkat.",
-      "step1": "Unggah PDF statement.",
-      "step2": "Pola harian, mingguan, sampai tahunan.",
-      "step3": "Bagikan recap ke orang terdekat.",
-      "ctaPrimary": "Mulai gratis",
-      "ctaSecondary": "Lihat recap",
-      "ctaHelper": "Satu PDF. Langsung mulai.",
-      "note": "Tanpa login e-wallet atau bank."
+      "eyebrow": "Identitas internetmu",
+      "title": "Sudutmu di internet.",
+      "subtitle": "Satu halaman. Linkmu, vibe-mu, auramu.",
+      "step1": "Klaim /namamu.",
+      "step2": "Drop link, embed, dan mood-mu.",
+      "step3": "Recap aura bulanan, bonus.",
+      "ctaPrimary": "Klaim halamanmu",
+      "ctaSecondary": "Lihat aura",
+      "ctaHelper": "Beberapa detik, jadi milikmu.",
+      "note": "Gratis. Milikmu selamanya."
     },
     "heroInsights": {
       "weekend": {
-        "emoji": "🌙",
-        "tag": "Weekend",
-        "message": "Weekend kamu lebih boros minggu ini."
+        "emoji": "🪩",
+        "tag": "Halaman",
+        "message": "kawaragi.io/kamu — hidup dalam hitungan menit."
       },
       "shopeeFood": {
-        "emoji": "🍱",
-        "tag": "Akhir bulan",
-        "message": "ShopeeFood lebih sering muncul akhir-akhir ini."
+        "emoji": "🔗",
+        "tag": "Link",
+        "message": "Drop link, jadi vibe-mu."
       },
       "peakHour": {
-        "emoji": "🕘",
-        "tag": "Jam ramai",
-        "message": "Jam transaksi paling sering: 21.00."
+        "emoji": "🎬",
+        "tag": "Embed",
+        "message": "TikTok favoritmu, tampil di halamanmu."
       },
       "gopay": {
-        "emoji": "🟢",
-        "tag": "Dompet",
-        "message": "GoPay jadi dompet utama bulan ini."
+        "emoji": "🌌",
+        "tag": "Aura",
+        "message": "Bulan ini: Digital Night Owl."
       },
       "coffee": {
-        "emoji": "☕",
-        "tag": "Malam",
-        "message": "Ngopi malam meningkat minggu ini."
+        "emoji": "🌷",
+        "tag": "Tema",
+        "message": "Violet aura cocok buatmu."
       },
       "saved": {
         "emoji": "✨",
-        "tag": "Mei",
-        "message": "Hemat lebih banyak dari bulan lalu."
+        "tag": "Recap",
+        "message": "+18% hemat — bonus aura."
       }
+    },
+    "identity": {
+      "eyebrow": "Halamanmu",
+      "title": "Link, vibe, identitas — di satu tempat.",
+      "subtitle": "Drop link, embed momenmu, pilih tema. Sudut internetmu jadi hidup.",
+      "chipLink": "Drop link",
+      "chipEmbed": "TikTok · IG",
+      "chipGif": "Mood GIF",
+      "chipTheme": "Violet aura",
+      "pageSlug": "kawaragi.io/kamu",
+      "pageDisplay": "Nama Kamu",
+      "pageBio": "Suka software. Coder larut malam. Drop recap saat vibe-nya pas.",
+      "pageLink1": "Proyek terbaru",
+      "pageLink2": "Belanja pilihanku",
+      "pageLink3": "Baca catatanku"
     },
     "local": {
       "title": "Untuk dompet digital Indonesia",
@@ -147,8 +183,8 @@
       }
     },
     "recap": {
-      "sectionTitle": "Recap bulanan",
-      "sectionSubtitle": "Screenshot. Share. Selesai.",
+      "sectionTitle": "Dan tiap bulan, auramu",
+      "sectionSubtitle": "Bukan dashboard finansial. Lapisan bonus yang diam-diam paham caramu hidup di internet.",
       "badge": "Mei 2026",
       "auraEditorial": "Aura",
       "auraType": "Digital Night Owl",
@@ -187,8 +223,8 @@
       "noBank": "Tanpa login bank."
     },
     "footer": {
-      "tagline": "Finansial yang terasa ringan.",
-      "cta": "Mulai di Kawaragi",
+      "tagline": "Identitas internetmu, sederhana.",
+      "cta": "Klaim halamanmu",
       "exampleHub": "Lihat contoh halaman"
     }
   },
@@ -201,7 +237,7 @@
     "unavailable": "Halaman gear tidak tersedia.",
     "migrationHint": "supabase/migrations/008_gear.sql",
     "featuredBadge": "Unggulan",
-    "footerPath": "agisna.dev/gear",
+    "footerPath": "/gear",
     "priceUnavailable": "Harga tidak tersedia"
   },
   "academicaudit": {

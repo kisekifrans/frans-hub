@@ -1,5 +1,7 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Sign in — Link Hub Admin",
 };

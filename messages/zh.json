@@ -12,6 +12,14 @@
       "title": "装备与桌面 | Agisna Dev",
       "description": "游戏外设、直播设备与桌面装备——创作者精选展示。"
     },
+    "privacy": {
+      "title": "隐私政策 | Kawaragi",
+      "description": "Kawaragi 如何收集、使用和保护您的数据。"
+    },
+    "terms": {
+      "title": "服务条款 | Kawaragi",
+      "description": "管辖您使用 Kawaragi 的条款。"
+    },
     "academicaudit": {
       "title": "AI 学术审计 | 写作模式分析",
       "description": "针对印尼语 PDF 的概率性学术写作模式分析，并非确定性 AI 检测。"
@@ -61,18 +69,21 @@
     "createPage": "创建你的页面",
     "dashboard": "控制台",
     "editProfile": "编辑资料",
-    "finance": "财务",
+    "finance": "Aura",
+    "aura": "Aura",
     "owner": {
       "sectionLabel": "所有者主页",
-      "welcomeTitle": "✨ 你的账户已就绪",
-      "welcomeSubtitle": "添加第一个链接，或查看你的财务洞察。",
+      "welcomeTitle": "✨ 你的页面已上线",
+      "welcomeSubtitle": "添加链接，打造你的风格——看 aura 慢慢成型。",
       "emptyLinks": "还没有链接——添加一个，让页面活起来。",
       "emptyBio": "写一句简介，让访客了解你。",
       "setupHint": "再完善一点，页面就更完整了。",
       "actionAddLink": "添加链接",
       "actionAddLinkHint": "打开编辑器",
-      "actionFinance": "财务",
-      "actionFinanceHint": "PDF 与洞察",
+      "actionFinance": "Aura",
+      "actionFinanceHint": "月度回顾",
+      "actionAura": "Aura",
+      "actionAuraHint": "月度回顾",
       "actionEdit": "编辑资料",
       "actionEditHint": "名称与简介",
       "actionCustomize": "自定义",
@@ -81,6 +92,16 @@
       "emptyBlocksTitle": "页面还是空的",
       "emptyBlocksHint": "添加链接、文字或嵌入——访客会在这里看到。",
       "emptyBlocksCta": "添加第一个内容"
+    }
+  },
+  "dashboard": {
+    "aura": {
+      "eyebrow": "彩蛋层",
+      "label": "你的 Aura",
+      "type": "Soft Saving Era",
+      "metric": "本月节省 +18%",
+      "detail": "GoPay 成为你的主力钱包。",
+      "cta": "查看 aura"
     }
   },
   "home": {
@@ -92,48 +113,63 @@
       "signIn": "登录"
     },
     "hero": {
-      "eyebrow": "生活方式版财务",
-      "title": "金钱，更好读懂",
-      "subtitle": "GoPay 或银行 PDF。消费习惯变成短故事。",
-      "step1": "上传账单 PDF",
-      "step2": "查看每周模式",
-      "step3": "想分享就发 recap",
-      "ctaPrimary": "免费开始",
-      "ctaSecondary": "看 recap",
-      "ctaHelper": "注册，上传一份 PDF，即可开始。",
-      "note": "无需银行密码。PDF 处理后删除。"
+      "eyebrow": "你的网络身份",
+      "title": "你在互联网的角落。",
+      "subtitle": "一个页面。链接、风格、aura，都是你的。",
+      "step1": "占用 /你的名字。",
+      "step2": "放上链接、嵌入和心情。",
+      "step3": "每月一次 aura 回顾，免费。",
+      "ctaPrimary": "认领你的页面",
+      "ctaSecondary": "看看 aura",
+      "ctaHelper": "几秒钟就是你的。",
+      "note": "免费，永远是你的。"
     },
     "heroInsights": {
       "weekend": {
-        "emoji": "🌙",
-        "tag": "周末",
-        "message": "这个周末花得更多。"
+        "emoji": "🪩",
+        "tag": "页面",
+        "message": "kawaragi.io/你——几分钟上线。"
       },
       "shopeeFood": {
-        "emoji": "🍱",
-        "tag": "月末",
-        "message": "最近 ShopeeFood 出现更频繁。"
+        "emoji": "🔗",
+        "tag": "链接",
+        "message": "添加链接，做你自己的风格。"
       },
       "peakHour": {
-        "emoji": "🕘",
-        "tag": "高峰",
-        "message": "最常交易时间：21:00。"
+        "emoji": "🎬",
+        "tag": "嵌入",
+        "message": "你的 TikTok，就在主页上播放。"
       },
       "gopay": {
-        "emoji": "🟢",
-        "tag": "钱包",
-        "message": "GoPay 成为本月主力钱包。"
+        "emoji": "🌌",
+        "tag": "Aura",
+        "message": "本月：Digital Night Owl。"
       },
       "coffee": {
-        "emoji": "☕",
-        "tag": "夜间",
-        "message": "本周夜间咖啡支出上升。"
+        "emoji": "🌷",
+        "tag": "主题",
+        "message": "紫色 aura 很适合你。"
       },
       "saved": {
         "emoji": "✨",
-        "tag": "五月",
-        "message": "比上个月存得更多。"
+        "tag": "回顾",
+        "message": "+18% 节省 — aura 彩蛋。"
       }
+    },
+    "identity": {
+      "eyebrow": "你的页面",
+      "title": "链接、风格、身份——在同一处。",
+      "subtitle": "添加链接，嵌入瞬间，挑一个主题。你的网络角落就活起来了。",
+      "chipLink": "添加链接",
+      "chipEmbed": "TikTok · IG",
+      "chipGif": "心情 GIF",
+      "chipTheme": "紫色 aura",
+      "pageSlug": "kawaragi.io/你",
+      "pageDisplay": "你的名字",
+      "pageBio": "热爱软件。深夜程序员。看心情发布回顾。",
+      "pageLink1": "最新项目",
+      "pageLink2": "购物推荐",
+      "pageLink3": "阅读笔记"
     },
     "local": {
       "title": "为印尼数字钱包而生",
@@ -147,8 +183,8 @@
       }
     },
     "recap": {
-      "sectionTitle": "月度 recap",
-      "sectionSubtitle": "像 Wrapped。截图即可。",
+      "sectionTitle": "每个月，你的 aura",
+      "sectionSubtitle": "不是财务仪表盘。是一个默默理解你网络生活方式的彩蛋层。",
       "badge": "2026 年 5 月",
       "auraEditorial": "Aura",
       "auraType": "Digital Night Owl",
@@ -187,8 +223,8 @@
       "noBank": "无需银行登录。"
     },
     "footer": {
-      "tagline": "轻盈的个人财务。",
-      "cta": "开始使用 Kawaragi",
+      "tagline": "你的网络身份，简单一点。",
+      "cta": "认领你的页面",
       "exampleHub": "查看示例页面"
     }
   },
@@ -201,7 +237,7 @@
     "unavailable": "装备页面不可用。",
     "migrationHint": "supabase/migrations/008_gear.sql",
     "featuredBadge": "精选",
-    "footerPath": "agisna.dev/gear",
+    "footerPath": "/gear",
     "priceUnavailable": "价格暂无"
   },
   "academicaudit": {

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Loader2, Wallet } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
 import { AnalyticsPanel } from "@/components/analytics/AnalyticsPanel";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { AuraTeaserCard } from "@/components/dashboard/AuraTeaserCard";
 import { PublicLinkSlugField } from "@/components/dashboard/PublicLinkSlugField";
 import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
 import { ThemePicker } from "@/components/profile/ThemePicker";
@@ -77,7 +78,8 @@ export function LinkHubEditor() {
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href="/finance"
+              href="/"
+              aria-label="Back to home"
               className="glass-card flex h-10 w-10 items-center justify-center rounded-full"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -103,10 +105,11 @@ export function LinkHubEditor() {
             )}
             <Link
               href="/finance"
-              className="glass-card flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
+              className="group relative inline-flex items-center gap-1.5 rounded-full border border-violet-200/60 bg-gradient-to-r from-violet-500/15 via-fuchsia-500/10 to-violet-500/15 px-3.5 py-2 text-xs font-semibold text-violet-700 shadow-sm transition hover:from-violet-500/25 hover:to-fuchsia-500/20 dark:border-violet-400/25 dark:text-violet-200"
+              aria-label="Open your monthly aura recap"
             >
-              <Wallet className="h-3.5 w-3.5" />
-              Finance
+              <Sparkles className="h-3.5 w-3.5" aria-hidden />
+              Aura
             </Link>
             <ThemeToggle />
             <LogoutButton />
@@ -154,22 +157,27 @@ export function LinkHubEditor() {
         )}
 
         {tab === "blocks" && (
-          <BlocksManager
-            blocks={profile.blocks}
-            profileId={profileId}
-            saving={saving}
-            onAdd={addBlock}
-            onPatch={patchBlock}
-            onRemove={removeBlock}
-            onReorder={reorder}
-          />
+          <div className="space-y-5">
+            <BlocksManager
+              blocks={profile.blocks}
+              profileId={profileId}
+              saving={saving}
+              onAdd={addBlock}
+              onPatch={patchBlock}
+              onRemove={removeBlock}
+              onReorder={reorder}
+            />
+            <AuraTeaserCard />
+          </div>
         )}
 
         {tab === "profile" && (
           <GlassCard className="space-y-6">
             <PublicLinkSlugField
               initialSlug={
-                !profile.slug || profile.slug === "main" ? "frans" : profile.slug
+                !profile.slug || profile.slug === "main"
+                  ? profile.username || ""
+                  : profile.slug
               }
               currentSlug={profile.slug ?? "main"}
               hint={

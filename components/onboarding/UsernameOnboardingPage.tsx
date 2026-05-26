@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSession } from "@/components/providers/SessionProvider";
 import { UsernamePicker } from "@/components/onboarding/UsernamePicker";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PageShell } from "@/components/ui/PageShell";
@@ -14,38 +15,32 @@ import { sanitizeUsernameInput } from "@/lib/auth/username";
 
 export function UsernameOnboardingPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const session = useSession();
   const [initial, setInitial] = useState("");
 
   useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(
-        (data: {
-          profile?: {
-            slug: string;
-            slugChangedAt?: string | null;
-          };
-          needsUsernameOnboarding?: boolean;
-        } | null) => {
-          if (!data?.profile) {
-            router.replace("/login?next=/onboarding/username");
-            return;
-          }
-          const p = data.profile;
-          if (
-            !data.needsUsernameOnboarding &&
-            !needsSlugOnboarding(p.slug, p.slugChangedAt ?? null)
-          ) {
-            router.replace("/dashboard");
-            return;
-          }
-          const base = p.slug.replace(/\d+$/, "") || "";
-          setInitial(sanitizeUsernameInput(base));
-        },
-      )
-      .finally(() => setLoading(false));
-  }, [router]);
+    if (session.loading) return;
+    if (!session.authenticated || !session.profile) {
+      router.replace("/login?next=/onboarding/username");
+      return;
+    }
+    const p = session.profile;
+    if (
+      !session.needsUsernameOnboarding &&
+      !needsSlugOnboarding(p.slug, p.slugChangedAt)
+    ) {
+      router.replace("/dashboard");
+      return;
+    }
+    const base = p.slug.replace(/\d+$/, "") || "";
+    setInitial(sanitizeUsernameInput(base));
+  }, [
+    session.loading,
+    session.authenticated,
+    session.profile,
+    session.needsUsernameOnboarding,
+    router,
+  ]);
 
   const picker = useUsernamePicker({ initialUsername: initial });
 
@@ -53,7 +48,7 @@ export function UsernameOnboardingPage() {
     if (initial) picker.setUsername(initial);
   }, [initial]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading) {
+  if (session.loading) {
     return (
       <PageShell contentClassName="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-500" />

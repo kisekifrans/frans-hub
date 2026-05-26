@@ -29,11 +29,21 @@ export async function uploadFinanceImportPdf(
   if (error) throw error;
   onProgress?.(100);
 
-  const { data } = supabase.storage
-    .from(FINANCE_IMPORTS_BUCKET)
-    .getPublicUrl(path);
+  // finance-imports is private; never store the public URL (it doesn't work and
+  // would leak the bucket path). Use createFinanceImportSignedUrl() on demand.
+  return { storagePath: path, fileUrl: "" };
+}
 
-  return { storagePath: path, fileUrl: data.publicUrl };
+export async function createFinanceImportSignedUrl(
+  supabase: SupabaseClient,
+  storagePath: string,
+  expiresInSeconds = 60,
+): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from(FINANCE_IMPORTS_BUCKET)
+    .createSignedUrl(storagePath, expiresInSeconds);
+  if (error || !data) return null;
+  return data.signedUrl;
 }
 
 export async function downloadFinanceImportPdf(

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, Share2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { staticSiteOrigin } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
 import { MotionDiv } from "@/components/ui/motion";
 
@@ -15,21 +16,24 @@ interface ProfileShareBarProps {
   slug?: string;
 }
 
-export function ProfileShareBar({ username, slug }: ProfileShareBarProps) {
+// `username` kept for callsite compatibility (and future fallback copy)
+// but the share URL is always slug-driven.
+export function ProfileShareBar({ username: _username, slug }: ProfileShareBarProps) {
   const t = useTranslations("common");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const hubUrl =
-    typeof window !== "undefined"
-      ? slug
-        ? `${window.location.origin}/${slug}`
-        : `${window.location.origin}/${locale}`
-      : slug
-        ? `https://agisna.dev/${slug}`
-        : `https://${username}.hub`;
+  // SSR + first client render: use static origin (NEXT_PUBLIC_SITE_URL ?? kawaragi.io)
+  // so React doesn't see different DOM. After mount, swap to real window.location.
+  const fallbackOrigin = staticSiteOrigin();
+  const [origin, setOrigin] = useState<string>(fallbackOrigin);
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+
+  const hubUrl = slug ? `${origin}/${slug}` : `${origin}/${locale}`;
 
   useEffect(() => {
     if (!open) return;

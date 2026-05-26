@@ -1,37 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useOptionalSession } from "@/components/providers/SessionProvider";
 
 export type ProfileAuthState = "loading" | "guest" | "owner" | "member";
 
 export function useProfileAuth(viewedSlug?: string) {
-  const [authState, setAuthState] = useState<ProfileAuthState>("loading");
+  const session = useOptionalSession();
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/session")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (cancelled) return;
-        if (!data?.authenticated) {
-          setAuthState("guest");
-          return;
-        }
-        const ownSlug = data.profile?.slug?.toLowerCase();
-        const viewing = viewedSlug?.toLowerCase();
-        if (viewing && ownSlug && ownSlug === viewing) {
-          setAuthState("owner");
-        } else {
-          setAuthState("member");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setAuthState("guest");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [viewedSlug]);
+  let authState: ProfileAuthState = "loading";
+  if (!session || session.loading) {
+    authState = "loading";
+  } else if (!session.authenticated) {
+    authState = "guest";
+  } else {
+    const ownSlug = session.profile?.slug?.toLowerCase();
+    const viewing = viewedSlug?.toLowerCase();
+    authState =
+      viewing && ownSlug && ownSlug === viewing ? "owner" : "member";
+  }
 
   return {
     authState,

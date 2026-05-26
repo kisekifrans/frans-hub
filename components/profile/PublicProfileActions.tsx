@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   useProfileAuth,
@@ -67,8 +68,12 @@ export function PublicProfileActions({
         className={cn("flex flex-wrap items-center justify-end gap-1.5", className)}
         aria-label={t("navLabel")}
       >
-        <Link href="/finance" className={pillClass}>
-          {t("finance")}
+        <Link
+          href="/finance"
+          className="inline-flex min-h-[40px] touch-manipulation items-center gap-1.5 rounded-full border border-violet-200/60 bg-gradient-to-r from-violet-500/15 via-fuchsia-500/10 to-violet-500/15 px-3 py-2 text-xs font-semibold text-violet-700 shadow-sm transition active:scale-[0.98] dark:border-violet-400/25 dark:text-violet-200 sm:py-1.5 sm:hover:-translate-y-0.5"
+        >
+          <Sparkles className="h-3.5 w-3.5" aria-hidden />
+          {t("aura")}
         </Link>
         <Link href="/dashboard" className={pillPrimaryClass}>
           {t("editProfile")}

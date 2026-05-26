@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthenticatedUser } from "@/lib/auth/require-user";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -12,9 +13,20 @@ function apiBase(): string {
   return url;
 }
 
+function extractSessionId(data: unknown): string | null {
+  if (!data || typeof data !== "object") return null;
+  const obj = data as Record<string, unknown>;
+  const candidate =
+    obj.session_id ?? obj.sessionId ?? obj.id ?? obj.audit_session_id;
+  return typeof candidate === "string" && candidate.length > 0
+    ? candidate
+    : null;
+}
+
 export async function POST(request: Request) {
   const auth = await requireAuthenticatedUser();
   if (auth instanceof NextResponse) return auth;
+  const { user } = auth;
 
   try {
     const form = await request.formData();
@@ -57,6 +69,17 @@ export async function POST(request: Request) {
         message = first.msg ?? message;
       }
       return NextResponse.json({ error: message }, { status: res.status });
+    }
+
+    const sessionId = extractSessionId(data);
+    if (sessionId) {
+      const supabase = await createClient();
+      await supabase
+        .from("academicaudit_sessions")
+        .upsert(
+          { session_id: sessionId, user_id: user.id },
+          { onConflict: "session_id" },
+        );
     }
 
     return NextResponse.json(data);

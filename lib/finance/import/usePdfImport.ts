@@ -40,8 +40,7 @@ export function usePdfImport() {
       let text: string;
       try {
         text = await extractPdfText(file);
-      } catch (e) {
-        console.error("[finance-import] pdf extract failed", e);
+      } catch {
         return {
           rows: [],
           errors: ["Failed to read PDF. The file may be corrupted or scanned."],
@@ -49,7 +48,6 @@ export function usePdfImport() {
         };
       }
 
-      console.log("[finance-import] extracted chars", text.length);
       const parsed = parseStatementText(text, source);
       const rows = buildPreviewRows(
         parsed.transactions,

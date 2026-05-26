@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import {
   Link2,
+  Palette,
   Pencil,
   Plus,
   Sparkles,
-  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -41,12 +41,12 @@ export function ProfileOwnerPanel({
       accent: "text-violet-600 dark:text-violet-300",
     },
     {
-      key: "finance",
+      key: "aura",
       href: "/finance",
-      icon: Wallet,
-      label: t("actionFinance"),
-      hint: t("actionFinanceHint"),
-      accent: "text-emerald-600 dark:text-emerald-400",
+      icon: Sparkles,
+      label: t("actionAura"),
+      hint: t("actionAuraHint"),
+      accent: "text-violet-500 dark:text-violet-300",
     },
     {
       key: "edit",
@@ -59,7 +59,7 @@ export function ProfileOwnerPanel({
     {
       key: "customize",
       href: "/dashboard",
-      icon: Sparkles,
+      icon: Palette,
       label: t("actionCustomize"),
       hint: t("actionCustomizeHint"),
       accent: "text-amber-600 dark:text-amber-300",

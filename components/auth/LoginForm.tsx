@@ -68,7 +68,8 @@ export function LoginForm({ error, next = "/dashboard" }: LoginFormProps) {
   const signInWithGoogle = () => {
     setLoading("google");
     setMessage(null);
-    // Server route sets redirectTo from Host header (fixes localhost → agisna.dev)
+    // Server route reads the live Host header to build redirectTo so localhost
+    // and prod don't cross-bleed (would otherwise fall back to Supabase Site URL).
     window.location.href = `/api/auth/google?next=${encodeURIComponent(next)}`;
   };
 
@@ -149,11 +150,11 @@ export function LoginForm({ error, next = "/dashboard" }: LoginFormProps) {
               <code className="rounded bg-amber-100/80 px-1 dark:bg-amber-900/50">
                 http://localhost:3000/login
               </code>{" "}
-              (not agisna.dev). Ensure Supabase Redirect URLs include{" "}
+              and ensure your Supabase project&apos;s Redirect URLs include{" "}
               <code className="rounded bg-amber-100/80 px-1 dark:bg-amber-900/50">
                 http://localhost:3000/auth/callback
               </code>
-              . After Google, you should return to localhost — not agisna.dev.
+              .
             </p>
           )}
 

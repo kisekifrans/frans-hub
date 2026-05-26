@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSession } from "@/components/providers/SessionProvider";
 
 /** Redirects members who have not claimed a username yet. */
 export function UsernameOnboardingGuard({
@@ -11,28 +12,19 @@ export function UsernameOnboardingGuard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [ready, setReady] = useState(false);
+  const session = useSession();
+
+  const inOnboarding = pathname.startsWith("/onboarding");
 
   useEffect(() => {
-    if (pathname.startsWith("/onboarding")) {
-      setReady(true);
-      return;
+    if (inOnboarding || session.loading) return;
+    if (session.needsUsernameOnboarding) {
+      router.replace("/onboarding/username");
     }
+  }, [inOnboarding, session.loading, session.needsUsernameOnboarding, router]);
 
-    fetch("/api/auth/session")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(
-        (data: { needsUsernameOnboarding?: boolean } | null) => {
-          if (data?.needsUsernameOnboarding) {
-            router.replace("/onboarding/username");
-            return;
-          }
-          setReady(true);
-        },
-      )
-      .catch(() => setReady(true));
-  }, [pathname, router]);
-
-  if (!ready) return null;
+  if (inOnboarding) return <>{children}</>;
+  if (session.loading) return null;
+  if (session.needsUsernameOnboarding) return null;
   return <>{children}</>;
 }

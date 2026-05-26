@@ -81,16 +81,7 @@ export async function extractPdfWithMeta(
   let ocrPages: number[] = [];
   let extractionMethod: PdfExtractionMethod = "pdfjs";
 
-  console.log("[pdf-extract] pdfjs pass");
-  console.log("[pdf-extract] pages", doc.numPages);
-  console.log("[pdf-extract] chars/page", pageCharCounts);
-  console.log("[pdf-extract] txnIds/page", pageTxnCounts);
-  console.log("[pdf-extract] RB/F ids", quality.rbTxnIdCount, quality.fTxnIdCount);
-  console.log("[pdf-extract] total txn ids", quality.txnIdCount);
-  console.log("[pdf-extract] quality", quality);
-
   if (!quality.passes) {
-    console.log("[pdf-hybrid] quality failed:", quality.reasons.join("; "));
     extractionMethod = "hybrid";
 
     const allPageNums = Array.from({ length: doc.numPages }, (_, i) => i + 1);
@@ -110,12 +101,7 @@ export async function extractPdfWithMeta(
       const pdfjsText = pageTexts[i];
       const ocrText = ocrResults.get(pageNum) ?? "";
       const combined = mergePageSources(pdfjsText, ocrText);
-      const pdfjsN = countTxnIds(repairExtractedTxnIds(pdfjsText));
-      const ocrN = countTxnIds(repairExtractedTxnIds(ocrText));
       const combinedN = countTxnIds(combined);
-      console.log(
-        `[pdf-hybrid] page ${pageNum}: pdfjs=${pdfjsN} ocr=${ocrN} merged=${combinedN}`,
-      );
       if (ocrText.trim()) ocrPages.push(pageNum);
       pageTexts[i] = combined;
       pageCharCounts[i] = combined.length;
@@ -124,31 +110,14 @@ export async function extractPdfWithMeta(
 
     merged = mergePageTexts(pageTexts);
     quality = assessExtractionQuality(merged, filename);
-    console.log("[pdf-hybrid] pages using OCR", ocrPages);
-    console.log("[pdf-hybrid] merged txn ids after OCR", quality.txnIdCount);
-    console.log("[pdf-hybrid] RB/F after OCR", quality.rbTxnIdCount, quality.fTxnIdCount);
   }
 
   await terminateOcrWorker();
 
   onProgress?.({ phase: "pdfjs", percent: 1 });
 
-  const finalText = merged;
-  console.log("===== FINAL PARSED TEXT =====");
-  console.log(finalText);
-  console.log("===== SEARCH GoCar =====", finalText.includes("GoCar"));
-  console.log("===== SEARCH 18/05/2026 =====", finalText.includes("18/05/2026"));
-  console.log("===== SEARCH Bendega =====", finalText.includes("Bendega"));
-  console.log(
-    "[pdf-extract] expected end date from filename",
-    quality.expectedEndDateIso,
-    "latest in text",
-    quality.latestDateIso,
-  );
-  console.log("[pdf-extract] method", extractionMethod, "ocrPages", ocrPages, "txnIds", quality.txnIdCount);
-
   return {
-    text: finalText,
+    text: merged,
     numPages: doc.numPages,
     pageCharCounts,
     pageTxnCounts,

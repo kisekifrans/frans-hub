@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link as LocaleLink } from "@/i18n/navigation";
 import { MemberAreaLink } from "@/components/auth/MemberAreaLink";
 import { HeroInsightCards } from "@/components/landing/HeroInsightCards";
+import { IdentityShowcase } from "@/components/landing/IdentityShowcase";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { RecapPreview } from "@/components/landing/RecapPreview";
 import {
@@ -88,14 +89,14 @@ export function LandingPage() {
             </ul>
             <div className="mt-6 flex flex-col items-stretch justify-center gap-2.5 sm:mt-8 sm:flex-row sm:items-center sm:gap-3">
               <Link
-                href="/login?next=/finance"
+                href="/login?next=/dashboard"
                 className="landing-cta-primary inline-flex min-h-[48px] touch-manipulation items-center justify-center gap-2 rounded-full bg-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-600/20 transition active:scale-[0.98] hover:bg-violet-500 dark:shadow-violet-900/35 sm:hover:shadow-violet-500/30"
               >
                 {t("hero.ctaPrimary")}
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
               <a
-                href="#recap"
+                href="#aura"
                 className="landing-cta-secondary inline-flex min-h-[48px] touch-manipulation items-center justify-center rounded-full border border-zinc-200/80 bg-white/80 px-6 py-3.5 text-sm font-semibold text-zinc-800 shadow-sm transition active:scale-[0.98] dark:border-white/15 dark:bg-white/8 dark:text-zinc-100 sm:hover:-translate-y-0.5"
               >
                 {t("hero.ctaSecondary")}
@@ -112,52 +113,24 @@ export function LandingPage() {
           <HeroInsightCards />
         </section>
 
-        {/* Indonesian-first */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.45 }}
-          className="mt-16 sm:mt-28"
-        >
-          <div className="text-center">
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
-              {t("local.title")}
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-base">
-              {t("local.subtitle")}
-            </p>
-          </div>
-          <ul className="mt-8 flex flex-wrap justify-center gap-2.5 sm:gap-3">
-            {LANDING_PAYMENT_KEYS.map((key, i) => (
-              <motion.li
-                key={key}
-                initial={{ opacity: 0, scale: 0.92 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <span className="landing-payment-pill inline-flex min-h-[40px] items-center gap-2 rounded-full border border-zinc-200/70 bg-white/85 px-3.5 py-2 text-sm font-medium text-zinc-800 shadow-sm dark:border-white/14 dark:bg-white/10 dark:text-zinc-100">
-                  <span aria-hidden>{PAYMENT_EMOJI[key]}</span>
-                  {t(`local.payments.${key}`)}
-                </span>
-              </motion.li>
-            ))}
-          </ul>
-          <p className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-            {t("local.footer")}
-          </p>
-        </motion.section>
+        {/* Identity showcase — your page, your vibe */}
+        <IdentityShowcase />
 
-        {/* Recap preview */}
-        <section id="recap" className="mt-16 scroll-mt-[4.5rem] sm:mt-28 sm:scroll-mt-24">
+        {/* Aura recap (positioned as bonus emotional layer, not primary product) */}
+        <section
+          id="aura"
+          className="mt-16 scroll-mt-[4.5rem] sm:mt-28 sm:scroll-mt-24"
+        >
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
+              {t("recap.badge")}
+            </p>
+            <h2 className="mt-3 text-xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-[1.75rem]">
               {t("recap.sectionTitle")}
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-base">
@@ -168,6 +141,43 @@ export function LandingPage() {
             <RecapPreview />
           </div>
         </section>
+
+        {/* Indonesian-first (supporting detail under aura) */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.45 }}
+          className="mt-16 sm:mt-24"
+        >
+          <div className="text-center">
+            <h2 className="text-base font-semibold tracking-tight text-zinc-700 dark:text-zinc-200 sm:text-lg">
+              {t("local.title")}
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 sm:text-sm">
+              {t("local.subtitle")}
+            </p>
+          </div>
+          <ul className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-2.5">
+            {LANDING_PAYMENT_KEYS.map((key, i) => (
+              <motion.li
+                key={key}
+                initial={{ opacity: 0, scale: 0.92 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <span className="landing-payment-pill inline-flex min-h-[36px] items-center gap-2 rounded-full border border-zinc-200/70 bg-white/85 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm dark:border-white/14 dark:bg-white/10 dark:text-zinc-200">
+                  <span aria-hidden>{PAYMENT_EMOJI[key]}</span>
+                  {t(`local.payments.${key}`)}
+                </span>
+              </motion.li>
+            ))}
+          </ul>
+          <p className="mt-5 text-center text-[11px] text-zinc-500 dark:text-zinc-500">
+            {t("local.footer")}
+          </p>
+        </motion.section>
 
         {/* Trust */}
         <motion.section
@@ -207,7 +217,7 @@ export function LandingPage() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("footer.tagline")}</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/login?next=/finance"
+              href="/login?next=/dashboard"
               className="landing-cta-primary inline-flex min-h-[48px] touch-manipulation items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition active:scale-[0.98] hover:bg-violet-500"
             >
               {t("footer.cta")}

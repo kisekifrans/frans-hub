@@ -29,8 +29,6 @@ export function EdgeCaseVideoPlayer({
     const el = videoRef.current;
     if (!el || !videoUrl.trim()) return;
 
-    console.log("[edgecase] assign src", videoUrl);
-
     const saved = localStorage.getItem(POSITION_KEY(edgeCaseId));
     const resumeAt = saved ? parseFloat(saved) : 0;
 
@@ -47,9 +45,7 @@ export function EdgeCaseVideoPlayer({
       el.load();
       const playAttempt = el.play();
       if (playAttempt) {
-        playAttempt.catch((err) => {
-          console.warn("[edgecase] autoplay blocked or failed", err);
-        });
+        playAttempt.catch(() => {});
       }
     };
 
@@ -107,22 +103,16 @@ export function EdgeCaseVideoPlayer({
         playsInline
         preload="metadata"
         className="h-full w-full rounded-2xl bg-black object-contain"
-        onLoadedData={() => console.log("[edgecase] onLoadedData")}
         onCanPlay={() => {
-          console.log("[edgecase] onCanPlay");
           setBuffering(false);
           const el = videoRef.current;
           if (el?.paused) {
-            void el.play().catch((err) => {
-              console.warn("[edgecase] play on canplay failed", err);
-            });
+            void el.play().catch(() => {});
           }
         }}
         onPlaying={() => setBuffering(false)}
         onWaiting={() => setBuffering(true)}
-        onError={(e) => {
-          const media = e.currentTarget;
-          console.error("[edgecase] onError", media.error, videoUrl);
+        onError={() => {
           setBuffering(false);
           onPlaybackError?.("Video failed to load");
         }}

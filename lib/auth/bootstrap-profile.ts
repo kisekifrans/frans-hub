@@ -1,7 +1,5 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { isValidProfileSlug, normalizeProfileSlug } from "@/lib/auth/reserved-slugs";
-import { DEFAULT_DATA } from "@/lib/defaults";
-import { blockToDb } from "@/lib/supabase/mappers";
 
 export type BootstrappedProfile = {
   id: string;
@@ -9,8 +7,23 @@ export type BootstrappedProfile = {
   created: boolean;
 };
 
+type GoogleUserMeta = {
+  username?: string;
+  preferred_username?: string;
+  name?: string;
+  full_name?: string;
+  given_name?: string;
+  family_name?: string;
+  avatar_url?: string;
+  picture?: string;
+};
+
+function metaOf(user: User): GoogleUserMeta {
+  return (user.user_metadata ?? {}) as GoogleUserMeta;
+}
+
 function baseSlugFromUser(user: User): string {
-  const meta = user.user_metadata as { username?: string; preferred_username?: string };
+  const meta = metaOf(user);
   const fromMeta = meta.username ?? meta.preferred_username;
   if (fromMeta) {
     const n = normalizeProfileSlug(String(fromMeta));
@@ -20,6 +33,32 @@ function baseSlugFromUser(user: User): string {
   const cleaned = local.toLowerCase().replace(/[^a-z0-9]/g, "");
   const base = cleaned.slice(0, 24) || "user";
   return isValidProfileSlug(base) ? base : `user${cleaned.slice(0, 8) || "1"}`;
+}
+
+function displayNameFromUser(user: User, slug: string): string {
+  const meta = metaOf(user);
+  const candidate =
+    meta.full_name?.trim() ||
+    meta.name?.trim() ||
+    [meta.given_name?.trim(), meta.family_name?.trim()]
+      .filter(Boolean)
+      .join(" ") ||
+    "";
+  if (candidate) return candidate.slice(0, 80);
+
+  if (user.email) {
+    const local = user.email.split("@")[0] ?? "";
+    if (local) return local.slice(0, 80);
+  }
+  return slug;
+}
+
+function avatarUrlFromUser(user: User): string | null {
+  const meta = metaOf(user);
+  const raw = (meta.avatar_url ?? meta.picture ?? "").trim();
+  if (!raw) return null;
+  if (!raw.startsWith("https://") && !raw.startsWith("http://")) return null;
+  return raw;
 }
 
 async function slugAvailable(
@@ -51,28 +90,14 @@ async function pickAvailableSlug(
   return `user${crypto.randomUUID().slice(0, 8)}`;
 }
 
-async function seedLinkBlocks(
-  supabase: SupabaseClient,
-  profileId: string,
-): Promise<void> {
-  const seed = DEFAULT_DATA.profile;
-  const blocks = seed.blocks.slice(0, 2).map((b, i) =>
-    blockToDb({ ...b, order: i }, profileId),
-  );
-  if (!blocks.length) return;
-  await supabase.from("blocks").insert(
-    blocks.map((b) => ({
-      ...b,
-      enabled: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })),
-  );
-}
-
 /**
  * Ensures the signed-in user has exactly one owned profile.
  * Idempotent — safe to call after every login.
+ *
+ * New users get an empty link hub. We never seed example "Shop my favorites"
+ * blocks because:
+ *   1. Anonymous visitors of /<newuser> see spam-looking demo links.
+ *   2. Empty state copy already prompts the user to add their first link.
  */
 export async function ensureUserProfile(
   supabase: SupabaseClient,
@@ -94,20 +119,21 @@ export async function ensureUserProfile(
   }
 
   const slug = await pickAvailableSlug(supabase, baseSlugFromUser(user));
-  const seed = DEFAULT_DATA.profile;
+  const displayName = displayNameFromUser(user, slug);
+  const avatarUrl = avatarUrlFromUser(user);
 
   const { data: created, error: insertError } = await supabase
     .from("profiles")
     .insert({
       slug,
       user_id: user.id,
-      username: seed.username,
-      display_name: seed.displayName,
-      bio: seed.bio,
-      avatar_url: seed.avatarUrl,
+      username: slug,
+      display_name: displayName,
+      bio: "",
+      avatar_url: avatarUrl,
       verified: false,
       social_links: [],
-      theme: seed.theme,
+      theme: "violet",
     })
     .select("id, slug")
     .single();
@@ -115,7 +141,6 @@ export async function ensureUserProfile(
   if (insertError) throw insertError;
 
   const profileId = created.id as string;
-  await seedLinkBlocks(supabase, profileId).catch(() => {});
 
   const { seedFinanceDefaults } = await import("@/lib/supabase/finance-service");
   await seedFinanceDefaults(supabase, profileId).catch(() => {});

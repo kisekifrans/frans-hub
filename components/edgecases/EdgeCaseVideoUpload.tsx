@@ -84,8 +84,6 @@ export function EdgeCaseVideoUpload({
         const videoPath = edgeCaseVideoPath(edgeCaseId, ext);
         const mime = file.type || `video/${ext === "mov" ? "quicktime" : ext}`;
 
-        console.log("[edgecase] uploading video", videoPath, mime);
-
         let meta = { durationSeconds: 0 };
         try {
           meta = await readVideoFileMeta(file);
@@ -131,11 +129,9 @@ export function EdgeCaseVideoUpload({
           mimeType: mime,
         };
 
-        console.log("[edgecase] upload complete", payload);
         onUploaded(payload);
         toast.success("Video uploaded");
       } catch (e) {
-        console.error("[edgecase] upload failed", e);
         toast.error(e instanceof Error ? e.message : "Upload failed");
         setPreviewUrl(null);
       } finally {

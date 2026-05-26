@@ -67,14 +67,6 @@ export async function ocrPdfPages(
     onPage?.(pageNum, i, total);
     const text = await ocrPdfPage(doc, pageNum);
     out.set(pageNum, text);
-    console.log(
-      "[pdf-ocr] page",
-      pageNum,
-      "chars",
-      text.length,
-      "txnIds",
-      (text.match(/RB-\d+-\d+|F-\d{6,}/gi) || []).length,
-    );
   }
 
   return out;

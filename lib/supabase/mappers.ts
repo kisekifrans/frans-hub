@@ -1,5 +1,6 @@
 import { buildAnalyticsReport } from "@/lib/analytics-report";
 import { ensureCacheBustUrl } from "@/lib/media-url";
+import { assertValidBlockUrl } from "@/lib/security/block-url";
 import { parseThumbnailFocus } from "@/lib/thumbnail-focus";
 import type { DbBlock, DbProfile, DbSocialLink } from "./database.types";
 import type {
@@ -109,23 +110,26 @@ export function blockToDb(
       return {
         ...common,
         title: block.title,
-        url: block.url,
+        url: assertValidBlockUrl("link", block.url),
         accent: block.accent ?? null,
         thumbnail_url: block.thumbnailUrl ?? null,
         thumbnail_layout: block.thumbnailLayout ?? null,
         thumbnail_focus: block.thumbnailFocus ?? null,
       };
-    case "gif":
+    case "gif": {
+      const url = assertValidBlockUrl("gif", block.url);
       return {
         ...common,
-        url: block.url,
-        thumbnail_url: block.url,
+        url,
+        thumbnail_url: url,
         alt: block.alt ?? null,
         caption: block.caption ?? null,
       };
+    }
     case "tiktok":
+      return { ...common, url: assertValidBlockUrl("tiktok", block.url) };
     case "instagram":
-      return { ...common, url: block.url };
+      return { ...common, url: assertValidBlockUrl("instagram", block.url) };
     default:
       return common;
   }

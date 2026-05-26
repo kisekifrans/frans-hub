@@ -16,6 +16,14 @@
       "title": "AI Academic Audit | Writing Pattern Analysis",
       "description": "Probabilistic academic writing pattern analysis for Indonesian PDFs. Not definitive AI detection."
     },
+    "privacy": {
+      "title": "Privacy Policy | Kawaragi",
+      "description": "How Kawaragi collects, uses, and protects your data."
+    },
+    "terms": {
+      "title": "Terms of Service | Kawaragi",
+      "description": "Terms governing your use of Kawaragi."
+    },
     "signature": {
       "title": "Signature Studio | Agisna Dev",
       "description": "Create and export digital signatures."
@@ -61,18 +69,21 @@
     "createPage": "Create your page",
     "dashboard": "Dashboard",
     "editProfile": "Edit profile",
-    "finance": "Finance",
+    "finance": "Aura",
+    "aura": "Aura",
     "owner": {
       "sectionLabel": "Owner home",
-      "welcomeTitle": "✨ Your account is ready",
-      "welcomeSubtitle": "Add your first link or explore your financial insights.",
-      "emptyLinks": "No links yet — add one to bring your page to life.",
+      "welcomeTitle": "✨ Your page is alive",
+      "welcomeSubtitle": "Drop links, set the vibe — and watch your aura come alive.",
+      "emptyLinks": "No links yet — drop one to bring your page to life.",
       "emptyBio": "Add a short bio so visitors know you.",
       "setupHint": "A couple more touches and your page feels complete.",
       "actionAddLink": "Add link",
       "actionAddLinkHint": "Open editor",
-      "actionFinance": "Finance",
-      "actionFinanceHint": "PDF & insights",
+      "actionFinance": "Aura",
+      "actionFinanceHint": "Monthly recap",
+      "actionAura": "Aura",
+      "actionAuraHint": "Monthly recap",
       "actionEdit": "Edit profile",
       "actionEditHint": "Name & bio",
       "actionCustomize": "Customize",
@@ -81,6 +92,16 @@
       "emptyBlocksTitle": "Your page is still empty",
       "emptyBlocksHint": "Add a link, text, or embed — visitors will see it here.",
       "emptyBlocksCta": "Add first content"
+    }
+  },
+  "dashboard": {
+    "aura": {
+      "eyebrow": "Bonus layer",
+      "label": "Your Aura",
+      "type": "Soft Saving Era",
+      "metric": "+18% saved this month",
+      "detail": "GoPay became your top wallet.",
+      "cta": "Open your aura"
     }
   },
   "home": {
@@ -92,48 +113,63 @@
       "signIn": "Sign in"
     },
     "hero": {
-      "eyebrow": "Finance, lifestyle edition",
-      "title": "Your money, easier to read",
-      "subtitle": "E-wallet or bank PDF. Spending as short stories.",
-      "step1": "Upload a statement PDF.",
-      "step2": "Daily, weekly, monthly, yearly patterns.",
-      "step3": "Share your recap with people close to you.",
-      "ctaPrimary": "Start free",
-      "ctaSecondary": "See recap",
-      "ctaHelper": "One PDF. Start right away.",
-      "note": "No e-wallet or bank login."
+      "eyebrow": "Your internet identity",
+      "title": "Your corner of the internet.",
+      "subtitle": "One page. Your links, your vibe, your aura.",
+      "step1": "Claim your /name.",
+      "step2": "Drop your links, embeds, and mood.",
+      "step3": "A monthly aura recap, on the house.",
+      "ctaPrimary": "Claim your page",
+      "ctaSecondary": "See an aura",
+      "ctaHelper": "Yours in seconds.",
+      "note": "Free. Forever yours."
     },
     "heroInsights": {
       "weekend": {
-        "emoji": "🌙",
-        "tag": "Weekend",
-        "message": "Weekends were heavier on spending this week."
+        "emoji": "🪩",
+        "tag": "Page",
+        "message": "kawaragi.io/you — live in minutes."
       },
       "shopeeFood": {
-        "emoji": "🍱",
-        "tag": "Late month",
-        "message": "ShopeeFood keeps showing up lately."
+        "emoji": "🔗",
+        "tag": "Link",
+        "message": "Drop a link. Make it yours."
       },
       "peakHour": {
-        "emoji": "🕘",
-        "tag": "Peak hour",
-        "message": "Busiest time: 9:00 PM."
+        "emoji": "🎬",
+        "tag": "Embed",
+        "message": "Your TikTok, playing on your page."
       },
       "gopay": {
-        "emoji": "🟢",
-        "tag": "Wallet",
-        "message": "GoPay became your main wallet this month."
+        "emoji": "🌌",
+        "tag": "Aura",
+        "message": "This month: Digital Night Owl."
       },
       "coffee": {
-        "emoji": "☕",
-        "tag": "Night",
-        "message": "Late-night coffee is up this week."
+        "emoji": "🌷",
+        "tag": "Theme",
+        "message": "Violet aura suits you tonight."
       },
       "saved": {
         "emoji": "✨",
-        "tag": "May",
-        "message": "You saved more than last month."
+        "tag": "Recap",
+        "message": "+18% saved — bonus aura."
       }
+    },
+    "identity": {
+      "eyebrow": "Your page",
+      "title": "Links, vibe, identity — in one place.",
+      "subtitle": "Drop links, embed your moments, pick a theme. Your internet corner is alive.",
+      "chipLink": "Drop a link",
+      "chipEmbed": "TikTok · IG",
+      "chipGif": "Mood GIF",
+      "chipTheme": "Violet aura",
+      "pageSlug": "kawaragi.io/you",
+      "pageDisplay": "Your name",
+      "pageBio": "Software lover. Late-night coder. Drops a recap when the vibe hits.",
+      "pageLink1": "Latest project",
+      "pageLink2": "Shop my picks",
+      "pageLink3": "Read my notes"
     },
     "local": {
       "title": "Built for Indonesian wallets",
@@ -147,8 +183,8 @@
       }
     },
     "recap": {
-      "sectionTitle": "Monthly recap",
-      "sectionSubtitle": "Screenshot. Share. Done.",
+      "sectionTitle": "And every month, your aura",
+      "sectionSubtitle": "Not a finance dashboard. A bonus layer that quietly gets how you live online.",
       "badge": "May 2026",
       "auraEditorial": "Aura",
       "auraType": "Digital Night Owl",
@@ -187,8 +223,8 @@
       "noBank": "No bank login required."
     },
     "footer": {
-      "tagline": "Finance that feels light.",
-      "cta": "Get started on Kawaragi",
+      "tagline": "Your internet identity, simplified.",
+      "cta": "Claim your page",
       "exampleHub": "See an example page"
     }
   },
@@ -201,7 +237,7 @@
     "unavailable": "Gear page unavailable.",
     "migrationHint": "supabase/migrations/008_gear.sql",
     "featuredBadge": "Featured",
-    "footerPath": "agisna.dev/gear",
+    "footerPath": "/gear",
     "priceUnavailable": "Price not available"
   },
   "academicaudit": {

@@ -838,9 +838,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         onProgress?.(75);
 
         const finalText = extracted.text;
-        console.log("===== FINAL PARSED TEXT (hook → parser) =====");
-        console.log(finalText);
-
         const parsed = parseStatementText(finalText, source);
         const rows = buildPreviewRows(
           parsed.transactions,
@@ -864,7 +861,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         syncFailedJob(updated);
 
         onProgress?.(100);
-        console.log("[finance-import] parsed rows", rows.length);
 
         if (rows.length === 0) {
           toast.error(noRowsMessage);
