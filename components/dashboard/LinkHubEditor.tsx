@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
 import { AnalyticsPanel } from "@/components/analytics/AnalyticsPanel";
@@ -43,22 +42,27 @@ export function LinkHubEditor() {
 
   type DashboardTab = "analytics" | "blocks" | "profile" | "gear";
 
-  const searchParams = useSearchParams();
-  const initialTab: DashboardTab = (() => {
-    const requested = searchParams?.get("tab");
+  const [tab, setTab] = useState<DashboardTab>("blocks");
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Read ?tab= once on mount via window.location instead of useSearchParams().
+  // useSearchParams forces the page into Next.js's CSR-bailout path which,
+  // combined with our `dynamic = "force-dynamic"` + Suspense streaming, ends
+  // up breaking the dashboard's HTML response in production. Plain
+  // window.location avoids that and keeps deep-linking (?tab=gear) working.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const requested = new URLSearchParams(window.location.search).get("tab");
     if (
       requested === "blocks" ||
       requested === "profile" ||
       requested === "gear" ||
       requested === "analytics"
     ) {
-      return requested;
+      setTab(requested);
     }
-    return "blocks";
-  })();
-  const [tab, setTab] = useState<DashboardTab>(initialTab);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
+  }, []);
 
   useEffect(() => {
     setShowTutorial(!isDashboardTutorialDismissed());
