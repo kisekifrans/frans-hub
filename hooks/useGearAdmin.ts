@@ -43,7 +43,7 @@ export function useGearAdmin(mode: GearAdminMode = "site") {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [client, setClient] = useState<SupabaseClient | null>(null);
+  const clientRef = useRef<SupabaseClient | null>(null);
   const itemsRef = useRef<GearItem[]>([]);
 
   useEffect(() => {
@@ -51,11 +51,11 @@ export function useGearAdmin(mode: GearAdminMode = "site") {
   }, [items]);
 
   const getClient = useCallback(() => {
-    if (client) return client;
-    const c = createClient();
-    setClient(c);
-    return c;
-  }, [client]);
+    if (!clientRef.current) {
+      clientRef.current = createClient();
+    }
+    return clientRef.current;
+  }, []);
 
   const load = useCallback(async () => {
     if (!isSupabaseConfigured()) {

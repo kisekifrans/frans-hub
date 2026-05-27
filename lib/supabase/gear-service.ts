@@ -197,8 +197,12 @@ async function loadGearForProfile(
     profileId,
     profile: gearProfileFromDb(profileRes.data as DbProfile),
     settings: gearSettingsFromDb(settingsRes.data as DbGearPageSettings | null),
-    categories: (catRows as DbGearCategory[]).map(gearCategoryFromDb),
-    items: (itemRes.data as DbGearItem[]).map(gearItemFromDb),
+    categories: (catRows ?? []).map((row) =>
+      gearCategoryFromDb(row as DbGearCategory),
+    ),
+    items: (itemRes.data ?? []).map((row) =>
+      gearItemFromDb(row as DbGearItem),
+    ),
   };
 }
 

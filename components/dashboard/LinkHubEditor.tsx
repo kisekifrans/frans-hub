@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
@@ -8,7 +9,22 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 import { AuraTeaserCard } from "@/components/dashboard/AuraTeaserCard";
 import { PublicLinkSlugField } from "@/components/dashboard/PublicLinkSlugField";
 import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
-import { GearManager } from "@/components/admin/gear/GearManager";
+
+const GearManager = dynamic(
+  () =>
+    import("@/components/admin/gear/GearManager").then((mod) => ({
+      default: mod.GearManager,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
+        <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
+        Loading your setup…
+      </div>
+    ),
+  },
+);
 import { ThemePicker } from "@/components/profile/ThemePicker";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";

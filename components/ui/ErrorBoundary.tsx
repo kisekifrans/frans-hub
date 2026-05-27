@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface ErrorBoundaryProps {
@@ -26,15 +26,16 @@ export class ErrorBoundary extends Component<
 > {
   state: ErrorBoundaryState = { error: null };
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { error };
+  static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
+    if (error instanceof Error) return { error };
+    if (typeof error === "string") return { error: new Error(error) };
+    return { error: new Error("Unexpected error.") };
   }
 
-  componentDidCatch(error: Error): void {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.error("[ErrorBoundary]", error);
-    }
+  componentDidCatch(error: unknown, info: ErrorInfo): void {
+    // Always log — production minified errors often have an empty `.message`.
+    // eslint-disable-next-line no-console
+    console.error("[ErrorBoundary]", error, info.componentStack);
   }
 
   reset = (): void => {
@@ -59,8 +60,11 @@ export class ErrorBoundary extends Component<
                 ? `${this.props.label} couldn't load`
                 : "Something went wrong"}
             </h3>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              {error.message || "Unexpected error."}
+            <p className="mt-1 break-words text-xs text-zinc-500 dark:text-zinc-400">
+              {error.message ||
+                (typeof error.name === "string" && error.name !== "Error"
+                  ? error.name
+                  : "Unexpected error.")}
             </p>
           </div>
         </div>

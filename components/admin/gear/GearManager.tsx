@@ -245,7 +245,7 @@ export function GearManager({
     );
   }
 
-  const categories = sortGearCategories(gear.categories);
+  const categories = sortGearCategories(gear.categories ?? []);
 
   // One DndContext for the whole page. Previously each category had its own
   // context while sharing the same `sensors` hook — @dnd-kit throws at
@@ -396,15 +396,35 @@ export function GearManager({
         </form>
       </GlassCard>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleItemDragEnd}
-      >
-        {categories.map((cat: GearCategory) => {
+      {(() => {
+        const pid = gear.profileId;
+        const canSort = gear.items.length > 0;
+
+        const sections = categories.map((cat: GearCategory) => {
           const catItems = gear.items
             .filter((i) => i.categoryId === cat.id)
             .sort((a, b) => a.order - b.order);
+
+          const itemNodes =
+            catItems.length === 0 ? (
+              <p className="text-xs text-zinc-500">Belum ada item.</p>
+            ) : (
+              catItems.map((item) => (
+                <SortableGearItem
+                  key={item.id}
+                  item={item}
+                  profileId={pid}
+                  saving={gear.saving}
+                  onChange={(patch) => gear.patchItem(item.id, patch)}
+                  onSave={(patch) => void gear.saveItem(item.id, patch)}
+                  onRemove={() => {
+                    if (window.confirm(`Hapus “${item.name}”?`)) {
+                      void gear.removeItem(item.id);
+                    }
+                  }}
+                />
+              ))
+            );
 
           return (
             <section key={cat.id} className="space-y-3">
@@ -415,7 +435,7 @@ export function GearManager({
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => gear.addItem(cat.id)}
+                    onClick={() => void gear.addItem(cat.id)}
                     disabled={gear.saving}
                     className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-medium text-white"
                   >
@@ -441,36 +461,36 @@ export function GearManager({
                 </div>
               </div>
 
-              <SortableContext
-                items={catItems.map((i) => i.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-4">
-                  {catItems.length === 0 ? (
-                    <p className="text-xs text-zinc-500">Belum ada item.</p>
-                  ) : (
-                    catItems.map((item) => (
-                      <SortableGearItem
-                        key={item.id}
-                        item={item}
-                        profileId={gear.profileId!}
-                        saving={gear.saving}
-                        onChange={(patch) => gear.patchItem(item.id, patch)}
-                        onSave={(patch) => void gear.saveItem(item.id, patch)}
-                        onRemove={() => {
-                          if (window.confirm(`Hapus “${item.name}”?`)) {
-                            void gear.removeItem(item.id);
-                          }
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
-              </SortableContext>
+              <div className="space-y-4">
+                {canSort && catItems.length > 0 ? (
+                  <SortableContext
+                    items={catItems.map((i) => i.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {itemNodes}
+                  </SortableContext>
+                ) : (
+                  itemNodes
+                )}
+              </div>
             </section>
           );
-        })}
-      </DndContext>
+        });
+
+        if (!canSort) {
+          return <div className="space-y-6">{sections}</div>;
+        }
+
+        return (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleItemDragEnd}
+          >
+            <div className="space-y-6">{sections}</div>
+          </DndContext>
+        );
+      })()}
     </div>
   );
 }
