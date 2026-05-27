@@ -247,14 +247,28 @@ export function GearManager({
 
   const categories = sortGearCategories(gear.categories);
 
-  const handleItemDragEnd = (categoryId: string) => (event: DragEndEvent) => {
+  // One DndContext for the whole page. Previously each category had its own
+  // context while sharing the same `sensors` hook — @dnd-kit throws at
+  // runtime when multiple contexts reuse one sensor instance (12 categories
+  // after seed = instant crash on the Setup tab).
+  const handleItemDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+
+    const activeItem = gear.items.find((i) => i.id === active.id);
+    const overItem = gear.items.find((i) => i.id === over.id);
+    if (!activeItem || !overItem || activeItem.categoryId !== overItem.categoryId) {
+      return;
+    }
+
+    const categoryId = activeItem.categoryId;
     const catItems = gear.items
       .filter((i) => i.categoryId === categoryId)
       .sort((a, b) => a.order - b.order);
     const oldIndex = catItems.findIndex((i) => i.id === active.id);
     const newIndex = catItems.findIndex((i) => i.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+
     const reordered = [...catItems];
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(newIndex, 0, moved);
@@ -382,47 +396,51 @@ export function GearManager({
         </form>
       </GlassCard>
 
-      {categories.map((cat: GearCategory) => {
-        const catItems = gear.items
-          .filter((i) => i.categoryId === cat.id)
-          .sort((a, b) => a.order - b.order);
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleItemDragEnd}
+      >
+        {categories.map((cat: GearCategory) => {
+          const catItems = gear.items
+            .filter((i) => i.categoryId === cat.id)
+            .sort((a, b) => a.order - b.order);
 
-        return (
-          <section key={cat.id} className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-                {cat.name}
-              </h3>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => gear.addItem(cat.id)}
-                  disabled={gear.saving}
-                  className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-medium text-white"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Item
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm(`Hapus kategori “${cat.name}” dan semua item?`)) {
-                      void gear.removeCategory(cat.id);
-                    }
-                  }}
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-rose-500 hover:bg-rose-500/10"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Hapus
-                </button>
+          return (
+            <section key={cat.id} className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                  {cat.name}
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => gear.addItem(cat.id)}
+                    disabled={gear.saving}
+                    className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-medium text-white"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Item
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Hapus kategori “${cat.name}” dan semua item?`,
+                        )
+                      ) {
+                        void gear.removeCategory(cat.id);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-rose-500 hover:bg-rose-500/10"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Hapus
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleItemDragEnd(cat.id)}
-            >
               <SortableContext
                 items={catItems.map((i) => i.id)}
                 strategy={verticalListSortingStrategy}
@@ -449,10 +467,10 @@ export function GearManager({
                   )}
                 </div>
               </SortableContext>
-            </DndContext>
-          </section>
-        );
-      })}
+            </section>
+          );
+        })}
+      </DndContext>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
 import { GearManager } from "@/components/admin/gear/GearManager";
 import { ThemePicker } from "@/components/profile/ThemePicker";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PageShell } from "@/components/ui/PageShell";
 import { useHub } from "@/hooks/useHub";
@@ -194,11 +195,13 @@ export function LinkHubEditor() {
         )}
 
         {tab === "gear" && (
-          <GearManager
-            mode="user"
-            publicHref={profile.slug ? `/hub/${profile.slug}/gear` : "/gear"}
-            publicLabel={profile.slug ? `/${profile.slug}/gear` : "/gear"}
-          />
+          <ErrorBoundary label="Setup">
+            <GearManager
+              mode="user"
+              publicHref={profile.slug ? `/hub/${profile.slug}/gear` : "/gear"}
+              publicLabel={profile.slug ? `/${profile.slug}/gear` : "/gear"}
+            />
+          </ErrorBoundary>
         )}
 
         {tab === "profile" && (
