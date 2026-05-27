@@ -2,29 +2,9 @@
 
 import { useState } from "react";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { GearItemEditor } from "@/components/admin/gear/GearItemEditor";
-import { sortGearCategories } from "@/lib/gear/group";
-import type { GearCategory, GearItem } from "@/lib/gear/types";
-import {
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
   Eye,
   EyeOff,
   Headphones,
@@ -32,9 +12,16 @@ import {
   Loader2,
   Monitor,
   Mouse,
+  Plus,
   RefreshCw,
   Sparkles,
+  Trash2,
 } from "lucide-react";
+import Link from "next/link";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { GearItemEditor } from "@/components/admin/gear/GearItemEditor";
+import { sortGearCategories } from "@/lib/gear/group";
+import type { GearCategory, GearItem } from "@/lib/gear/types";
 import { useGearAdmin, type GearAdminMode } from "@/hooks/useGearAdmin";
 import { cn } from "@/lib/utils";
 
@@ -121,61 +108,66 @@ function UserGearWelcome({
   );
 }
 
-function SortableGearItem({
+function GearListItem({
   item,
   profileId,
   saving,
+  canMoveUp,
+  canMoveDown,
   onChange,
   onSave,
   onRemove,
+  onMoveUp,
+  onMoveDown,
 }: {
   item: GearItem;
   profileId: string;
   saving: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   onChange: (patch: Partial<GearItem>) => void;
   onSave: (patch?: Partial<GearItem>) => void;
   onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(isDragging && "z-10 opacity-90")}
-    >
-      <GearItemEditor
-        item={item}
-        profileId={profileId}
-        saving={saving}
-        onChange={onChange}
-        onSave={onSave}
-        onRemove={onRemove}
-        dragHandle={
+    <GearItemEditor
+      item={item}
+      profileId={profileId}
+      saving={saving}
+      onChange={onChange}
+      onSave={onSave}
+      onRemove={onRemove}
+      dragHandle={
+        <div className="flex flex-col gap-0.5">
           <button
             type="button"
-            className="cursor-grab touch-none rounded-lg p-2 text-zinc-400 active:cursor-grabbing"
-            {...attributes}
-            {...listeners}
-            aria-label="Urutkan"
+            disabled={saving || !canMoveUp}
+            onClick={onMoveUp}
+            className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/50 hover:text-zinc-700 disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-zinc-200"
+            aria-label="Move up"
           >
-            <GripVertical className="h-4 w-4" />
+            <ChevronUp className="h-4 w-4" />
           </button>
-        }
-      />
-    </div>
+          <button
+            type="button"
+            disabled={saving || !canMoveDown}
+            onClick={onMoveDown}
+            className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/50 hover:text-zinc-700 disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-zinc-200"
+            aria-label="Move down"
+          >
+            <ChevronDown className="h-4 w-4" />
+          </button>
+        </div>
+      }
+    />
   );
 }
 
 export interface GearManagerProps {
   mode?: GearAdminMode;
-  /** Public URL to link to (e.g. "/id/gear" or "/id/u/<slug>/gear"). */
+  /** Public URL to link to (e.g. "/gear" or "/hub/<slug>/gear"). */
   publicHref?: string;
   /** Visible label shown next to "Public:". */
   publicLabel?: string;
@@ -188,12 +180,6 @@ export function GearManager({
 }: GearManagerProps = {}) {
   const gear = useGearAdmin(mode);
   const [newCategory, setNewCategory] = useState("");
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-
   const isUserMode = mode === "user";
 
   if (gear.loading) {
@@ -206,7 +192,6 @@ export function GearManager({
   }
 
   if (gear.loadError || !gear.profileId) {
-    // Detect the most common cause: migration 021 hasn't been applied yet.
     const looksLikeMissingMigration =
       gear.loadError?.toLowerCase().includes("gear_enabled") ||
       gear.loadError?.includes("42703");
@@ -224,8 +209,8 @@ export function GearManager({
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {looksLikeMissingMigration ? (
                 <>
-                  Your account is fine — your gear table just needs one last
-                  migration to come online. Try again in a minute, or refresh.
+                  Your account is fine — run migration 021 on Supabase, then try
+                  again.
                 </>
               ) : (
                 gear.loadError ?? "Something went wrong fetching your gear."
@@ -245,37 +230,24 @@ export function GearManager({
     );
   }
 
+  const profileId = gear.profileId;
   const categories = sortGearCategories(gear.categories ?? []);
-
-  // One DndContext for the whole page. Previously each category had its own
-  // context while sharing the same `sensors` hook — @dnd-kit throws at
-  // runtime when multiple contexts reuse one sensor instance (12 categories
-  // after seed = instant crash on the Setup tab).
-  const handleItemDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const activeItem = gear.items.find((i) => i.id === active.id);
-    const overItem = gear.items.find((i) => i.id === over.id);
-    if (!activeItem || !overItem || activeItem.categoryId !== overItem.categoryId) {
-      return;
-    }
-
-    const categoryId = activeItem.categoryId;
-    const catItems = gear.items
-      .filter((i) => i.categoryId === categoryId)
-      .sort((a, b) => a.order - b.order);
-    const oldIndex = catItems.findIndex((i) => i.id === active.id);
-    const newIndex = catItems.findIndex((i) => i.id === over.id);
-    if (oldIndex < 0 || newIndex < 0) return;
-
-    const reordered = [...catItems];
-    const [moved] = reordered.splice(oldIndex, 1);
-    reordered.splice(newIndex, 0, moved);
-    gear.reorderItemsInCategory(categoryId, reordered);
-  };
-
   const showWelcome = isUserMode && gear.items.length === 0;
+
+  const moveItemInCategory = (
+    categoryId: string,
+    catItems: GearItem[],
+    index: number,
+    direction: "up" | "down",
+  ) => {
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= catItems.length) return;
+    const reordered = [...catItems];
+    const tmp = reordered[index]!;
+    reordered[index] = reordered[target]!;
+    reordered[target] = tmp;
+    void gear.reorderItemsInCategory(categoryId, reordered);
+  };
 
   return (
     <div className="space-y-6">
@@ -333,7 +305,8 @@ export function GearManager({
           </div>
           {!gear.gearEnabled ? (
             <p className="text-xs text-zinc-500">
-              Your gear page is hidden. Toggle to <b>Public</b> when you&apos;re ready.
+              Your gear page is hidden. Toggle to <b>Public</b> when you&apos;re
+              ready.
             </p>
           ) : null}
         </GlassCard>
@@ -341,7 +314,10 @@ export function GearManager({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-zinc-500">
             Kelola gear showcase. Publik:{" "}
-            <Link href={publicHref} className="font-medium text-violet-600 underline dark:text-violet-300">
+            <Link
+              href={publicHref}
+              className="font-medium text-violet-600 underline dark:text-violet-300"
+            >
               {publicLabel}
             </Link>
           </p>
@@ -365,9 +341,15 @@ export function GearManager({
           className="w-full resize-none rounded-xl border border-white/25 bg-white/40 px-3 py-2 text-sm dark:bg-white/5"
           placeholder="Contoh: Setup streaming & gaming daily driver…"
         />
-        <p className="text-xs text-zinc-500">
-          Profil (nama, bio, avatar, sosial) di tab Profile admin.
-        </p>
+        {isUserMode ? (
+          <p className="text-xs text-zinc-500">
+            Shown at the top of your public gear page.
+          </p>
+        ) : (
+          <p className="text-xs text-zinc-500">
+            Profil (nama, bio, avatar, sosial) di tab Profile admin.
+          </p>
+        )}
       </GlassCard>
 
       <GlassCard padding="md" className="space-y-3">
@@ -396,101 +378,78 @@ export function GearManager({
         </form>
       </GlassCard>
 
-      {(() => {
-        const pid = gear.profileId;
-        const canSort = gear.items.length > 0;
-
-        const sections = categories.map((cat: GearCategory) => {
-          const catItems = gear.items
-            .filter((i) => i.categoryId === cat.id)
-            .sort((a, b) => a.order - b.order);
-
-          const itemNodes =
-            catItems.length === 0 ? (
-              <p className="text-xs text-zinc-500">Belum ada item.</p>
-            ) : (
-              catItems.map((item) => (
-                <SortableGearItem
-                  key={item.id}
-                  item={item}
-                  profileId={pid}
-                  saving={gear.saving}
-                  onChange={(patch) => gear.patchItem(item.id, patch)}
-                  onSave={(patch) => void gear.saveItem(item.id, patch)}
-                  onRemove={() => {
-                    if (window.confirm(`Hapus “${item.name}”?`)) {
-                      void gear.removeItem(item.id);
-                    }
-                  }}
-                />
-              ))
-            );
-
-          return (
-            <section key={cat.id} className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-                  {cat.name}
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void gear.addItem(cat.id)}
-                    disabled={gear.saving}
-                    className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-medium text-white"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Item
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Hapus kategori “${cat.name}” dan semua item?`,
-                        )
-                      ) {
-                        void gear.removeCategory(cat.id);
-                      }
-                    }}
-                    className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-rose-500 hover:bg-rose-500/10"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Hapus
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {canSort && catItems.length > 0 ? (
-                  <SortableContext
-                    items={catItems.map((i) => i.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {itemNodes}
-                  </SortableContext>
-                ) : (
-                  itemNodes
-                )}
-              </div>
-            </section>
-          );
-        });
-
-        if (!canSort) {
-          return <div className="space-y-6">{sections}</div>;
-        }
+      {categories.map((cat: GearCategory) => {
+        const catItems = gear.items
+          .filter((i) => i.categoryId === cat.id)
+          .sort((a, b) => a.order - b.order);
 
         return (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleItemDragEnd}
-          >
-            <div className="space-y-6">{sections}</div>
-          </DndContext>
+          <section key={cat.id} className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                {cat.name}
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void gear.addItem(cat.id)}
+                  disabled={gear.saving}
+                  className="inline-flex items-center gap-1 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-medium text-white"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Item
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Hapus kategori “${cat.name}” dan semua item?`,
+                      )
+                    ) {
+                      void gear.removeCategory(cat.id);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-rose-500 hover:bg-rose-500/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Hapus
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {catItems.length === 0 ? (
+                <p className="text-xs text-zinc-500">Belum ada item.</p>
+              ) : (
+                catItems.map((item, index) => (
+                  <GearListItem
+                    key={item.id}
+                    item={item}
+                    profileId={profileId}
+                    saving={gear.saving}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < catItems.length - 1}
+                    onChange={(patch) => gear.patchItem(item.id, patch)}
+                    onSave={(patch) => void gear.saveItem(item.id, patch)}
+                    onRemove={() => {
+                      if (window.confirm(`Hapus “${item.name}”?`)) {
+                        void gear.removeItem(item.id);
+                      }
+                    }}
+                    onMoveUp={() =>
+                      moveItemInCategory(cat.id, catItems, index, "up")
+                    }
+                    onMoveDown={() =>
+                      moveItemInCategory(cat.id, catItems, index, "down")
+                    }
+                  />
+                ))
+              )}
+            </div>
+          </section>
         );
-      })()}
+      })}
     </div>
   );
 }
