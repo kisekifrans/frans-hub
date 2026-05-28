@@ -2,6 +2,16 @@ import { locales, type AppLocale } from "@/i18n/routing";
 import { isValidProfileSlug } from "@/lib/auth/reserved-slugs";
 
 const LOCALE_PATTERN = locales.join("|");
+const LOCALIZED_RESERVED_SEGMENTS = new Set([
+  "admin",
+  "privacy",
+  "terms",
+  "gear",
+  "signature",
+  "typing",
+  "typingmonster",
+  "tools",
+]);
 
 /** /id/admin, /en/admin/audit, etc. */
 export function isLocalizedAdminPath(pathname: string): boolean {
@@ -68,4 +78,13 @@ export function slugFromPublicPath(pathname: string): string | null {
   const match = pathname.match(/^\/([^/]+)$/);
   if (!match || !isValidProfileSlug(match[1])) return null;
   return match[1];
+}
+
+/** Localized single-segment profile URL e.g. /en/frans, /id/kiseki */
+export function slugFromLocalizedPublicPath(pathname: string): string | null {
+  const match = pathname.match(new RegExp(`^/(${LOCALE_PATTERN})/([^/]+)$`));
+  if (!match) return null;
+  const slug = match[2];
+  if (!slug || LOCALIZED_RESERVED_SEGMENTS.has(slug)) return null;
+  return isValidProfileSlug(slug) ? slug : null;
 }

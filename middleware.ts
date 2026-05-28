@@ -5,6 +5,7 @@ import {
   isLocalizedLoginPath,
   isLoginPath,
   isMemberPath,
+  slugFromLocalizedPublicPath,
   isPublicSlugPath,
   isSiteAdminPath,
   localeFromLocalizedAdminPath,
@@ -174,6 +175,13 @@ export default async function middleware(request: NextRequest) {
   if (publicSlug) {
     const url = request.nextUrl.clone();
     url.pathname = `/hub/${publicSlug}`;
+    return NextResponse.rewrite(url);
+  }
+
+  const localizedPublicSlug = slugFromLocalizedPublicPath(pathname);
+  if (localizedPublicSlug) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/hub/${localizedPublicSlug}`;
     return NextResponse.rewrite(url);
   }
 
