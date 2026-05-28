@@ -273,14 +273,16 @@ export function LinkHubEditor() {
           />
         )}
 
-        <ActivationProgressCard
-          score={quality.score}
-          completedCount={quality.completedCount}
-          totalCount={quality.totalCount}
-          nextAction={quality.nextAction}
-          steps={quality.steps}
-          onOpenStep={handleOpenActivationStep}
-        />
+        {quality.completedCount < quality.totalCount ? (
+          <ActivationProgressCard
+            score={quality.score}
+            completedCount={quality.completedCount}
+            totalCount={quality.totalCount}
+            nextAction={quality.nextAction}
+            steps={quality.steps}
+            onOpenStep={handleOpenActivationStep}
+          />
+        ) : null}
 
         {tab === "analytics" && (
           <AnalyticsPanel

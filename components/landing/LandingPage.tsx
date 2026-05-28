@@ -221,7 +221,7 @@ export function LandingPage() {
               {t("footer.cta")}
             </Link>
             <Link
-              href={`/${siteSlug}`}
+              href={`/hub/${siteSlug}`}
               className={cn(
                 "text-sm font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400",
               )}
