@@ -88,7 +88,7 @@ export function OutreachTemplateEditor({
                 setEmojiOpen(false);
               }}
               anchorRef={emojiBtnRef}
-              useMobileSheet={false}
+              usePortal
             />
           ) : null}
         </div>
