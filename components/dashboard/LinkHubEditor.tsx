@@ -2,13 +2,15 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { BlocksManager } from "@/components/admin/BlocksManager";
 import { AnalyticsPanel } from "@/components/analytics/AnalyticsPanel";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { AuraTeaserCard } from "@/components/dashboard/AuraTeaserCard";
 import { PublicLinkSlugField } from "@/components/dashboard/PublicLinkSlugField";
 import { SocialLinksEditor } from "@/components/admin/SocialLinksEditor";
+import { ActivationProgressCard } from "@/components/dashboard/ActivationProgressCard";
+import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 
 const GearManager = dynamic(
   () =>
@@ -33,13 +35,16 @@ import { PageShell } from "@/components/ui/PageShell";
 import { useHub } from "@/hooks/useHub";
 import type { AnalyticsGranularity, AnalyticsPeriod } from "@/lib/types";
 import type { Profile } from "@/lib/types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardTutorial } from "@/components/dashboard/DashboardTutorial";
+import { useGearAdmin } from "@/hooks/useGearAdmin";
+import { buildProfileQualitySnapshot } from "@/lib/dashboard/completion";
 import {
   dismissDashboardTutorial,
   isDashboardTutorialDismissed,
 } from "@/lib/dashboard/tutorial";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 /** Member link editor — same glass UI as admin, scoped to the signed-in user's profile. */
 export function LinkHubEditor() {
@@ -56,12 +61,14 @@ export function LinkHubEditor() {
     reorder,
     refreshAnalytics,
   } = useHub("user");
+  const gear = useGearAdmin("user");
 
   type DashboardTab = "analytics" | "blocks" | "profile" | "gear";
 
   const [tab, setTab] = useState<DashboardTab>("blocks");
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [hasSharedProfile, setHasSharedProfile] = useState(false);
 
   // Read ?tab= once on mount via window.location instead of useSearchParams().
   // useSearchParams forces the page into Next.js's CSR-bailout path which,
@@ -110,6 +117,52 @@ export function LinkHubEditor() {
   const publicPath =
     profile.slug && profile.slug !== "main" ? `/${profile.slug}` : null;
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !profileId) return;
+    const key = `kawaragi:shared:${profileId}`;
+    setHasSharedProfile(window.localStorage.getItem(key) === "1");
+  }, [profileId]);
+
+  const quality = useMemo(
+    () =>
+      buildProfileQualitySnapshot({
+        profile,
+        gearEnabled: gear.gearEnabled,
+        gearItems: gear.items,
+        hasSharedProfile,
+      }),
+    [profile, gear.gearEnabled, gear.items, hasSharedProfile],
+  );
+
+  const handleOpenActivationStep = useCallback(
+    (stepId: "links" | "theme" | "publish") => {
+      if (stepId === "publish") {
+        setTab("gear");
+        return;
+      }
+      if (stepId === "theme") {
+        setTab("profile");
+        return;
+      }
+      setTab("blocks");
+    },
+    [],
+  );
+
+  const handleCopyPublicLink = useCallback(async () => {
+    if (typeof window === "undefined" || !publicPath) return;
+    const url = `${window.location.origin}${publicPath}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      const key = `kawaragi:shared:${profileId}`;
+      window.localStorage.setItem(key, "1");
+      setHasSharedProfile(true);
+      toast.success("Public link copied");
+    } catch {
+      toast.error("Could not copy link");
+    }
+  }, [profileId, publicPath]);
+
   return (
     <PageShell>
       <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -133,13 +186,27 @@ export function LinkHubEditor() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {publicPath && (
-              <Link
-                href={publicPath}
-                target="_blank"
-                className="rounded-full bg-violet-600/90 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:bg-violet-500"
-              >
-                View public page
-              </Link>
+              <>
+                <Link
+                  href={publicPath}
+                  target="_blank"
+                  className="rounded-full bg-violet-600/90 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:bg-violet-500"
+                >
+                  View public page
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void handleCopyPublicLink()}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-violet-200/60 bg-white/70 px-3.5 py-2 text-xs font-semibold text-violet-700 transition hover:bg-white dark:border-violet-400/25 dark:bg-white/[0.03] dark:text-violet-200 dark:hover:bg-white/[0.08]"
+                >
+                  {hasSharedProfile ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                  {hasSharedProfile ? "Shared" : "Copy link"}
+                </button>
+              </>
             )}
             <Link
               href="/finance"
@@ -186,6 +253,15 @@ export function LinkHubEditor() {
             onOpenTab={setTab}
           />
         )}
+
+        <ActivationProgressCard
+          score={quality.score}
+          completedCount={quality.completedCount}
+          totalCount={quality.totalCount}
+          nextAction={quality.nextAction}
+          steps={quality.steps}
+          onOpenStep={handleOpenActivationStep}
+        />
 
         {tab === "analytics" && (
           <AnalyticsPanel
@@ -236,7 +312,11 @@ export function LinkHubEditor() {
               }
               onUpdated={(slug) => saveProfileFields({ slug })}
             />
-            <ProfileFields profile={profile} onSave={saveProfileFields} />
+            <ProfileFields
+              profile={profile}
+              profileId={profileId}
+              onSave={saveProfileFields}
+            />
             <SocialLinksEditor
               links={profile.socialLinks}
               onChange={(socialLinks) => saveProfileFields({ socialLinks })}
@@ -254,13 +334,31 @@ export function LinkHubEditor() {
 
 function ProfileFields({
   profile,
+  profileId,
   onSave,
 }: {
   profile: Profile;
+  profileId: string;
   onSave: (patch: Partial<Profile>) => void;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
+      <div className="sm:col-span-2">
+        <p className="mb-2 text-sm text-zinc-500">Avatar</p>
+        <div className="flex items-center gap-4 rounded-2xl border border-white/20 bg-white/30 px-4 py-3 dark:bg-white/5">
+          <ProfileAvatar
+            profile={profile}
+            profileId={profileId}
+            editable
+            onAvatarChange={(avatarUrl, avatarStoragePath) =>
+              onSave({ avatarUrl, avatarStoragePath })
+            }
+          />
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Click the avatar to upload a new photo (max 8MB).
+          </p>
+        </div>
+      </div>
       <label className="block text-sm">
         <span className="text-zinc-500">Display name</span>
         <input
