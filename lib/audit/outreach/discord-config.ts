@@ -63,8 +63,16 @@ export function mentionMapToPaste(map: Record<string, string>): string {
 export function resolveDiscordMentionId(
   email: string,
   config: DiscordOutreachConfig,
-  overrideId?: string,
+  opts?: {
+    overrideId?: string;
+    batchMap?: Record<string, string>;
+  },
 ): string | undefined {
-  const id = overrideId?.trim() || config.mentionMap[email.toLowerCase()] || config.defaultMentionId.trim();
+  const key = email.toLowerCase();
+  const id =
+    opts?.overrideId?.trim() ||
+    opts?.batchMap?.[key] ||
+    config.mentionMap[key] ||
+    config.defaultMentionId.trim();
   return id && /^\d{17,20}$/.test(id) ? id : undefined;
 }

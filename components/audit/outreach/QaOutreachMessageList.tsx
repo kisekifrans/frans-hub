@@ -23,6 +23,7 @@ import { toast } from "sonner";
 interface QaOutreachMessageListProps {
   messages: GeneratedOutreachMessage[];
   sentArchive: SentArchiveEntry[];
+  batchMentionMap: Record<string, string>;
   onMarkSent: (entry: Omit<SentArchiveEntry, "sentAt">) => void;
   onClearArchive: () => void;
 }
@@ -47,6 +48,7 @@ function ruleBadgeClass(ruleId: string): string {
 export function QaOutreachMessageList({
   messages,
   sentArchive,
+  batchMentionMap,
   onMarkSent,
   onClearArchive,
 }: QaOutreachMessageListProps) {
@@ -85,7 +87,9 @@ export function QaOutreachMessageList({
 
     setSendingId(m.record.id);
     try {
-      const mentionUserId = resolveDiscordMentionId(m.record.email, discord);
+      const mentionUserId = resolveDiscordMentionId(m.record.email, discord, {
+        batchMap: batchMentionMap,
+      });
       const res = await fetch("/api/tools/qa-outreach/discord", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,6 +139,7 @@ export function QaOutreachMessageList({
               <MessageCard
                 key={m.record.id}
                 message={m}
+                mentionId={batchMentionMap[m.record.email]}
                 copied={copiedId === m.record.id}
                 sending={sendingId === m.record.id}
                 onCopy={() => void handleCopy(m.record.id, m.message)}
@@ -246,12 +251,14 @@ function MessageSection({
 
 function MessageCard({
   message: m,
+  mentionId,
   copied,
   sending,
   onCopy,
   onDiscord,
 }: {
   message: GeneratedOutreachMessage;
+  mentionId?: string;
   copied: boolean;
   sending: boolean;
   onCopy: () => void;
@@ -270,16 +277,25 @@ function MessageCard({
                 {m.record.role}
               </span>
             ) : null}
-            <span
-              className={cn(
-                "rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
-                ruleBadgeClass(m.ruleId),
-              )}
-            >
-              {m.ruleLabel}
-            </span>
-          </div>
-        </div>
+                    <span
+                      className={cn(
+                        "rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
+                        ruleBadgeClass(m.ruleId),
+                      )}
+                    >
+                      {m.ruleLabel}
+                    </span>
+                    {mentionId ? (
+                      <span className="rounded-md bg-[#5865F2]/15 px-1.5 py-0.5 text-[10px] font-medium text-[#5865F2] dark:text-[#aeb4ff]">
+                        @{mentionId}
+                      </span>
+                    ) : (
+                      <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700 dark:text-amber-300">
+                        No @ assigned
+                      </span>
+                    )}
+                  </div>
+                </div>
         <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row">
           <button
             type="button"

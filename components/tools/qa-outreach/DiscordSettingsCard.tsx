@@ -120,7 +120,7 @@ export function DiscordSettingsCard() {
             />
           </label>
           <label className="block space-y-1 text-xs text-zinc-500">
-            Email → Discord ID (one per line: email, userId)
+            Email → Discord ID map (optional — use Assign IDs in order above instead)
             <textarea
               className={cn(inputClass, "min-h-[80px] font-mono text-xs")}
               placeholder="user@example.com, 123456789012345678"

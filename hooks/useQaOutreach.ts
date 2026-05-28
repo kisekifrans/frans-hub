@@ -13,6 +13,14 @@ import {
   saveOutreachSettings,
 } from "@/lib/audit/outreach/templates";
 import {
+  assignDiscordIdsToEmails,
+  clearBatchMentionMap,
+  loadBatchMentionMap,
+  orderRecordsByEmailPaste,
+  parseDiscordIdList,
+  saveBatchMentionMap,
+} from "@/lib/audit/outreach/discord-mentions";
+import {
   clearSentArchive,
   loadSentArchive,
   markRecordSent,
@@ -31,6 +39,10 @@ export function useQaOutreach() {
   const [fileName, setFileName] = useState("");
   const [batchId, setBatchId] = useState("");
   const [sentArchive, setSentArchive] = useState<SentArchiveEntry[]>([]);
+  const [batchMentionMap, setBatchMentionMap] = useState<Record<string, string>>(
+    {},
+  );
+  const [discordIdPaste, setDiscordIdPaste] = useState("");
   const [fallbackDate, setFallbackDate] = useState("");
   const [emailPaste, setEmailPaste] = useState("");
   const [filterByPaste, setFilterByPaste] = useState(true);
@@ -45,8 +57,13 @@ export function useQaOutreach() {
   }, []);
 
   useEffect(() => {
-    if (batchId) setSentArchive(loadSentArchive(batchId));
-    else setSentArchive([]);
+    if (batchId) {
+      setSentArchive(loadSentArchive(batchId));
+      setBatchMentionMap(loadBatchMentionMap(batchId));
+    } else {
+      setSentArchive([]);
+      setBatchMentionMap({});
+    }
   }, [batchId]);
 
   const records = useMemo(
@@ -59,7 +76,8 @@ export function useQaOutreach() {
   const filteredRecords = useMemo(() => {
     if (!filterByPaste || pasteEmails.length === 0) return records;
     const set = new Set(pasteEmails);
-    return records.filter((r) => set.has(r.email));
+    const matched = records.filter((r) => set.has(r.email));
+    return orderRecordsByEmailPaste(matched, pasteEmails);
   }, [records, pasteEmails, filterByPaste]);
 
   const displayRecords = useMemo(() => {
@@ -93,6 +111,8 @@ export function useQaOutreach() {
       const nextBatch = `${file.name}-${Date.now()}`;
       setBatchId(nextBatch);
       setSentArchive([]);
+      setBatchMentionMap({});
+      setDiscordIdPaste("");
       if (!outreachMap.email) {
         toast.warning("Could not detect email column — map it manually");
       } else {
@@ -157,6 +177,40 @@ export function useQaOutreach() {
     [batchId],
   );
 
+  const assignDiscordIdsInOrder = useCallback(() => {
+    if (!batchId) {
+      toast.error("Import a CSV first");
+      return;
+    }
+    const ids = parseDiscordIdList(discordIdPaste);
+    if (ids.length === 0) {
+      toast.error("Paste at least one Discord user ID");
+      return;
+    }
+    const emails = displayRecords.map((r) => r.email);
+    const { map, assigned, emailCount, idCount } = assignDiscordIdsToEmails(
+      emails,
+      ids,
+    );
+    setBatchMentionMap(map);
+    saveBatchMentionMap(batchId, map);
+    if (assigned < emailCount || assigned < idCount) {
+      toast.warning(
+        `Assigned ${assigned} of ${emailCount} messages (${idCount} IDs pasted)`,
+      );
+    } else {
+      toast.success(`Assigned ${assigned} Discord IDs in order`);
+    }
+  }, [batchId, discordIdPaste, displayRecords]);
+
+  const clearDiscordAssignments = useCallback(() => {
+    if (!batchId) return;
+    clearBatchMentionMap(batchId);
+    setBatchMentionMap({});
+    setDiscordIdPaste("");
+    toast.success("Discord ID assignments cleared");
+  }, [batchId]);
+
   const resetSentArchive = useCallback(() => {
     if (!batchId) return;
     clearSentArchive(batchId);
@@ -165,13 +219,18 @@ export function useQaOutreach() {
   }, [batchId]);
 
   const clearData = useCallback(() => {
-    if (batchId) clearSentArchive(batchId);
+    if (batchId) {
+      clearSentArchive(batchId);
+      clearBatchMentionMap(batchId);
+    }
     setHeaders([]);
     setRawRows([]);
     setColumnMap({});
     setFileName("");
     setBatchId("");
     setSentArchive([]);
+    setBatchMentionMap({});
+    setDiscordIdPaste("");
     setEmailPaste("");
   }, [batchId]);
 
@@ -187,6 +246,11 @@ export function useQaOutreach() {
     fileName,
     batchId,
     sentArchive,
+    batchMentionMap,
+    discordIdPaste,
+    setDiscordIdPaste,
+    assignDiscordIdsInOrder,
+    clearDiscordAssignments,
     markSent,
     resetSentArchive,
     records,

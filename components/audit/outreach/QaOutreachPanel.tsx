@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AuditUploadDropzone } from "@/components/audit/AuditUploadDropzone";
 import { QaOutreachDataTable } from "@/components/audit/outreach/QaOutreachDataTable";
+import { DiscordIdAssignCard } from "@/components/audit/outreach/DiscordIdAssignCard";
 import { QaOutreachMessageList } from "@/components/audit/outreach/QaOutreachMessageList";
 import { DiscordSettingsCard } from "@/components/tools/qa-outreach/DiscordSettingsCard";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -43,6 +44,11 @@ export function QaOutreachPanel() {
     ignoredZeroCount,
     messages,
     sentArchive,
+    batchMentionMap,
+    discordIdPaste,
+    setDiscordIdPaste,
+    assignDiscordIdsInOrder,
+    clearDiscordAssignments,
     markSent,
     resetSentArchive,
     pasteEmails,
@@ -78,6 +84,27 @@ export function QaOutreachPanel() {
   };
 
   const hasData = records.length > 0 && !missingColumns;
+
+  const sentIds = useMemo(
+    () => new Set(sentArchive.map((e) => e.recordId)),
+    [sentArchive],
+  );
+
+  const pendingCount = useMemo(
+    () => messages.filter((m) => !sentIds.has(m.record.id)).length,
+    [messages, sentIds],
+  );
+
+  const mentionPreview = useMemo(
+    () =>
+      displayRecords.map((r) => ({
+        email: r.email,
+        discordId: batchMentionMap[r.email] ?? "",
+      })),
+    [displayRecords, batchMentionMap],
+  );
+
+  const assignedCount = Object.keys(batchMentionMap).length;
 
   return (
     <div className="space-y-6">
@@ -397,11 +424,24 @@ export function QaOutreachPanel() {
 
       <DiscordSettingsCard />
 
+      {hasData ? (
+        <DiscordIdAssignCard
+          pendingCount={pendingCount}
+          assignedCount={assignedCount}
+          discordIdPaste={discordIdPaste}
+          onPasteChange={setDiscordIdPaste}
+          onAssign={assignDiscordIdsInOrder}
+          onClear={clearDiscordAssignments}
+          preview={mentionPreview}
+        />
+      ) : null}
+
       {messages.length > 0 ? (
         <GlassCard padding="lg">
           <QaOutreachMessageList
             messages={messages}
             sentArchive={sentArchive}
+            batchMentionMap={batchMentionMap}
             onMarkSent={markSent}
             onClearArchive={resetSentArchive}
           />
