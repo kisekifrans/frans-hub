@@ -327,9 +327,9 @@ function MessageCard({
       </div>
 
       <div className="grid grid-cols-3 gap-px border-b border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5">
-        <Stat label="Reviews" value={String(m.record.reviews)} highlight />
-        <Stat label="Pace" value={m.record.medianPace || "—"} />
-        <Stat label="Hours" value={m.record.hours || "—"} />
+                <Stat label="REVIEWS" value={String(m.record.reviews)} highlight />
+                <Stat label="PACE (s)" value={m.record.medianPace || "—"} />
+                <Stat label="HOURS" value={m.record.hours || "—"} />
       </div>
 
       <div className="relative flex-1 p-4">

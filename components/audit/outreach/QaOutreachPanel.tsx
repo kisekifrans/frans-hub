@@ -13,6 +13,7 @@ import {
 import { AuditUploadDropzone } from "@/components/audit/AuditUploadDropzone";
 import { QaOutreachDataTable } from "@/components/audit/outreach/QaOutreachDataTable";
 import { DiscordIdAssignCard } from "@/components/audit/outreach/DiscordIdAssignCard";
+import { OutreachTemplateEditor } from "@/components/audit/outreach/OutreachTemplateEditor";
 import { QaOutreachMessageList } from "@/components/audit/outreach/QaOutreachMessageList";
 import { DiscordSettingsCard } from "@/components/tools/qa-outreach/DiscordSettingsCard";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -384,40 +385,33 @@ export function QaOutreachPanel() {
               </button>
             </div>
 
-            {settings.rules.map((rule) => (
-              <div key={rule.id} className="space-y-2">
-                <p
-                  className={cn(
-                    "text-xs font-medium text-violet-700 dark:text-violet-300",
-                    rule.kind === "lt" &&
-                      !settings.lowRuleEnabled &&
-                      "opacity-50",
-                    rule.kind === "gt" &&
-                      !settings.highRuleEnabled &&
-                      "opacity-50",
-                  )}
-                >
-                  {rule.label}
-                  {rule.kind === "lt"
-                    ? settings.lowRuleEnabled
-                      ? ` · reviews < ${settings.lowThreshold}`
+            {settings.rules.map((rule) => {
+              const ruleDisabled =
+                (rule.kind === "lt" && !settings.lowRuleEnabled) ||
+                (rule.kind === "gt" && !settings.highRuleEnabled);
+              const ruleHint =
+                rule.kind === "lt"
+                  ? settings.lowRuleEnabled
+                    ? ` · reviews < ${settings.lowThreshold}`
+                    : " · disabled"
+                  : rule.kind === "gt"
+                    ? settings.highRuleEnabled
+                      ? ` · reviews > ${settings.highThreshold}`
                       : " · disabled"
-                    : rule.kind === "gt"
-                      ? settings.highRuleEnabled
-                        ? ` · reviews > ${settings.highThreshold}`
-                        : " · disabled"
-                      : " · fallback when other rules off or no match"}
-                </p>
-                <textarea
-                  className={cn(inputClass, "min-h-[140px] font-mono text-xs")}
+                    : " · fallback when other rules off or no match";
+              return (
+                <OutreachTemplateEditor
+                  key={rule.id}
+                  label={`${rule.label}${ruleHint}`}
                   value={rule.body}
-                  onChange={(e) => updateRuleBody(rule.id, e.target.value)}
+                  disabled={ruleDisabled}
+                  onChange={(body) => updateRuleBody(rule.id, body)}
                   onBlur={() =>
                     updateSettings({ rules: settings.rules }, { quiet: true })
                   }
                 />
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : null}
       </GlassCard>

@@ -41,13 +41,11 @@ export function buildDiscordWebhookPayload(
       : message.message;
 
   const fields = [
-    { name: "Reviews", value: String(record.reviews), inline: true },
-    { name: "Median pace", value: record.medianPace || "—", inline: true },
-    { name: "Hours", value: record.hours || "—", inline: true },
+    { name: "REVIEWS", value: String(record.reviews), inline: true },
+    { name: "MEDIAN PACE (s)", value: record.medianPace || "—", inline: true },
+    { name: "HOURS", value: record.hours || "—", inline: true },
+    { name: "ROLE", value: record.role || "—", inline: true },
   ];
-  if (record.role) {
-    fields.push({ name: "Role", value: record.role, inline: true });
-  }
 
   const payload: DiscordWebhookPayload = {
     username: opts.username || "QA Outreach",
