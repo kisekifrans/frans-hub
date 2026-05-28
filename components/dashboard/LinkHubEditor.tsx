@@ -106,16 +106,8 @@ export function LinkHubEditor() {
     [refreshAnalytics],
   );
 
-  if (loading || !profile || !profileId || !analytics) {
-    return (
-      <PageShell contentClassName="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-      </PageShell>
-    );
-  }
-
   const publicPath =
-    profile.slug && profile.slug !== "main" ? `/${profile.slug}` : null;
+    profile?.slug && profile.slug !== "main" ? `/${profile.slug}` : null;
 
   useEffect(() => {
     if (typeof window === "undefined" || !profileId) return;
@@ -124,13 +116,32 @@ export function LinkHubEditor() {
   }, [profileId]);
 
   const quality = useMemo(
-    () =>
-      buildProfileQualitySnapshot({
+    () => {
+      if (!profile) {
+        return {
+          score: 0,
+          nextAction: "Loading profile",
+          completedCount: 0,
+          totalCount: 3,
+          steps: [
+            { id: "links" as const, label: "Add 2 links", done: false, hint: "Loading..." },
+            { id: "theme" as const, label: "Pick your theme", done: false, hint: "Loading..." },
+            {
+              id: "publish" as const,
+              label: "Publish + share setup",
+              done: false,
+              hint: "Loading...",
+            },
+          ],
+        };
+      }
+      return buildProfileQualitySnapshot({
         profile,
         gearEnabled: gear.gearEnabled,
         gearItems: gear.items,
         hasSharedProfile,
-      }),
+      });
+    },
     [profile, gear.gearEnabled, gear.items, hasSharedProfile],
   );
 
@@ -150,7 +161,7 @@ export function LinkHubEditor() {
   );
 
   const handleCopyPublicLink = useCallback(async () => {
-    if (typeof window === "undefined" || !publicPath) return;
+    if (typeof window === "undefined" || !publicPath || !profileId) return;
     const url = `${window.location.origin}${publicPath}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -162,6 +173,14 @@ export function LinkHubEditor() {
       toast.error("Could not copy link");
     }
   }, [profileId, publicPath]);
+
+  if (loading || !profile || !profileId || !analytics) {
+    return (
+      <PageShell contentClassName="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
