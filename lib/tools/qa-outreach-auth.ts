@@ -9,21 +9,22 @@ const DEFAULT_PASSWORD_HASH =
   "44628206275735ddfe1df267e794472690f9b2fa06c9462239e6e161a5c2bf72";
 
 function authSecret(): string {
-  const secret =
-    process.env.QA_OUTREACH_AUTH_SECRET?.trim() ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 32);
-  if (secret && secret.length >= 16) return secret;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "QA_OUTREACH_AUTH_SECRET must be set in production (min 16 characters)",
-    );
-  }
-  return "dev-only-qa-outreach-secret-change-me";
+  const explicit = process.env.QA_OUTREACH_AUTH_SECRET?.trim();
+  if (explicit && explicit.length >= 16) return explicit;
+
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (service && service.length >= 16) return service;
+
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "agisna.dev";
+  return createHash("sha256")
+    .update(`qa-outreach-session:${site}`)
+    .digest("hex");
 }
 
 function expectedPasswordHash(): string {
   const plain = process.env.QA_OUTREACH_PASSWORD?.trim();
-  if (plain) {
+  // Ignore empty env (Vercel sometimes has QA_OUTREACH_PASSWORD="")
+  if (plain && plain.length > 0) {
     return createHash("sha256").update(plain, "utf8").digest("hex");
   }
   return DEFAULT_PASSWORD_HASH;

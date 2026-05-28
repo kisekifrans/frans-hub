@@ -46,7 +46,12 @@ export function QaOutreachGate({ children }: QaOutreachGateProps) {
         body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        setError("Incorrect password");
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(
+          res.status === 401
+            ? "Incorrect password"
+            : data.error || "Could not unlock. Try again.",
+        );
         setPassword("");
         return;
       }

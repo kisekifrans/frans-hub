@@ -24,10 +24,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
 
-  const token = createQaOutreachSessionToken();
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(QA_OUTREACH_COOKIE, token, qaOutreachCookieOptions);
-  return res;
+  try {
+    const token = createQaOutreachSessionToken();
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set(QA_OUTREACH_COOKIE, token, qaOutreachCookieOptions);
+    return res;
+  } catch {
+    return NextResponse.json(
+      { error: "Session could not be created" },
+      { status: 503 },
+    );
+  }
 }
 
 export async function DELETE() {
