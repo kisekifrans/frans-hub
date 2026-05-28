@@ -6,11 +6,16 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuditDashboard } from "@/hooks/useAuditDashboard";
 import { AuditWorkspace } from "@/components/audit/AuditWorkspace";
 import { AuditSessionHome } from "@/components/audit/AuditSessionHome";
+import { QaOutreachPanel } from "@/components/audit/outreach/QaOutreachPanel";
 import { PageShell } from "@/components/ui/PageShell";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type AuditTab = "episode" | "outreach";
 
 export function AuditDashboard() {
   const [adminEmail, setAdminEmail] = useState("");
+  const [tab, setTab] = useState<AuditTab>("episode");
   const audit = useAuditDashboard(adminEmail);
 
   useEffect(() => {
@@ -44,12 +49,39 @@ export function AuditDashboard() {
               <h1 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">
                 QA Admin Audit
               </h1>
-              <p className="text-xs text-zinc-500">Atlas Capture - Team Special Project Frans</p>
+              <p className="text-xs text-zinc-500">
+                Atlas Capture · Episode review & outreach messages
+              </p>
             </div>
           </div>
         </header>
 
-        {audit.session ? (
+        <nav className="mb-6 flex gap-2">
+          {(
+            [
+              { id: "episode" as const, label: "Episode audit" },
+              { id: "outreach" as const, label: "QA Outreach" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "rounded-full px-4 py-2 text-sm font-medium transition",
+                tab === t.id
+                  ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                  : "glass-card text-zinc-600 dark:text-zinc-300",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        {tab === "outreach" ? (
+          <QaOutreachPanel />
+        ) : audit.session ? (
           <AuditWorkspace audit={audit} />
         ) : (
           <AuditSessionHome audit={audit} />

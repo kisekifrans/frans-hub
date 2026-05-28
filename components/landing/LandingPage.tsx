@@ -33,6 +33,7 @@ const PAYMENT_EMOJI: Record<LandingPaymentKey, string> = {
 export function LandingPage() {
   const t = useTranslations("landing");
   const siteSlug = getSiteProfileSlug();
+  const exampleHubHref = siteSlug === "main" ? "/frans" : `/hub/${siteSlug}`;
 
   return (
     <PageShell variant="violet" contentClassName="min-h-screen">
@@ -221,7 +222,7 @@ export function LandingPage() {
               {t("footer.cta")}
             </Link>
             <Link
-              href={`/hub/${siteSlug}`}
+              href={exampleHubHref}
               className={cn(
                 "text-sm font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400",
               )}
