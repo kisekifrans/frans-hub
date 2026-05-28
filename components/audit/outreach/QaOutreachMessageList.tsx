@@ -152,44 +152,43 @@ export function QaOutreachMessageList({
 
       {sentMessages.length > 0 ? (
         <div className="space-y-3">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between gap-2 text-left"
-            onClick={() => setShowArchive(!showArchive)}
-          >
-            <div className="flex items-center gap-2">
-              <Archive className="h-4 w-4 text-emerald-500" />
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                Sent Archive
-              </h2>
-              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
-                {sentMessages.length}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className={cn(btnClass, "glass-card")}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (
-                    confirm(
-                      "Clear sent archive for this CSV import? You can send again.",
-                    )
-                  ) {
-                    onClearArchive();
-                  }
-                }}
-              >
-                Clear archive
-              </button>
+          <div className="flex w-full items-center justify-between gap-2">
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+              onClick={() => setShowArchive(!showArchive)}
+            >
+              <div className="flex items-center gap-2">
+                <Archive className="h-4 w-4 text-emerald-500" />
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                  Sent Archive
+                </h2>
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
+                  {sentMessages.length}
+                </span>
+              </div>
               {showArchive ? (
-                <ChevronUp className="h-4 w-4 text-zinc-400" />
+                <ChevronUp className="h-4 w-4 shrink-0 text-zinc-400" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-zinc-400" />
+                <ChevronDown className="h-4 w-4 shrink-0 text-zinc-400" />
               )}
-            </div>
-          </button>
+            </button>
+            <button
+              type="button"
+              className={cn(btnClass, "glass-card shrink-0")}
+              onClick={() => {
+                if (
+                  confirm(
+                    "Clear sent archive for this CSV import? You can send again.",
+                  )
+                ) {
+                  onClearArchive();
+                }
+              }}
+            >
+              Clear archive
+            </button>
+          </div>
           {showArchive ? (
             <ul className="grid gap-3 lg:grid-cols-2">
               {sentMessages.map(({ entry, message: m }) => (
