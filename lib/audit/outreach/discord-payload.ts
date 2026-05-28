@@ -56,7 +56,6 @@ export function buildDiscordWebhookPayload(
         title: record.email,
         description,
         color: ruleColor(message.ruleId),
-        footer: { text: message.ruleLabel },
         fields,
         timestamp: new Date().toISOString(),
       },
