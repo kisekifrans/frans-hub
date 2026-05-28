@@ -17,14 +17,16 @@ export interface ProfileQualitySnapshot {
 }
 
 function countReadyLinks(profile: Profile): number {
-  return profile.blocks.filter((block) => {
+  const blocks = Array.isArray(profile.blocks) ? profile.blocks : [];
+  return blocks.filter((block) => {
     if (block.type !== "link" || !block.enabled) return false;
     return Boolean(block.url?.trim());
   }).length;
 }
 
 function countActiveSocials(profile: Profile): number {
-  return profile.socialLinks.filter((link) => Boolean(link.url?.trim())).length;
+  const links = Array.isArray(profile.socialLinks) ? profile.socialLinks : [];
+  return links.filter((link) => Boolean(link.url?.trim())).length;
 }
 
 export function buildProfileQualitySnapshot(params: {
@@ -36,10 +38,15 @@ export function buildProfileQualitySnapshot(params: {
   const { profile, gearEnabled, gearItems, hasSharedProfile } = params;
 
   const readyLinks = countReadyLinks(profile);
-  const featuredGear = gearItems.filter((item) => item.featured && item.enabled);
-  const hasBio = profile.bio.trim().length >= 24;
-  const hasAvatar = Boolean(profile.avatarUrl?.trim());
-  const hasDisplayName = Boolean(profile.displayName?.trim());
+  const safeGearItems = Array.isArray(gearItems) ? gearItems : [];
+  const featuredGear = safeGearItems.filter((item) => item.featured && item.enabled);
+  const bio = typeof profile.bio === "string" ? profile.bio : "";
+  const avatarUrl = typeof profile.avatarUrl === "string" ? profile.avatarUrl : "";
+  const displayName =
+    typeof profile.displayName === "string" ? profile.displayName : "";
+  const hasBio = bio.trim().length >= 24;
+  const hasAvatar = Boolean(avatarUrl.trim());
+  const hasDisplayName = Boolean(displayName.trim());
   const hasSocial = countActiveSocials(profile) > 0;
 
   const steps: CompletionStep[] = [
