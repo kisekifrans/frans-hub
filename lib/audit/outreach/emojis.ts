@@ -1,27 +1,3 @@
-/** Quick-pick emojis for outreach message templates (Discord-safe). */
-export const OUTREACH_TEMPLATE_EMOJIS = [
-  "👋",
-  "🙏",
-  "✅",
-  "❌",
-  "⚠️",
-  "📊",
-  "📈",
-  "📉",
-  "⏱️",
-  "💬",
-  "📩",
-  "🔔",
-  "🎯",
-  "💪",
-  "✨",
-  "🔍",
-  "📝",
-  "🙂",
-  "😊",
-  "👍",
-] as const;
-
 export function insertTextAtCursor(
   value: string,
   insertion: string,

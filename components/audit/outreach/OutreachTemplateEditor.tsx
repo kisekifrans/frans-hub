@@ -1,17 +1,13 @@
 "use client";
 
-import { useRef } from "react";
-import {
-  insertTextAtCursor,
-  OUTREACH_TEMPLATE_EMOJIS,
-} from "@/lib/audit/outreach/emojis";
+import { useEffect, useRef, useState } from "react";
+import { Smile } from "lucide-react";
+import { EmojiPickerPopover } from "@/components/quickreply/EmojiPickerPopover";
+import { insertTextAtCursor } from "@/lib/audit/outreach/emojis";
 import { cn } from "@/lib/utils";
 
 const inputClass =
   "glass-card w-full rounded-lg border-0 px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 dark:text-zinc-100";
-
-const emojiBtnClass =
-  "flex h-8 w-8 items-center justify-center rounded-lg text-base transition hover:bg-white/60 dark:hover:bg-white/15";
 
 interface OutreachTemplateEditorProps {
   label: string;
@@ -29,6 +25,17 @@ export function OutreachTemplateEditor({
   disabled,
 }: OutreachTemplateEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const emojiBtnRef = useRef<HTMLButtonElement>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [mobileSheet, setMobileSheet] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setMobileSheet(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   const insertEmoji = (emoji: string) => {
     const el = textareaRef.current;
@@ -50,26 +57,56 @@ export function OutreachTemplateEditor({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-violet-700 dark:text-violet-300">
-        {label}
-      </p>
-      <div className="flex flex-wrap gap-1 rounded-xl border border-white/40 bg-white/20 p-2 dark:border-white/10 dark:bg-white/5">
-        <span className="w-full px-1 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
-          Insert emoji
-        </span>
-        {OUTREACH_TEMPLATE_EMOJIS.map((emoji) => (
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-medium text-violet-700 dark:text-violet-300">
+          {label}
+        </p>
+        <div className="relative">
           <button
-            key={emoji}
+            ref={emojiBtnRef}
             type="button"
-            className={cn(emojiBtnClass, disabled && "pointer-events-none opacity-40")}
-            title={`Insert ${emoji}`}
-            onClick={() => insertEmoji(emoji)}
             disabled={disabled}
+            aria-label="Insert emoji"
+            aria-expanded={emojiOpen}
+            onClick={() => setEmojiOpen((o) => !o)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition",
+              "glass-card text-zinc-700 dark:text-zinc-200",
+              emojiOpen && "ring-1 ring-violet-500/40",
+              disabled && "pointer-events-none opacity-40",
+            )}
           >
-            {emoji}
+            <Smile className="h-4 w-4" />
+            Emoji
           </button>
-        ))}
+          {!mobileSheet && emojiOpen ? (
+            <EmojiPickerPopover
+              open={emojiOpen}
+              onClose={() => setEmojiOpen(false)}
+              onPick={(emoji) => {
+                insertEmoji(emoji);
+                setEmojiOpen(false);
+              }}
+              anchorRef={emojiBtnRef}
+              useMobileSheet={false}
+            />
+          ) : null}
+        </div>
       </div>
+
+      {mobileSheet ? (
+        <EmojiPickerPopover
+          open={emojiOpen}
+          onClose={() => setEmojiOpen(false)}
+          onPick={(emoji) => {
+            insertEmoji(emoji);
+            setEmojiOpen(false);
+          }}
+          anchorRef={emojiBtnRef}
+          useMobileSheet
+        />
+      ) : null}
+
       <textarea
         ref={textareaRef}
         className={cn(inputClass, "min-h-[140px] font-mono text-xs")}
