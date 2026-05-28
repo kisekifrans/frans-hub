@@ -74,6 +74,12 @@ export function verifyQaOutreachSessionToken(token: string | undefined): boolean
   }
 }
 
+export function isQaOutreachSessionAuthorized(
+  token: string | undefined,
+): boolean {
+  return verifyQaOutreachSessionToken(token);
+}
+
 export const qaOutreachCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",

@@ -33,6 +33,8 @@ Thank you.`;
 export const DEFAULT_OUTREACH_SETTINGS: OutreachSettings = {
   lowThreshold: 3,
   highThreshold: 5,
+  lowRuleEnabled: true,
+  highRuleEnabled: true,
   ignoreZeroReviews: true,
   rules: [
     {
@@ -82,6 +84,10 @@ export function loadOutreachSettings(): OutreachSettings {
         parsed.highThreshold ?? DEFAULT_OUTREACH_SETTINGS.highThreshold,
       ignoreZeroReviews:
         parsed.ignoreZeroReviews ?? DEFAULT_OUTREACH_SETTINGS.ignoreZeroReviews,
+      lowRuleEnabled:
+        parsed.lowRuleEnabled ?? DEFAULT_OUTREACH_SETTINGS.lowRuleEnabled,
+      highRuleEnabled:
+        parsed.highRuleEnabled ?? DEFAULT_OUTREACH_SETTINGS.highRuleEnabled,
       rules: syncRuleThresholds(rules, {
         low: parsed.lowThreshold ?? DEFAULT_OUTREACH_SETTINGS.lowThreshold,
         high: parsed.highThreshold ?? DEFAULT_OUTREACH_SETTINGS.highThreshold,
@@ -130,14 +136,20 @@ export function pickTemplateRule(
   reviews: number,
   settings: OutreachSettings,
 ): OutreachTemplateRule {
-  const { lowThreshold, highThreshold, rules } = settings;
+  const {
+    lowThreshold,
+    highThreshold,
+    lowRuleEnabled,
+    highRuleEnabled,
+    rules,
+  } = settings;
   const low = rules.find((r) => r.kind === "lt");
   const high = rules.find((r) => r.kind === "gt");
   const fallback =
     rules.find((r) => r.kind === "default") ?? DEFAULT_OUTREACH_SETTINGS.rules[2];
 
-  if (reviews < lowThreshold && low) return low;
-  if (reviews > highThreshold && high) return high;
+  if (lowRuleEnabled && reviews < lowThreshold && low) return low;
+  if (highRuleEnabled && reviews > highThreshold && high) return high;
   return fallback;
 }
 

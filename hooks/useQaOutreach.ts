@@ -12,6 +12,12 @@ import {
   loadOutreachSettings,
   saveOutreachSettings,
 } from "@/lib/audit/outreach/templates";
+import {
+  clearSentArchive,
+  loadSentArchive,
+  markRecordSent,
+  type SentArchiveEntry,
+} from "@/lib/audit/outreach/sent-archive";
 import type {
   OutreachColumnMap,
   OutreachRecord,
@@ -23,6 +29,8 @@ export function useQaOutreach() {
   const [rawRows, setRawRows] = useState<Record<string, string>[]>([]);
   const [columnMap, setColumnMap] = useState<OutreachColumnMap>({});
   const [fileName, setFileName] = useState("");
+  const [batchId, setBatchId] = useState("");
+  const [sentArchive, setSentArchive] = useState<SentArchiveEntry[]>([]);
   const [fallbackDate, setFallbackDate] = useState("");
   const [emailPaste, setEmailPaste] = useState("");
   const [filterByPaste, setFilterByPaste] = useState(true);
@@ -35,6 +43,11 @@ export function useQaOutreach() {
   useEffect(() => {
     setSettings(loadOutreachSettings());
   }, []);
+
+  useEffect(() => {
+    if (batchId) setSentArchive(loadSentArchive(batchId));
+    else setSentArchive([]);
+  }, [batchId]);
 
   const records = useMemo(
     () => buildOutreachRecords(rawRows, columnMap, fallbackDate),
@@ -77,6 +90,9 @@ export function useQaOutreach() {
       setRawRows(parsed.rows);
       setColumnMap({ ...outreachMap });
       setFileName(file.name);
+      const nextBatch = `${file.name}-${Date.now()}`;
+      setBatchId(nextBatch);
+      setSentArchive([]);
       if (!outreachMap.email) {
         toast.warning("Could not detect email column — map it manually");
       } else {
@@ -133,13 +149,31 @@ export function useQaOutreach() {
     toast.success("Templates reset to defaults");
   }, []);
 
+  const markSent = useCallback(
+    (entry: Omit<SentArchiveEntry, "sentAt">) => {
+      if (!batchId) return;
+      setSentArchive(markRecordSent(batchId, entry));
+    },
+    [batchId],
+  );
+
+  const resetSentArchive = useCallback(() => {
+    if (!batchId) return;
+    clearSentArchive(batchId);
+    setSentArchive([]);
+    toast.success("Sent archive cleared for this import");
+  }, [batchId]);
+
   const clearData = useCallback(() => {
+    if (batchId) clearSentArchive(batchId);
     setHeaders([]);
     setRawRows([]);
     setColumnMap({});
     setFileName("");
+    setBatchId("");
+    setSentArchive([]);
     setEmailPaste("");
-  }, []);
+  }, [batchId]);
 
   const columnOptions = headers;
 
@@ -151,6 +185,10 @@ export function useQaOutreach() {
     setColumnMap,
     columnOptions,
     fileName,
+    batchId,
+    sentArchive,
+    markSent,
+    resetSentArchive,
     records,
     filteredRecords,
     displayRecords,

@@ -13,6 +13,7 @@ import {
 import { AuditUploadDropzone } from "@/components/audit/AuditUploadDropzone";
 import { QaOutreachDataTable } from "@/components/audit/outreach/QaOutreachDataTable";
 import { QaOutreachMessageList } from "@/components/audit/outreach/QaOutreachMessageList";
+import { DiscordSettingsCard } from "@/components/tools/qa-outreach/DiscordSettingsCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useQaOutreach } from "@/hooks/useQaOutreach";
 import type { OutreachColumnMap } from "@/lib/audit/outreach/types";
@@ -41,6 +42,9 @@ export function QaOutreachPanel() {
     filteredRecords,
     ignoredZeroCount,
     messages,
+    sentArchive,
+    markSent,
+    resetSentArchive,
     pasteEmails,
     emailPaste,
     setEmailPaste,
@@ -228,10 +232,7 @@ export function QaOutreachPanel() {
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
               Message Templates
             </h2>
-            <p className="text-xs text-zinc-500">
-              &lt; {settings.lowThreshold} · &gt; {settings.highThreshold} ·{" "}
-              {PLACEHOLDER_HINT}
-            </p>
+            <p className="text-xs text-zinc-500">{PLACEHOLDER_HINT}</p>
           </div>
           {showTemplates ? (
             <ChevronUp className="h-4 w-4 shrink-0 text-zinc-400" />
@@ -253,13 +254,34 @@ export function QaOutreachPanel() {
             </label>
 
             <div className="flex flex-wrap items-end gap-3">
+              <label
+                className={cn(
+                  btnClass,
+                  "cursor-pointer gap-2 self-end",
+                  settings.lowRuleEnabled && "ring-1 ring-amber-500/40",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="accent-amber-600"
+                  checked={settings.lowRuleEnabled}
+                  onChange={(e) =>
+                    updateSettings(
+                      { lowRuleEnabled: e.target.checked },
+                      { quiet: true },
+                    )
+                  }
+                />
+                Reviews &lt; rule
+              </label>
               <label className="space-y-1 text-xs text-zinc-500">
-                Low (&lt;)
+                Threshold
                 <input
                   type="number"
                   min={0}
                   className={cn(inputClass, "w-20")}
                   value={settings.lowThreshold}
+                  disabled={!settings.lowRuleEnabled}
                   onChange={(e) =>
                     updateSettings(
                       { lowThreshold: Number(e.target.value) },
@@ -268,13 +290,34 @@ export function QaOutreachPanel() {
                   }
                 />
               </label>
+              <label
+                className={cn(
+                  btnClass,
+                  "cursor-pointer gap-2 self-end",
+                  settings.highRuleEnabled && "ring-1 ring-emerald-500/40",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="accent-emerald-600"
+                  checked={settings.highRuleEnabled}
+                  onChange={(e) =>
+                    updateSettings(
+                      { highRuleEnabled: e.target.checked },
+                      { quiet: true },
+                    )
+                  }
+                />
+                Reviews &gt; rule
+              </label>
               <label className="space-y-1 text-xs text-zinc-500">
-                High (&gt;)
+                Threshold
                 <input
                   type="number"
                   min={0}
                   className={cn(inputClass, "w-20")}
                   value={settings.highThreshold}
+                  disabled={!settings.highRuleEnabled}
                   onChange={(e) =>
                     updateSettings(
                       { highThreshold: Number(e.target.value) },
@@ -316,13 +359,27 @@ export function QaOutreachPanel() {
 
             {settings.rules.map((rule) => (
               <div key={rule.id} className="space-y-2">
-                <p className="text-xs font-medium text-violet-700 dark:text-violet-300">
+                <p
+                  className={cn(
+                    "text-xs font-medium text-violet-700 dark:text-violet-300",
+                    rule.kind === "lt" &&
+                      !settings.lowRuleEnabled &&
+                      "opacity-50",
+                    rule.kind === "gt" &&
+                      !settings.highRuleEnabled &&
+                      "opacity-50",
+                  )}
+                >
                   {rule.label}
                   {rule.kind === "lt"
-                    ? ` · reviews < ${settings.lowThreshold}`
+                    ? settings.lowRuleEnabled
+                      ? ` · reviews < ${settings.lowThreshold}`
+                      : " · disabled"
                     : rule.kind === "gt"
-                      ? ` · reviews > ${settings.highThreshold}`
-                      : " · between"}
+                      ? settings.highRuleEnabled
+                        ? ` · reviews > ${settings.highThreshold}`
+                        : " · disabled"
+                      : " · fallback when other rules off or no match"}
                 </p>
                 <textarea
                   className={cn(inputClass, "min-h-[140px] font-mono text-xs")}
@@ -338,9 +395,16 @@ export function QaOutreachPanel() {
         ) : null}
       </GlassCard>
 
+      <DiscordSettingsCard />
+
       {messages.length > 0 ? (
         <GlassCard padding="lg">
-          <QaOutreachMessageList messages={messages} />
+          <QaOutreachMessageList
+            messages={messages}
+            sentArchive={sentArchive}
+            onMarkSent={markSent}
+            onClearArchive={resetSentArchive}
+          />
         </GlassCard>
       ) : hasData ? (
         <p className="text-center text-sm text-zinc-500">

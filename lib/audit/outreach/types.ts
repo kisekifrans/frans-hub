@@ -31,6 +31,10 @@ export interface OutreachTemplateRule {
 export interface OutreachSettings {
   lowThreshold: number;
   highThreshold: number;
+  /** Apply template when reviews < lowThreshold */
+  lowRuleEnabled: boolean;
+  /** Apply template when reviews > highThreshold */
+  highRuleEnabled: boolean;
   /** Skip rows where Reviews === 0 */
   ignoreZeroReviews: boolean;
   rules: OutreachTemplateRule[];
