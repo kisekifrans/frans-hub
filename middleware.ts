@@ -22,6 +22,7 @@ const NON_LOCALIZED = [
   "/login",
   "/onboarding",
   "/tools/quickreply",
+  "/tools/qa-outreach",
   "/finance",
   "/dashboard",
 ] as const;

@@ -98,6 +98,12 @@ export function AdminDashboard() {
               Quick Reply
             </Link>
             <Link
+              href="/tools/qa-outreach"
+              className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
+            >
+              QA Outreach
+            </Link>
+            <Link
               href="/gear"
               className="glass-card rounded-full px-4 py-2 text-sm font-medium text-violet-700 transition hover:bg-white/55 dark:text-violet-300 dark:hover:bg-white/15"
             >
