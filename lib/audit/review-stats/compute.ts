@@ -1,3 +1,8 @@
+import {
+  findHighestHours,
+  findHighestMedianPace,
+  type StatHighlight,
+} from "./highlights";
 import { averageMedianPaceLabel, parseMedianPaceToSeconds } from "./pace";
 import type { OutreachRecord } from "@/lib/audit/outreach/types";
 
@@ -8,6 +13,8 @@ export interface ReviewStatsSummary {
   avgReviews: number;
   avgMedianPace: string;
   medianPaceDataCount: number;
+  highestHours: StatHighlight;
+  highestMedianPace: StatHighlight;
   totalReviews: number;
 }
 
@@ -31,6 +38,8 @@ export function computeReviewStats(
       avgReviews: 0,
       avgMedianPace: "—",
       medianPaceDataCount: 0,
+      highestHours: { value: "—", email: null },
+      highestMedianPace: { value: "—", email: null },
       totalReviews: 0,
     };
   }
@@ -50,6 +59,8 @@ export function computeReviewStats(
     avgReviews,
     avgMedianPace: averageMedianPaceLabel(paceValues),
     medianPaceDataCount,
+    highestHours: findHighestHours(active),
+    highestMedianPace: findHighestMedianPace(active),
     totalReviews,
   };
 }

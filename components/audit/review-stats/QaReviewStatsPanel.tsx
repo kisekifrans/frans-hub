@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 import {
-  BarChart3,
   ChevronDown,
   ChevronUp,
+  Clock,
   Copy,
+  Gauge,
   Loader2,
   Table2,
+  Timer,
   Trash2,
+  Trophy,
 } from "lucide-react";
+import { ReviewStatsHeroCard } from "@/components/audit/review-stats/ReviewStatsHeroCard";
 import { AuditUploadDropzone } from "@/components/audit/AuditUploadDropzone";
 import { QaOutreachDataTable } from "@/components/audit/outreach/QaOutreachDataTable";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -140,47 +144,50 @@ export function QaReviewStatsPanel() {
       {hasData ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2">
-            <GlassCard
-              padding="lg"
-              className="relative overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-600/20 via-violet-500/10 to-transparent dark:from-violet-600/25"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-violet-700 dark:text-violet-300">
-                    Average reviews
-                  </p>
-                  <p className="mt-2 text-4xl font-bold tabular-nums text-zinc-900 dark:text-white sm:text-5xl">
-                    {stats.avgReviews}
-                  </p>
-                  <p className="mt-2 text-xs text-zinc-500">
-                    {stats.activeRows} reviewers
-                    {ignoreZeroReviews && stats.ignoredZeroRows > 0
-                      ? ` · ${stats.ignoredZeroRows} with 0 hidden`
-                      : ""}
-                  </p>
-                </div>
-                <BarChart3 className="h-8 w-8 text-violet-500/60" />
-              </div>
-            </GlassCard>
-
-            <GlassCard
-              padding="lg"
-              className="relative overflow-hidden border-emerald-500/25 bg-gradient-to-br from-emerald-600/15 via-emerald-500/5 to-transparent"
-            >
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
-                  Average median pace
-                </p>
-                <p className="mt-2 text-4xl font-bold tabular-nums text-zinc-900 dark:text-white sm:text-5xl">
-                  {stats.avgMedianPace}
-                </p>
-                <p className="mt-2 text-xs text-zinc-500">
-                  {stats.medianPaceDataCount > 0
-                    ? `From ${stats.medianPaceDataCount} reviewers with pace data`
-                    : "Map Median Pace column — values in seconds or 2m 9s format"}
-                </p>
-              </div>
-            </GlassCard>
+            <ReviewStatsHeroCard
+              label="Average reviews"
+              value={String(stats.avgReviews)}
+              subtitle={
+                ignoreZeroReviews && stats.ignoredZeroRows > 0
+                  ? `${stats.activeRows} reviewers · ${stats.ignoredZeroRows} with 0 hidden`
+                  : `${stats.activeRows} reviewers`
+              }
+              icon={Gauge}
+              accent="violet"
+            />
+            <ReviewStatsHeroCard
+              label="Average median pace"
+              value={stats.avgMedianPace}
+              subtitle={
+                stats.medianPaceDataCount > 0
+                  ? `From ${stats.medianPaceDataCount} reviewers with pace data`
+                  : "Map Median Pace column (seconds or 2m 9s)"
+              }
+              icon={Timer}
+              accent="emerald"
+            />
+            <ReviewStatsHeroCard
+              label="Highest hours"
+              value={stats.highestHours.value}
+              subtitle={
+                stats.highestHours.email
+                  ? stats.highestHours.email
+                  : "Map Hours column to see top reviewer"
+              }
+              icon={Clock}
+              accent="amber"
+            />
+            <ReviewStatsHeroCard
+              label="Highest median pace"
+              value={stats.highestMedianPace.value}
+              subtitle={
+                stats.highestMedianPace.email
+                  ? stats.highestMedianPace.email
+                  : "Map Median Pace column to see top reviewer"
+              }
+              icon={Trophy}
+              accent="sky"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
