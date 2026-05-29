@@ -1,4 +1,4 @@
-import { averageMedianPaceLabel } from "./pace";
+import { averageMedianPaceLabel, parseMedianPaceToSeconds } from "./pace";
 import type { OutreachRecord } from "@/lib/audit/outreach/types";
 
 export interface ReviewStatsSummary {
@@ -7,6 +7,7 @@ export interface ReviewStatsSummary {
   ignoredZeroRows: number;
   avgReviews: number;
   avgMedianPace: string;
+  medianPaceDataCount: number;
   totalReviews: number;
 }
 
@@ -29,6 +30,7 @@ export function computeReviewStats(
       ignoredZeroRows,
       avgReviews: 0,
       avgMedianPace: "—",
+      medianPaceDataCount: 0,
       totalReviews: 0,
     };
   }
@@ -36,13 +38,18 @@ export function computeReviewStats(
   const totalReviews = active.reduce((sum, r) => sum + r.reviews, 0);
   const avgReviews =
     Math.round((totalReviews / active.length) * 100) / 100;
+  const paceValues = active.map((r) => r.medianPace);
+  const medianPaceDataCount = paceValues.filter(
+    (v) => parseMedianPaceToSeconds(v) != null,
+  ).length;
 
   return {
     totalRows,
     activeRows: active.length,
     ignoredZeroRows,
     avgReviews,
-    avgMedianPace: averageMedianPaceLabel(active.map((r) => r.medianPace)),
+    avgMedianPace: averageMedianPaceLabel(paceValues),
+    medianPaceDataCount,
     totalReviews,
   };
 }

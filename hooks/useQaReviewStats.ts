@@ -15,9 +15,7 @@ export function useQaReviewStats() {
   const [headers, setHeaders] = useState<string[]>([]);
   const [columnMap, setColumnMap] = useState<OutreachColumnMap>({});
   const [fileName, setFileName] = useState("");
-  const [records, setRecords] = useState<ReturnType<typeof buildOutreachRecords>>(
-    [],
-  );
+  const [rawRows, setRawRows] = useState<Record<string, string>[]>([]);
   const [uploading, setUploading] = useState(false);
   const [ignoreZeroReviews, setIgnoreZeroReviews] = useState(true);
   const [reviewsBelowThreshold, setReviewsBelowThreshold] = useState(3);
@@ -35,7 +33,7 @@ export function useQaReviewStats() {
       setHeaders(parsed.headers);
       setColumnMap(map);
       setFileName(file.name);
-      setRecords(buildOutreachRecords(parsed.rows, map));
+      setRawRows(parsed.rows);
       if (!map.email || !map.reviews) {
         toast.warning("Map Email and Reviews columns");
       } else {
@@ -52,9 +50,14 @@ export function useQaReviewStats() {
     setHeaders([]);
     setColumnMap({});
     setFileName("");
-    setRecords([]);
+    setRawRows([]);
     setSearchEmail("");
   }, []);
+
+  const records = useMemo(
+    () => buildOutreachRecords(rawRows, columnMap),
+    [rawRows, columnMap],
+  );
 
   const stats = useMemo(
     () => computeReviewStats(records, { ignoreZeroReviews }),

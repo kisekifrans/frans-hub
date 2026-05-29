@@ -30,9 +30,11 @@ const REVIEWS_ALIASES = [
 
 const MEDIAN_PACE_ALIASES = [
   "medianpace",
+  "medianpaces",
   "medianpaceperreview",
+  "medianpaceseconds",
+  "medianpacesinseconds",
   "pace",
-  "median",
 ];
 
 const HOURS_ALIASES = ["hours", "hour", "totalhours", "workedhours", "timehours"];
@@ -50,7 +52,11 @@ export function detectOutreachColumnMap(headers: string[]): OutreachColumnMap {
   map.email = pick(EMAIL_ALIASES);
   map.role = pick(ROLE_ALIASES);
   map.reviews = pick(REVIEWS_ALIASES);
-  map.medianPace = pick(MEDIAN_PACE_ALIASES);
+  map.medianPace =
+    pick(MEDIAN_PACE_ALIASES) ??
+    normalized.find(
+      (h) => h.norm.includes("median") && h.norm.includes("pace"),
+    )?.original;
   map.hours = pick(HOURS_ALIASES);
 
   return map;

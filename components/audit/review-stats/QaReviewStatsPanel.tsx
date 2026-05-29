@@ -175,7 +175,9 @@ export function QaReviewStatsPanel() {
                   {stats.avgMedianPace}
                 </p>
                 <p className="mt-2 text-xs text-zinc-500">
-                  Mean pace across active reviewers
+                  {stats.medianPaceDataCount > 0
+                    ? `From ${stats.medianPaceDataCount} reviewers with pace data`
+                    : "Map Median Pace column — values in seconds or 2m 9s format"}
                 </p>
               </div>
             </GlassCard>
