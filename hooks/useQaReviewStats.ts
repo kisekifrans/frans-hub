@@ -4,12 +4,14 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { parseCsvFile } from "@/lib/audit/csv";
 import { detectOutreachColumnMap } from "@/lib/audit/outreach/columns";
+import { parseEmailPaste } from "@/lib/audit/outreach/emails";
 import { buildOutreachRecords } from "@/lib/audit/outreach/parse";
 import type { OutreachColumnMap } from "@/lib/audit/outreach/types";
 import {
   computeReviewStats,
   filterByReviewsBelow,
 } from "@/lib/audit/review-stats/compute";
+import { excludeEmailsFromRecords } from "@/lib/audit/review-stats/filter";
 
 export function useQaReviewStats() {
   const [headers, setHeaders] = useState<string[]>([]);
@@ -20,6 +22,7 @@ export function useQaReviewStats() {
   const [ignoreZeroReviews, setIgnoreZeroReviews] = useState(true);
   const [reviewsBelowThreshold, setReviewsBelowThreshold] = useState(3);
   const [searchEmail, setSearchEmail] = useState("");
+  const [excludeEmailPaste, setExcludeEmailPaste] = useState("");
 
   const uploadCsv = useCallback(async (file: File) => {
     setUploading(true);
@@ -52,6 +55,7 @@ export function useQaReviewStats() {
     setFileName("");
     setRawRows([]);
     setSearchEmail("");
+    setExcludeEmailPaste("");
   }, []);
 
   const records = useMemo(
@@ -59,17 +63,36 @@ export function useQaReviewStats() {
     [rawRows, columnMap],
   );
 
-  const stats = useMemo(
-    () => computeReviewStats(records, { ignoreZeroReviews }),
-    [records, ignoreZeroReviews],
+  const excludeEmails = useMemo(
+    () => parseEmailPaste(excludeEmailPaste),
+    [excludeEmailPaste],
   );
+
+  const workingRecords = useMemo(
+    () => excludeEmailsFromRecords(records, excludeEmails),
+    [records, excludeEmails],
+  );
+
+  const excludedRowCount = records.length - workingRecords.length;
 
   const belowThresholdRecords = useMemo(
     () =>
-      filterByReviewsBelow(records, reviewsBelowThreshold, {
+      filterByReviewsBelow(workingRecords, reviewsBelowThreshold, {
         ignoreZeroReviews,
       }),
-    [records, reviewsBelowThreshold, ignoreZeroReviews],
+    [workingRecords, reviewsBelowThreshold, ignoreZeroReviews],
+  );
+
+  /** Stats for everyone (ignore 0 only) — used for total row count context */
+  const datasetStats = useMemo(
+    () => computeReviewStats(workingRecords, { ignoreZeroReviews }),
+    [workingRecords, ignoreZeroReviews],
+  );
+
+  /** Stats for reviewers matching Reviews < threshold (what filters drive) */
+  const filteredStats = useMemo(
+    () => computeReviewStats(belowThresholdRecords, { ignoreZeroReviews: false }),
+    [belowThresholdRecords],
   );
 
   const tableRecords = useMemo(() => {
@@ -97,7 +120,13 @@ export function useQaReviewStats() {
     setReviewsBelowThreshold,
     searchEmail,
     setSearchEmail,
-    stats,
+    excludeEmailPaste,
+    setExcludeEmailPaste,
+    excludeEmails,
+    excludedRowCount,
+    workingRecords,
+    datasetStats,
+    filteredStats,
     belowThresholdRecords,
     tableRecords,
   };

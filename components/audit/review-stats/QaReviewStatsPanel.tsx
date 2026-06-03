@@ -8,9 +8,11 @@ import {
   Copy,
   Gauge,
   Loader2,
+  Star,
   Table2,
   Timer,
   Trash2,
+  TrendingDown,
   Trophy,
 } from "lucide-react";
 import { ReviewStatsHeroCard } from "@/components/audit/review-stats/ReviewStatsHeroCard";
@@ -51,7 +53,13 @@ export function QaReviewStatsPanel() {
     setReviewsBelowThreshold,
     searchEmail,
     setSearchEmail,
-    stats,
+    excludeEmailPaste,
+    setExcludeEmailPaste,
+    excludeEmails,
+    excludedRowCount,
+    workingRecords,
+    datasetStats,
+    filteredStats,
     belowThresholdRecords,
     tableRecords,
   } = useQaReviewStats();
@@ -89,7 +97,12 @@ export function QaReviewStatsPanel() {
             <span className="font-medium text-violet-600 dark:text-violet-300">
               {fileName}
             </span>
-            <span>· {records.length} reviewers</span>
+            <span>
+              · {records.length} in CSV
+              {excludedRowCount > 0
+                ? ` · ${workingRecords.length} after exclude`
+                : ""}
+            </span>
             <button type="button" className={btnClass} onClick={clearData}>
               <Trash2 className="h-3.5 w-3.5" />
               Clear
@@ -143,24 +156,20 @@ export function QaReviewStatsPanel() {
 
       {hasData ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <ReviewStatsHeroCard
               label="Average reviews"
-              value={String(stats.avgReviews)}
-              subtitle={
-                ignoreZeroReviews && stats.ignoredZeroRows > 0
-                  ? `${stats.activeRows} reviewers · ${stats.ignoredZeroRows} with 0 hidden`
-                  : `${stats.activeRows} reviewers`
-              }
+              value={String(filteredStats.avgReviews)}
+              subtitle={`${filteredStats.activeRows} reviewers with reviews < ${reviewsBelowThreshold}`}
               icon={Gauge}
               accent="violet"
             />
             <ReviewStatsHeroCard
               label="Average median pace"
-              value={stats.avgMedianPace}
+              value={filteredStats.avgMedianPace}
               subtitle={
-                stats.medianPaceDataCount > 0
-                  ? `From ${stats.medianPaceDataCount} reviewers with pace data`
+                filteredStats.medianPaceDataCount > 0
+                  ? `${filteredStats.medianPaceDataCount} in filter · pace data`
                   : "Map Median Pace column (seconds or 2m 9s)"
               }
               icon={Timer}
@@ -168,10 +177,10 @@ export function QaReviewStatsPanel() {
             />
             <ReviewStatsHeroCard
               label="Highest hours"
-              value={stats.highestHours.value}
+              value={filteredStats.highestHours.value}
               subtitle={
-                stats.highestHours.email
-                  ? stats.highestHours.email
+                filteredStats.highestHours.email
+                  ? filteredStats.highestHours.email
                   : "Map Hours column to see top reviewer"
               }
               icon={Clock}
@@ -179,30 +188,85 @@ export function QaReviewStatsPanel() {
             />
             <ReviewStatsHeroCard
               label="Highest median pace"
-              value={stats.highestMedianPace.value}
+              value={filteredStats.highestMedianPace.value}
               subtitle={
-                stats.highestMedianPace.email
-                  ? stats.highestMedianPace.email
+                filteredStats.highestMedianPace.email
+                  ? filteredStats.highestMedianPace.email
                   : "Map Median Pace column to see top reviewer"
               }
               icon={Trophy}
               accent="sky"
             />
+            <ReviewStatsHeroCard
+              label="Highest reviews"
+              value={filteredStats.highestReviews.value}
+              subtitle={
+                filteredStats.highestReviews.email
+                  ? filteredStats.highestReviews.email
+                  : "Top review count in filtered set"
+              }
+              icon={Star}
+              accent="rose"
+            />
+            <ReviewStatsHeroCard
+              label="Lowest median pace"
+              value={filteredStats.lowestMedianPace.value}
+              subtitle={
+                filteredStats.lowestMedianPace.email
+                  ? filteredStats.lowestMedianPace.email
+                  : "Fastest pace in filtered set"
+              }
+              icon={TrendingDown}
+              accent="fuchsia"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <MiniStat label="Total rows" value={String(stats.totalRows)} />
-            <MiniStat label="Active" value={String(stats.activeRows)} />
+          <div
+            className={cn(
+              "grid grid-cols-2 gap-3",
+              excludedRowCount > 0 ? "sm:grid-cols-4" : "sm:grid-cols-3",
+            )}
+          >
+            <MiniStat label="Total rows (CSV)" value={String(records.length)} />
+            {excludedRowCount > 0 ? (
+              <MiniStat label="Excluded" value={String(excludedRowCount)} />
+            ) : null}
+            <MiniStat label="In dataset" value={String(datasetStats.totalRows)} />
             <MiniStat
-              label="Total reviews"
-              value={String(stats.totalReviews)}
-            />
-            <MiniStat
-              label={`Below ${reviewsBelowThreshold}`}
+              label={`Reviews < ${reviewsBelowThreshold}`}
               value={String(belowThresholdRecords.length)}
               highlight
             />
+            <MiniStat
+              label="Total reviews (filtered)"
+              value={String(filteredStats.totalReviews)}
+              highlight
+            />
           </div>
+
+          <GlassCard padding="lg" className="space-y-4">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+              Exclude Emails
+            </h2>
+            <p className="text-xs text-zinc-500">
+              Paste emails to remove from stats and the table (one per line, or
+              comma/tab separated). Matching is case-insensitive.
+            </p>
+            <textarea
+              className={cn(inputClass, "min-h-[100px] font-mono text-xs")}
+              placeholder="team@example.com&#10;lead@example.com"
+              value={excludeEmailPaste}
+              onChange={(e) => setExcludeEmailPaste(e.target.value)}
+            />
+            <p className="text-xs text-zinc-500">
+              {excludeEmails.length} in exclude list
+              {excludedRowCount > 0
+                ? ` · ${excludedRowCount} row${excludedRowCount === 1 ? "" : "s"} removed`
+                : excludeEmails.length > 0
+                  ? " · no matching rows in CSV"
+                  : ""}
+            </p>
+          </GlassCard>
 
           <GlassCard padding="lg" className="space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
@@ -231,9 +295,10 @@ export function QaReviewStatsPanel() {
                   min={0}
                   className={cn(inputClass, "w-16 px-2 py-1")}
                   value={reviewsBelowThreshold}
-                  onChange={(e) =>
-                    setReviewsBelowThreshold(Number(e.target.value))
-                  }
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10);
+                    setReviewsBelowThreshold(Number.isFinite(n) ? n : 0);
+                  }}
                 />
               </label>
               <button

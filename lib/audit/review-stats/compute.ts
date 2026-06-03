@@ -1,6 +1,8 @@
 import {
   findHighestHours,
   findHighestMedianPace,
+  findHighestReviews,
+  findLowestMedianPace,
   type StatHighlight,
 } from "./highlights";
 import { averageMedianPaceLabel, parseMedianPaceToSeconds } from "./pace";
@@ -15,6 +17,8 @@ export interface ReviewStatsSummary {
   medianPaceDataCount: number;
   highestHours: StatHighlight;
   highestMedianPace: StatHighlight;
+  lowestMedianPace: StatHighlight;
+  highestReviews: StatHighlight;
   totalReviews: number;
 }
 
@@ -40,6 +44,8 @@ export function computeReviewStats(
       medianPaceDataCount: 0,
       highestHours: { value: "—", email: null },
       highestMedianPace: { value: "—", email: null },
+      lowestMedianPace: { value: "—", email: null },
+      highestReviews: { value: "—", email: null },
       totalReviews: 0,
     };
   }
@@ -61,6 +67,8 @@ export function computeReviewStats(
     medianPaceDataCount,
     highestHours: findHighestHours(active),
     highestMedianPace: findHighestMedianPace(active),
+    lowestMedianPace: findLowestMedianPace(active),
+    highestReviews: findHighestReviews(active),
     totalReviews,
   };
 }

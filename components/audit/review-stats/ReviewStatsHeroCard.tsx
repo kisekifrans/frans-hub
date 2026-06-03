@@ -9,7 +9,7 @@ interface ReviewStatsHeroCardProps {
   value: string;
   subtitle: string;
   icon: LucideIcon;
-  accent: "violet" | "emerald" | "amber" | "sky";
+  accent: "violet" | "emerald" | "amber" | "sky" | "rose" | "fuchsia";
 }
 
 const accentStyles = {
@@ -40,6 +40,20 @@ const accentStyles = {
       "from-sky-500/20 via-sky-500/8 to-transparent dark:from-sky-600/20",
     label: "text-sky-800 dark:text-sky-300",
     icon: "text-sky-500/70",
+  },
+  rose: {
+    border: "border-rose-500/30",
+    gradient:
+      "from-rose-500/20 via-rose-500/8 to-transparent dark:from-rose-600/20",
+    label: "text-rose-800 dark:text-rose-300",
+    icon: "text-rose-500/70",
+  },
+  fuchsia: {
+    border: "border-fuchsia-500/30",
+    gradient:
+      "from-fuchsia-500/20 via-fuchsia-500/8 to-transparent dark:from-fuchsia-600/20",
+    label: "text-fuchsia-800 dark:text-fuchsia-300",
+    icon: "text-fuchsia-500/70",
   },
 };
 
