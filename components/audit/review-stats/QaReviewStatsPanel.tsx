@@ -14,6 +14,7 @@ import {
   Trash2,
   TrendingDown,
   Trophy,
+  X,
 } from "lucide-react";
 import { ReviewStatsHeroCard } from "@/components/audit/review-stats/ReviewStatsHeroCard";
 import { AuditUploadDropzone } from "@/components/audit/AuditUploadDropzone";
@@ -38,12 +39,14 @@ async function copyText(text: string) {
 
 export function QaReviewStatsPanel() {
   const {
-    fileName,
+    csvSources,
+    mergedRowCount,
     columnMap,
     setColumnMap,
     columnOptions,
     records,
-    uploadCsv,
+    addCsvFiles,
+    removeCsvBundle,
     uploading,
     clearData,
     missingColumns,
@@ -57,10 +60,19 @@ export function QaReviewStatsPanel() {
     setExcludeEmailPaste,
     excludeEmails,
     excludedRowCount,
+    includeEmailPaste,
+    setIncludeEmailPaste,
+    includeEmails,
+    filterByIncludeList,
+    setFilterByIncludeList,
+    includeListActive,
+    includeMatchedCount,
+    includeMissingCount,
     workingRecords,
     datasetStats,
     filteredStats,
     belowThresholdRecords,
+    tableSourceRecords,
     tableRecords,
   } = useQaReviewStats();
 
@@ -71,14 +83,22 @@ export function QaReviewStatsPanel() {
     setColumnMap({ ...columnMap, ...patch });
 
   const copyBelowEmails = async () => {
-    const emails = belowThresholdRecords.map((r) => r.email).join("\n");
+    const emails = tableSourceRecords.map((r) => r.email).join("\n");
     if (!emails) {
       toast.error("No emails to copy");
       return;
     }
     await copyText(emails);
-    toast.success(`Copied ${belowThresholdRecords.length} emails`);
+    toast.success(`Copied ${tableSourceRecords.length} emails`);
   };
+
+  const statsSubtitle = includeListActive
+    ? `${filteredStats.activeRows} of ${includeEmails.length} pasted emails in CSV`
+    : `${filteredStats.activeRows} reviewers with reviews < ${reviewsBelowThreshold}`;
+
+  const totalReviewsLabel = includeListActive
+    ? "Total reviews (cohort)"
+    : "Total reviews (filtered)";
 
   return (
     <div className="space-y-6">
@@ -88,25 +108,54 @@ export function QaReviewStatsPanel() {
             Import Productivity CSV
           </h2>
           <p className="mt-1 text-xs text-zinc-500">
-            Export the .csv files from the User Management.
+            Export .csv files from User Management — add multiple files to
+            combine; duplicate emails sum reviews across files.
           </p>
         </div>
-        <AuditUploadDropzone uploading={uploading} onFile={uploadCsv} />
-        {fileName ? (
-          <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-            <span className="font-medium text-violet-600 dark:text-violet-300">
-              {fileName}
-            </span>
-            <span>
-              · {records.length} in CSV
+        <AuditUploadDropzone
+          uploading={uploading}
+          multiple
+          onFiles={addCsvFiles}
+        />
+        {csvSources.length > 0 ? (
+          <div className="space-y-3">
+            <ul className="space-y-2">
+              {csvSources.map((source) => (
+                <li
+                  key={source.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/25 px-3 py-2 text-xs dark:border-white/10 dark:bg-white/5"
+                >
+                  <span className="font-medium text-violet-600 dark:text-violet-300">
+                    {source.name}
+                  </span>
+                  <span className="text-zinc-500">{source.rowCount} rows</span>
+                  <button
+                    type="button"
+                    className={cn(btnClass, "ml-auto px-2 py-1")}
+                    onClick={() => removeCsvBundle(source.id)}
+                    aria-label={`Remove ${source.name}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+              <span>
+                {csvSources.length} file{csvSources.length === 1 ? "" : "s"} ·{" "}
+                {mergedRowCount} raw rows · {records.length} unique emails
+              </span>
               {excludedRowCount > 0
                 ? ` · ${workingRecords.length} after exclude`
                 : ""}
-            </span>
-            <button type="button" className={btnClass} onClick={clearData}>
-              <Trash2 className="h-3.5 w-3.5" />
-              Clear
-            </button>
+              {includeListActive
+                ? ` · ${includeMatchedCount} in include list`
+                : ""}
+              <button type="button" className={btnClass} onClick={clearData}>
+                <Trash2 className="h-3.5 w-3.5" />
+                Clear all
+              </button>
+            </div>
           </div>
         ) : null}
       </GlassCard>
@@ -160,7 +209,7 @@ export function QaReviewStatsPanel() {
             <ReviewStatsHeroCard
               label="Average reviews"
               value={String(filteredStats.avgReviews)}
-              subtitle={`${filteredStats.activeRows} reviewers with reviews < ${reviewsBelowThreshold}`}
+              subtitle={statsSubtitle}
               icon={Gauge}
               accent="violet"
             />
@@ -227,22 +276,75 @@ export function QaReviewStatsPanel() {
               excludedRowCount > 0 ? "sm:grid-cols-4" : "sm:grid-cols-3",
             )}
           >
-            <MiniStat label="Total rows (CSV)" value={String(records.length)} />
+            <MiniStat
+              label="Unique emails"
+              value={String(records.length)}
+            />
             {excludedRowCount > 0 ? (
               <MiniStat label="Excluded" value={String(excludedRowCount)} />
             ) : null}
             <MiniStat label="In dataset" value={String(datasetStats.totalRows)} />
+            {includeListActive ? (
+              <MiniStat
+                label="In include list"
+                value={String(includeMatchedCount)}
+                highlight
+              />
+            ) : (
+              <MiniStat
+                label={`Reviews < ${reviewsBelowThreshold}`}
+                value={String(belowThresholdRecords.length)}
+                highlight
+              />
+            )}
             <MiniStat
-              label={`Reviews < ${reviewsBelowThreshold}`}
-              value={String(belowThresholdRecords.length)}
-              highlight
-            />
-            <MiniStat
-              label="Total reviews (filtered)"
+              label={totalReviewsLabel}
               value={String(filteredStats.totalReviews)}
               highlight
             />
           </div>
+
+          <GlassCard padding="lg" className="space-y-4">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+              Include Only These Emails
+            </h2>
+            <p className="text-xs text-zinc-500">
+              Paste a list from Sheets — when enabled, only matching rows drive
+              stats and the table (after exclude, if any).
+            </p>
+            <textarea
+              className={cn(inputClass, "min-h-[100px] font-mono text-xs")}
+              placeholder="reviewer1@example.com&#10;reviewer2@example.com"
+              value={includeEmailPaste}
+              onChange={(e) => setIncludeEmailPaste(e.target.value)}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <label
+                className={cn(
+                  btnClass,
+                  "cursor-pointer gap-2",
+                  filterByIncludeList && "ring-1 ring-violet-500/40",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="accent-violet-600"
+                  checked={filterByIncludeList}
+                  onChange={(e) => setFilterByIncludeList(e.target.checked)}
+                />
+                Only these emails
+              </label>
+              <span className="text-xs text-zinc-500">
+                {includeEmails.length} in list
+                {includeListActive
+                  ? ` · ${includeMatchedCount} matched in CSV`
+                  : ""}
+                {includeListActive && includeMissingCount > 0
+                  ? ` · ${includeMissingCount} not in CSV`
+                  : ""}
+              </span>
+            </div>
+          </GlassCard>
 
           <GlassCard padding="lg" className="space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
@@ -308,15 +410,19 @@ export function QaReviewStatsPanel() {
                   "bg-violet-600 text-white hover:bg-violet-500",
                 )}
                 onClick={() => void copyBelowEmails()}
-                disabled={belowThresholdRecords.length === 0}
+                disabled={tableSourceRecords.length === 0}
               >
                 <Copy className="h-3.5 w-3.5" />
-                Copy {belowThresholdRecords.length} emails
+                Copy {tableSourceRecords.length} emails
               </button>
             </div>
             <input
               className={inputClass}
-              placeholder="Search email in filtered list…"
+              placeholder={
+                includeListActive
+                  ? "Search email in include list…"
+                  : "Search email in filtered list…"
+              }
               value={searchEmail}
               onChange={(e) => setSearchEmail(e.target.value)}
             />
@@ -331,7 +437,9 @@ export function QaReviewStatsPanel() {
               <div className="flex items-center gap-2">
                 <Table2 className="h-4 w-4 text-violet-500" />
                 <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                  Reviewers below {reviewsBelowThreshold} reviews
+                  {includeListActive
+                    ? "Included reviewers"
+                    : `Reviewers below ${reviewsBelowThreshold} reviews`}
                 </h2>
                 <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-amber-800 dark:text-amber-300">
                   {tableRecords.length}
@@ -348,7 +456,9 @@ export function QaReviewStatsPanel() {
                 <QaOutreachDataTable rows={tableRecords} dimZeroRows />
               ) : (
                 <p className="py-6 text-center text-sm text-zinc-500">
-                  No reviewers match this filter.
+                  {includeListActive
+                    ? "No pasted emails matched the CSV."
+                    : "No reviewers match this filter."}
                 </p>
               )
             ) : null}

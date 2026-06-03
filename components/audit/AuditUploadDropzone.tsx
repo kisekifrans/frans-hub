@@ -6,24 +6,38 @@ import { cn } from "@/lib/utils";
 
 interface AuditUploadDropzoneProps {
   uploading: boolean;
-  onFile: (file: File) => void;
+  onFile?: (file: File) => void;
+  /** When set with `multiple`, all selected CSV files are passed at once. */
+  onFiles?: (files: File[]) => void;
+  multiple?: boolean;
+}
+
+function pickCsvFiles(files: FileList | null): File[] {
+  if (!files?.length) return [];
+  return [...files].filter((f) => f.name.toLowerCase().endsWith(".csv"));
 }
 
 export function AuditUploadDropzone({
   uploading,
   onFile,
+  onFiles,
+  multiple = false,
 }: AuditUploadDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
-      const file = files?.[0];
-      if (!file) return;
-      if (!file.name.toLowerCase().endsWith(".csv")) return;
-      onFile(file);
+      const csvFiles = pickCsvFiles(files);
+      if (csvFiles.length === 0) return;
+      if (multiple && onFiles) {
+        onFiles(csvFiles);
+        return;
+      }
+      const file = csvFiles[0];
+      if (file && onFile) onFile(file);
     },
-    [onFile],
+    [multiple, onFile, onFiles],
   );
 
   return (
@@ -56,8 +70,12 @@ export function AuditUploadDropzone({
         ref={inputRef}
         type="file"
         accept=".csv,text/csv"
+        multiple={multiple}
         className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => {
+          handleFiles(e.target.files);
+          e.target.value = "";
+        }}
       />
       {uploading ? (
         <Loader2 className="h-10 w-10 animate-spin text-violet-500" />
@@ -68,7 +86,9 @@ export function AuditUploadDropzone({
       )}
       <div>
         <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-          Drop CSV or click to upload
+          {multiple
+            ? "Drop CSV files or click to upload"
+            : "Drop CSV or click to upload"}
         </p>
         <p className="mt-1 flex items-center justify-center gap-1.5 text-xs text-zinc-500">
           <FileSpreadsheet className="h-3.5 w-3.5" />
