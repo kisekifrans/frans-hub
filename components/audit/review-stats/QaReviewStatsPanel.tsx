@@ -11,16 +11,18 @@ import {
   Star,
   Table2,
   Timer,
-  Trash2,
   TrendingDown,
   Trophy,
-  X,
 } from "lucide-react";
+import { CsvFileList } from "@/components/audit/review-stats/CsvFileList";
+import { DailyPerformanceTrend } from "@/components/audit/review-stats/DailyPerformanceTrend";
 import { ReviewStatsHeroCard } from "@/components/audit/review-stats/ReviewStatsHeroCard";
+import { TimelineNotes } from "@/components/audit/review-stats/TimelineNotes";
 import { AuditUploadDropzone } from "@/components/audit/AuditUploadDropzone";
 import { QaOutreachDataTable } from "@/components/audit/outreach/QaOutreachDataTable";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useQaReviewStats } from "@/hooks/useQaReviewStats";
+import { useTimelineEvents } from "@/hooks/useTimelineEvents";
 import type { OutreachColumnMap } from "@/lib/audit/outreach/types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -39,13 +41,15 @@ async function copyText(text: string) {
 
 export function QaReviewStatsPanel() {
   const {
-    csvSources,
+    csvBundles,
     mergedRowCount,
+    undatedFileCount,
     columnMap,
     setColumnMap,
     columnOptions,
     records,
     addCsvFiles,
+    updateCsvBundle,
     removeCsvBundle,
     uploading,
     clearData,
@@ -75,6 +79,8 @@ export function QaReviewStatsPanel() {
     tableSourceRecords,
     tableRecords,
   } = useQaReviewStats();
+
+  const { events, addEvent, updateEvent, deleteEvent } = useTimelineEvents();
 
   const [showTable, setShowTable] = useState(true);
   const hasData = records.length > 0 && !missingColumns;
@@ -117,46 +123,20 @@ export function QaReviewStatsPanel() {
           multiple
           onFiles={addCsvFiles}
         />
-        {csvSources.length > 0 ? (
-          <div className="space-y-3">
-            <ul className="space-y-2">
-              {csvSources.map((source) => (
-                <li
-                  key={source.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/40 bg-white/25 px-3 py-2 text-xs dark:border-white/10 dark:bg-white/5"
-                >
-                  <span className="font-medium text-violet-600 dark:text-violet-300">
-                    {source.name}
-                  </span>
-                  <span className="text-zinc-500">{source.rowCount} rows</span>
-                  <button
-                    type="button"
-                    className={cn(btnClass, "ml-auto px-2 py-1")}
-                    onClick={() => removeCsvBundle(source.id)}
-                    aria-label={`Remove ${source.name}`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
-              <span>
-                {csvSources.length} file{csvSources.length === 1 ? "" : "s"} ·{" "}
-                {mergedRowCount} raw rows · {records.length} unique emails
-              </span>
-              {excludedRowCount > 0
-                ? ` · ${workingRecords.length} after exclude`
-                : ""}
-              {includeListActive
-                ? ` · ${includeMatchedCount} in include list`
-                : ""}
-              <button type="button" className={btnClass} onClick={clearData}>
-                <Trash2 className="h-3.5 w-3.5" />
-                Clear all
-              </button>
-            </div>
-          </div>
+        {csvBundles.length > 0 ? (
+          <CsvFileList
+            bundles={csvBundles}
+            mergedRowCount={mergedRowCount}
+            uniqueEmailCount={records.length}
+            excludedRowCount={excludedRowCount}
+            workingRecordCount={workingRecords.length}
+            includeListActive={includeListActive}
+            includeMatchedCount={includeMatchedCount}
+            undatedFileCount={undatedFileCount}
+            onUpdateBundle={updateCsvBundle}
+            onRemoveBundle={removeCsvBundle}
+            onClearAll={clearData}
+          />
         ) : null}
       </GlassCard>
 
@@ -427,6 +407,25 @@ export function QaReviewStatsPanel() {
               onChange={(e) => setSearchEmail(e.target.value)}
             />
           </GlassCard>
+
+          <DailyPerformanceTrend
+            csvBundles={csvBundles}
+            columnMap={columnMap}
+            ignoreZeroReviews={ignoreZeroReviews}
+            reviewsBelowThreshold={reviewsBelowThreshold}
+            excludeEmails={excludeEmails}
+            includeEmails={includeEmails}
+            includeListActive={includeListActive}
+            allEvents={events}
+            undatedFileCount={undatedFileCount}
+          />
+
+          <TimelineNotes
+            events={events}
+            onAdd={addEvent}
+            onUpdate={updateEvent}
+            onDelete={deleteEvent}
+          />
 
           <GlassCard padding="lg" className="space-y-3">
             <button

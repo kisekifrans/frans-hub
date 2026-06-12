@@ -85,6 +85,18 @@ export function useQaReviewStats() {
     }
   }, [csvBundles]);
 
+  const updateCsvBundle = useCallback(
+    (
+      id: string,
+      patch: Partial<Pick<CsvBundle, "reportDate" | "sourceType" | "label">>,
+    ) => {
+      setCsvBundles((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+      );
+    },
+    [],
+  );
+
   const removeCsvBundle = useCallback((id: string) => {
     setCsvBundles((prev) => {
       const next = prev.filter((b) => b.id !== id);
@@ -108,6 +120,7 @@ export function useQaReviewStats() {
   );
 
   const mergedRowCount = rawRows.length;
+  const undatedFileCount = csvBundles.filter((b) => !b.reportDate?.trim()).length;
 
   const excludeEmails = useMemo(
     () => parseEmailPaste(excludeEmailPaste),
@@ -178,25 +191,17 @@ export function useQaReviewStats() {
 
   const missingColumns = !columnMap.email || !columnMap.reviews;
 
-  const csvSources = useMemo(
-    () =>
-      csvBundles.map((b) => ({
-        id: b.id,
-        name: b.name,
-        rowCount: b.rows.length,
-      })),
-    [csvBundles],
-  );
-
   return {
     headers,
     columnMap,
     setColumnMap,
     columnOptions: headers,
-    csvSources,
+    csvBundles,
     mergedRowCount,
+    undatedFileCount,
     records,
     addCsvFiles,
+    updateCsvBundle,
     removeCsvBundle,
     uploading,
     clearData,

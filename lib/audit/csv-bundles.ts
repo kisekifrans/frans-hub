@@ -1,3 +1,8 @@
+import {
+  detectDateFromFilename,
+  detectSourceTypeFromFilename,
+} from "@/lib/audit/review-stats/date-detect";
+import type { CsvSourceType } from "@/lib/audit/review-stats/types";
 import type { ParsedCsv } from "./types";
 
 export interface CsvBundle {
@@ -5,6 +10,9 @@ export interface CsvBundle {
   name: string;
   headers: string[];
   rows: Record<string, string>[];
+  reportDate?: string;
+  sourceType?: CsvSourceType;
+  label?: string;
 }
 
 export function createCsvBundle(parsed: ParsedCsv, name: string): CsvBundle {
@@ -13,6 +21,8 @@ export function createCsvBundle(parsed: ParsedCsv, name: string): CsvBundle {
     name,
     headers: parsed.headers,
     rows: parsed.rows,
+    reportDate: detectDateFromFilename(name),
+    sourceType: detectSourceTypeFromFilename(name),
   };
 }
 
